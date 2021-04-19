@@ -20,11 +20,13 @@ int main(int argc, char** argv) {
     if(!SDL_init()) {
         return 0;
     }
-    Window window("Maze", 1023, 1023);
+    // 1023
+    Window window("Maze", 1025, 1025);
     if(!window.getSuccess()) {
         return 0;
     }
-    Maze maze(20, 35, 13, 25);
+    // 20, 35, 13, 25
+    Maze maze(16, 45, 15, 25);
     SDL_Color boundaryColor = {0x00, 0x00, 0x00, 0xFF};
    
     SDL_DisplayMode DM;

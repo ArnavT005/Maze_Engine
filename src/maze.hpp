@@ -22,7 +22,7 @@ class Maze {
     void createBasicStructure(Window* window);
     void updateBlock(int i, int j, int degree, int up, int right, int down, int left);
     void createEdge(Window* window, int i, int j, int side);
-    //void generateMazeRandom(Window* window);
+    void generateMazeRandom(Window* window);
 
     int dimension, blockSize, dotSize, padding;
     std::vector<std::vector<Block>> maze;
@@ -450,41 +450,175 @@ void Maze::createBasicStructure(Window* window) {
 
 
 void Maze::createEdge(Window* window, int i, int j, int side) {
-    SDL_Point point = getDotScreenCoordinate(i, j);
-    SDL_Rect dot = {point.x, point.y, dotSize, dotSize},
-             vEdge = {point.x, point.y + dotSize, dotSize, blockSize},
-             hEdge = {point.x + dotSize, point.y, blockSize, dotSize};
+    SDL_Point point1 = getDotScreenCoordinate(i, j);
+    SDL_Point point2 = getDotScreenCoordinate(dimension - i + 2, dimension - j + 2);
+    SDL_Rect dot1 = {point1.x, point1.y, dotSize, dotSize},
+             dot2 = {point2.x, point2.y, dotSize, dotSize},
+             vEdge = {point1.x, point1.y + dotSize, dotSize, blockSize},
+             hEdge = {point1.x + dotSize, point1.y, blockSize, dotSize};
     SDL_Color dotColor = {0xFF, 0x00, 0x00, 0xFF},  
               edgeColor = {0x00, 0x70, 0x00, 0xFF};
 
     int offset = dotSize + blockSize;
-    window->renderRect(&dot, dotColor);
+    window->renderRect(&dot1, dotColor);
+    window->renderRect(&dot2, dotColor);
     switch(side) {
         case 0:
-            vEdge.y = dot.y - blockSize;
+            vEdge.y = dot1.y - blockSize;
             window->renderRect(&vEdge, edgeColor);
-            dot.y -= offset;
-            window->renderRect(&dot, dotColor);
+            dot1.y -= offset;
+            window->renderRect(&dot1, dotColor);
             break;
         case 1:
-            hEdge.x = dot.x + dotSize;
+            hEdge.x = dot1.x + dotSize;
             window->renderRect(&hEdge, edgeColor);
-            dot.x += offset;
-            window->renderRect(&dot, dotColor);
+            dot1.x += offset;
+            window->renderRect(&dot1, dotColor);
             break;
         case 2:
-            vEdge.y = dot.y + dotSize;
+            vEdge.y = dot1.y + dotSize;
             window->renderRect(&vEdge, edgeColor);
-            dot.y += offset;
-            window->renderRect(&dot, dotColor);
+            dot1.y += offset;
+            window->renderRect(&dot1, dotColor);
             break;
         case 3:
-            hEdge.x = dot.x - blockSize;
+            hEdge.x = dot1.x - blockSize;
             window->renderRect(&hEdge, edgeColor);
-            dot.y -= offset;
-            window->renderRect(&dot, dotColor);
+            dot1.x -= offset;
+            window->renderRect(&dot1, dotColor);
             break;
     }
+    vEdge.x = point2.x;
+    hEdge.y = point2.y;
+    //create mirror edge
+    switch(side) {
+        case 0:
+            vEdge.y = dot2.y + dotSize;
+            window->renderRect(&vEdge, edgeColor);
+            dot2.y += offset;
+            window->renderRect(&dot2, dotColor);
+            break;
+        case 1:
+            hEdge.x = dot2.x - blockSize;
+            window->renderRect(&hEdge, edgeColor);
+            dot2.x -= offset;
+            window->renderRect(&dot2, dotColor);
+            break;
+        case 2:
+            vEdge.y = dot2.y - blockSize;
+            window->renderRect(&vEdge, edgeColor);
+            dot2.y -= offset;
+            window->renderRect(&dot2, dotColor);
+            break;
+        case 3:
+            hEdge.x = dot2.x + dotSize;
+            window->renderRect(&hEdge, edgeColor);
+            dot2.x += offset;
+            window->renderRect(&dot2, dotColor);
+            break;
+    }
+
 }
 
+void Maze::generateMazeRandom(Window* window) {
+
+    srand(time(0));
+    int mirrorI, mirrorJ, side;
+    for(int i = 2; i <= dimension; i ++) {
+        for(int j = 2; j <= dimension / 2; j ++) {
+            if(i==dimension/2+1||j==dimension/2+1)
+                continue;
+            if(dimension/2-1<=i&&i<=dimension/2+3&&dimension/2-1<=j&&j<=dimension/2+3)
+                continue;
+            side = rand() % 4;
+            mirrorI = dimension - i + 2;
+            mirrorJ = dimension - j + 2;
+            switch(side) {
+                case 0: 
+                    if(maze[i-2][j-2].degree <= 2 || maze[i-2][j-1].degree <= 2)
+                        break;
+                    if(i-2==dimension/2||(dimension/2-1<=j&&j<=dimension/2+3&&i==dimension/2+4))
+                        break;
+                    else {
+                        if(maze[i-2][j-2].right == ACCESS_ALLOWED) {
+                            maze[i-2][j-2].right = ALL_DENIED;
+                            maze[i-2][j-2].degree --;
+                            maze[i-2][j-1].left = ALL_DENIED;
+                            maze[i-2][j-1].degree --;
+                            // update mirror blocks
+                            maze[mirrorI-1][mirrorJ-2].right = ALL_DENIED;
+                            maze[mirrorI-1][mirrorJ-2].degree --;
+                            maze[mirrorI-1][mirrorJ-1].left = ALL_DENIED;
+                            maze[mirrorI-1][mirrorJ-1].degree --;
+                            createEdge(window, i, j, 0);
+                        }
+                        break;
+                    }
+                case 1:
+                    if(maze[i-1][j-1].degree <= 2 || maze[i-2][j-1].degree <= 2)
+                        break;
+                    if(j==dimension/2||(dimension/2-1<=i&&i<=dimension/2+3&&j==dimension/2-2))
+                        break;
+                    else {
+                        if(maze[i-2][j-1].down == ACCESS_ALLOWED) {
+                            maze[i-2][j-1].down = ALL_DENIED;
+                            maze[i-2][j-1].degree --;
+                            maze[i-1][j-1].up = ALL_DENIED;
+                            maze[i-1][j-1].degree --;
+                            // update mirror blocks
+                            maze[mirrorI-2][mirrorJ-2].down = ALL_DENIED;
+                            maze[mirrorI-2][mirrorJ-2].degree --;
+                            maze[mirrorI-1][mirrorJ-2].up = ALL_DENIED;
+                            maze[mirrorI-1][mirrorJ-2].degree --;
+                            createEdge(window, i, j, 1);
+
+                        }
+                        break;
+                    }  
+                case 2:
+                    if(maze[i-1][j-2].degree <= 2 || maze[i-1][j-1].degree <= 2)
+                        break;
+                    if(i==dimension/2||(dimension/2-1<=j&&j<=dimension/2+3&&i==dimension/2-2))
+                        break;
+                    else {
+                        if(maze[i-1][j-2].right == ACCESS_ALLOWED) {
+                            maze[i-1][j-2].right = ALL_DENIED;
+                            maze[i-1][j-2].degree --;
+                            maze[i-1][j-1].left = ALL_DENIED;
+                            maze[i-1][j-1].degree --;
+                            // update mirror blocks
+                            maze[mirrorI-2][mirrorJ-2].right = ALL_DENIED;
+                            maze[mirrorI-2][mirrorJ-2].degree --;
+                            maze[mirrorI-2][mirrorJ-1].left = ALL_DENIED;
+                            maze[mirrorI-2][mirrorJ-1].degree --;
+                            createEdge(window, i, j, 2);
+
+                        }
+                        break;
+                    }
+                case 3:
+                    if(maze[i-1][j-2].degree <= 2 || maze[i-2][j-2].degree <= 2)
+                        break;
+                    if(j-2==dimension/2||(dimension/2-1<=i&&i<=dimension/2+3&&j==dimension/2+4))
+                        break;
+                    else {
+                        if(maze[i-2][j-2].down == ACCESS_ALLOWED) {
+                            maze[i-2][j-2].down = ALL_DENIED;
+                            maze[i-2][j-2].degree --;
+                            maze[i-1][j-2].up = ALL_DENIED;
+                            maze[i-1][j-2].degree --;
+                            // update mirror blocks
+                            maze[mirrorI-2][mirrorJ-1].down = ALL_DENIED;
+                            maze[mirrorI-2][mirrorJ-1].degree --;
+                            maze[mirrorI-1][mirrorJ-1].up = ALL_DENIED;
+                            maze[mirrorI-1][mirrorJ-1].degree --;
+                            createEdge(window, i, j, 3);
+
+                        }
+                        break;
+                    }                      
+            }
+        } 
+    }
+}    
 
