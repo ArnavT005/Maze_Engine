@@ -240,6 +240,7 @@ void Maze::createBasicStructure(Window* window) {
     dot.y -= offset;
     window->renderRect(&dot, dotColor);
 
+    // create top door
     hEdge.x += offset;
     hEdge.y -= offset;
     window->renderRect(&hEdge, doorColor);
@@ -268,6 +269,7 @@ void Maze::createBasicStructure(Window* window) {
     dot.y -= offset;
     window->renderRect(&dot, dotColor);
 
+    // create right door
     vEdge.y += offset;
     window->renderRect(&vEdge, doorColor);
     dot.y += 2 * offset;
@@ -297,6 +299,7 @@ void Maze::createBasicStructure(Window* window) {
     dot.y -= offset;
     window->renderRect(&dot, dotColor);
 
+    // create bottom door
     hEdge.x -= offset;
     window->renderRect(&hEdge, doorColor);
     dot.y += offset;
@@ -327,6 +330,7 @@ void Maze::createBasicStructure(Window* window) {
     dot.y -= offset;
     window->renderRect(&dot, dotColor);
 
+    // create left door
     vEdge.x -= offset;
     vEdge.y -= offset;
     window->renderRect(&vEdge, doorColor);
@@ -336,6 +340,8 @@ void Maze::createBasicStructure(Window* window) {
     window->renderRect(&dot, doorColor);
     window->renderRect(&vEdge, doorColor);
 
+
+    // update all adjacent blocks
     updateBlock(dimension / 2 - 2, dimension / 2 - 2, 0, 2, 2, 2, 2);
     updateBlock(dimension / 2 + 1, dimension / 2 - 2, 0, 2, 2, 2, 2);
     updateBlock(dimension / 2 - 2, dimension / 2 + 1, 0, 2, 2, 2, 2);
@@ -530,94 +536,118 @@ void Maze::generateMazeRandom(Window* window) {
                 continue;
             if(dimension/2-1<=i&&i<=dimension/2+3&&dimension/2-1<=j&&j<=dimension/2+3)
                 continue;
-            side = rand() % 4;
             mirrorI = dimension - i + 2;
             mirrorJ = dimension - j + 2;
-            switch(side) {
-                case 0: 
-                    if(maze[i-2][j-2].degree <= 2 || maze[i-2][j-1].degree <= 2)
-                        break;
-                    if(i-2==dimension/2||(dimension/2-1<=j&&j<=dimension/2+3&&i==dimension/2+4))
-                        break;
-                    else {
-                        if(maze[i-2][j-2].right == ACCESS_ALLOWED) {
-                            maze[i-2][j-2].right = ALL_DENIED;
-                            maze[i-2][j-2].degree --;
-                            maze[i-2][j-1].left = ALL_DENIED;
-                            maze[i-2][j-1].degree --;
-                            // update mirror blocks
-                            maze[mirrorI-1][mirrorJ-2].right = ALL_DENIED;
-                            maze[mirrorI-1][mirrorJ-2].degree --;
-                            maze[mirrorI-1][mirrorJ-1].left = ALL_DENIED;
-                            maze[mirrorI-1][mirrorJ-1].degree --;
-                            createEdge(window, i, j, 0);
+            bool flag = false;
+            int counter = 0;
+            int extra;
+            side = rand() % 4;
+            while(!flag && counter < 16) {
+                
+                switch(side) {
+                    case 0: 
+                        if(/*i-2==dimension/2||*/(dimension/2-1<=j&&j<=dimension/2+3&&i==dimension/2+4)) {
+                            side = rand() % 4;
+                            break;
                         }
-                        break;
-                    }
-                case 1:
-                    if(maze[i-1][j-1].degree <= 2 || maze[i-2][j-1].degree <= 2)
-                        break;
-                    if(j==dimension/2||(dimension/2-1<=i&&i<=dimension/2+3&&j==dimension/2-2))
-                        break;
-                    else {
-                        if(maze[i-2][j-1].down == ACCESS_ALLOWED) {
-                            maze[i-2][j-1].down = ALL_DENIED;
-                            maze[i-2][j-1].degree --;
-                            maze[i-1][j-1].up = ALL_DENIED;
-                            maze[i-1][j-1].degree --;
-                            // update mirror blocks
-                            maze[mirrorI-2][mirrorJ-2].down = ALL_DENIED;
-                            maze[mirrorI-2][mirrorJ-2].degree --;
-                            maze[mirrorI-1][mirrorJ-2].up = ALL_DENIED;
-                            maze[mirrorI-1][mirrorJ-2].degree --;
-                            createEdge(window, i, j, 1);
-
+                        if(maze[i-2][j-2].degree <= 1 || maze[i-2][j-1].degree <= 1){
+                            side = 2;
+                            break;
                         }
-                        break;
-                    }  
-                case 2:
-                    if(maze[i-1][j-2].degree <= 2 || maze[i-1][j-1].degree <= 2)
-                        break;
-                    if(i==dimension/2||(dimension/2-1<=j&&j<=dimension/2+3&&i==dimension/2-2))
-                        break;
-                    else {
-                        if(maze[i-1][j-2].right == ACCESS_ALLOWED) {
-                            maze[i-1][j-2].right = ALL_DENIED;
-                            maze[i-1][j-2].degree --;
-                            maze[i-1][j-1].left = ALL_DENIED;
-                            maze[i-1][j-1].degree --;
-                            // update mirror blocks
-                            maze[mirrorI-2][mirrorJ-2].right = ALL_DENIED;
-                            maze[mirrorI-2][mirrorJ-2].degree --;
-                            maze[mirrorI-2][mirrorJ-1].left = ALL_DENIED;
-                            maze[mirrorI-2][mirrorJ-1].degree --;
-                            createEdge(window, i, j, 2);
-
+                        else {
+                            if(maze[i-2][j-2].right == ACCESS_ALLOWED) {
+                                maze[i-2][j-2].right = ALL_DENIED;
+                                maze[i-2][j-2].degree --;
+                                maze[i-2][j-1].left = ALL_DENIED;
+                                maze[i-2][j-1].degree --;
+                                // update mirror blocks
+                                maze[mirrorI-1][mirrorJ-2].right = ALL_DENIED;
+                                maze[mirrorI-1][mirrorJ-2].degree --;
+                                maze[mirrorI-1][mirrorJ-1].left = ALL_DENIED;
+                                maze[mirrorI-1][mirrorJ-1].degree --;
+                                createEdge(window, i, j, 0);
+                            }
+                            flag = true;
+                            break;
                         }
-                        break;
-                    }
-                case 3:
-                    if(maze[i-1][j-2].degree <= 2 || maze[i-2][j-2].degree <= 2)
-                        break;
-                    if(j-2==dimension/2||(dimension/2-1<=i&&i<=dimension/2+3&&j==dimension/2+4))
-                        break;
-                    else {
-                        if(maze[i-2][j-2].down == ACCESS_ALLOWED) {
-                            maze[i-2][j-2].down = ALL_DENIED;
-                            maze[i-2][j-2].degree --;
-                            maze[i-1][j-2].up = ALL_DENIED;
-                            maze[i-1][j-2].degree --;
-                            // update mirror blocks
-                            maze[mirrorI-2][mirrorJ-1].down = ALL_DENIED;
-                            maze[mirrorI-2][mirrorJ-1].degree --;
-                            maze[mirrorI-1][mirrorJ-1].up = ALL_DENIED;
-                            maze[mirrorI-1][mirrorJ-1].degree --;
-                            createEdge(window, i, j, 3);
-
+                    case 1:
+                        if(/*j==dimension/2||*/(dimension/2-1<=i&&i<=dimension/2+3&&j==dimension/2-2)){
+                            side = rand() % 4;
+                            break;
                         }
-                        break;
-                    }                      
-            }
+                        if(maze[i-1][j-1].degree <= 1 || maze[i-2][j-1].degree <= 1){
+                            side = 3;
+                            break;
+                        }
+                        else {
+                            if(maze[i-2][j-1].down == ACCESS_ALLOWED) {
+                                maze[i-2][j-1].down = ALL_DENIED;
+                                maze[i-2][j-1].degree --;
+                                maze[i-1][j-1].up = ALL_DENIED;
+                                maze[i-1][j-1].degree --;
+                                // update mirror blocks
+                                maze[mirrorI-2][mirrorJ-2].down = ALL_DENIED;
+                                maze[mirrorI-2][mirrorJ-2].degree --;
+                                maze[mirrorI-1][mirrorJ-2].up = ALL_DENIED;
+                                maze[mirrorI-1][mirrorJ-2].degree --;
+                                createEdge(window, i, j, 1);
+                            }
+                            flag = true;
+                            break;
+                        }  
+                    case 2:
+                        if(/*i==dimension/2||*/(dimension/2-1<=j&&j<=dimension/2+3&&i==dimension/2-2)) {
+                            side = rand() % 4;
+                            break;
+                        }
+                        if(maze[i-1][j-2].degree <= 1 || maze[i-1][j-1].degree <= 1) {
+                            side = 0;
+                            break;
+                        }
+                        else {
+                            if(maze[i-1][j-2].right == ACCESS_ALLOWED) {
+                                maze[i-1][j-2].right = ALL_DENIED;
+                                maze[i-1][j-2].degree --;
+                                maze[i-1][j-1].left = ALL_DENIED;
+                                maze[i-1][j-1].degree --;
+                                // update mirror blocks
+                                maze[mirrorI-2][mirrorJ-2].right = ALL_DENIED;
+                                maze[mirrorI-2][mirrorJ-2].degree --;
+                                maze[mirrorI-2][mirrorJ-1].left = ALL_DENIED;
+                                maze[mirrorI-2][mirrorJ-1].degree --;
+                                createEdge(window, i, j, 2);
+                            }
+                            flag = true;
+                            break;
+                        }
+                    case 3:
+                        if(/*j-2==dimension/2||*/(dimension/2-1<=i&&i<=dimension/2+3&&j==dimension/2+4)){
+                            side = rand() % 4;
+                            break;
+                        }
+                        if(maze[i-1][j-2].degree <= 1 || maze[i-2][j-2].degree <= 1){
+                            side = 1;
+                            break;
+                        }
+                        else {
+                            if(maze[i-2][j-2].down == ACCESS_ALLOWED) {
+                                maze[i-2][j-2].down = ALL_DENIED;
+                                maze[i-2][j-2].degree --;
+                                maze[i-1][j-2].up = ALL_DENIED;
+                                maze[i-1][j-2].degree --;
+                                // update mirror blocks
+                                maze[mirrorI-2][mirrorJ-1].down = ALL_DENIED;
+                                maze[mirrorI-2][mirrorJ-1].degree --;
+                                maze[mirrorI-1][mirrorJ-1].up = ALL_DENIED;
+                                maze[mirrorI-1][mirrorJ-1].degree --;
+                                createEdge(window, i, j, 3);
+                            }
+                            flag = true;
+                            break;
+                        }                      
+                }
+                counter ++;
+            }    
         } 
     }
 }    
