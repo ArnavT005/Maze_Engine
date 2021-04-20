@@ -1,3 +1,5 @@
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include "window.hpp"
 #include "maze.hpp"
 #include "pacman.hpp"
@@ -9,10 +11,17 @@ bool SDL_init() {
         std::cout << "SDL unable to initialize! SDL Error: " << SDL_GetError() << "\n";
         success = false;
     }
+    else {
+        if(IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
+            std::cout << "IMG unable to initialize! SDL_Image Error: " << IMG_GetError() << "\n";
+            success = false;
+        }
+    }
     return success;
 }
 
 void close() {
+    IMG_Quit();
     SDL_Quit();
 }
 
@@ -41,7 +50,7 @@ int main(int argc, char** argv) {
     maze.createBasicStructure(&window);
     maze.generateMazeRandom(&window);
     
-    Pacman pac(&maze);
+    Pacman pac(&maze, &window);
     
     window.setRenderTarget(NULL);
     window.clearWindow();
