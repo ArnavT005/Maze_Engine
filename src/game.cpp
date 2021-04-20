@@ -1,5 +1,6 @@
 #include "window.hpp"
 #include "maze.hpp"
+#include "pacman.hpp"
 
 
 bool SDL_init() {
@@ -29,6 +30,7 @@ int main(int argc, char** argv) {
     Maze maze(16, 45, 15, 25);
     SDL_Color boundaryColor = {0x00, 0x00, 0x00, 0xFF};
    
+
     SDL_DisplayMode DM;
     SDL_GetCurrentDisplayMode(0, &DM);
     std::cout << DM.w << " " << DM.h << "\n";
@@ -38,6 +40,8 @@ int main(int argc, char** argv) {
     maze.createBase(&window, 0, 0, boundaryColor);
     maze.createBasicStructure(&window);
     maze.generateMazeRandom(&window);
+    Pacman pac(&maze);
+    pac.render(&window);
     window.updateWindow();
 
     bool quit = false;
@@ -45,9 +49,13 @@ int main(int argc, char** argv) {
     
     while(!quit) {
         while(SDL_PollEvent(& event)) {
-            if(event.type == SDL_KEYDOWN) {
+            if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
                 quit = true;
             }
+            pac.handleEvent(event);
+            pac.move();
+            pac.render(&window);
+            window.updateWindow();
         }
     }
     window.free();
