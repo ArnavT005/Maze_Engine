@@ -46,6 +46,22 @@ Maze::Maze() {
             maze[i][j].right = ACCESS_ALLOWED;
             maze[i][j].down = ACCESS_ALLOWED;
             maze[i][j].left = ACCESS_ALLOWED;
+            if(i == 0) {
+                maze[i][j].up = ALL_DENIED;
+                maze[i][j].degree --;
+            }
+            else if(i == dimension - 1) {
+                maze[i][j].down = ALL_DENIED;
+                maze[i][j].degree --;
+            }
+            if(j == 0) {
+                maze[i][j].left = ALL_DENIED;
+                maze[i][j].degree --;
+            }
+            else if(j == dimension - 1) {
+                maze[i][j].right = ALL_DENIED;
+                maze[i][j].degree --;
+            }
         }
     }
 }
