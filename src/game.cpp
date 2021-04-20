@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     
     while(!quit) {
         while(SDL_PollEvent(& event)) {
-            if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
+            if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
                 quit = true;
             }
             pac.handleEvent(event);
