@@ -29,20 +29,22 @@ int main(int argc, char** argv) {
     // 20, 35, 13, 25
     Maze maze(16, 45, 15, 25);
     SDL_Color boundaryColor = {0x00, 0x00, 0x00, 0xFF};
-   
+    SDL_Texture* background = SDL_CreateTexture(window.getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
 
+
+    window.setRenderTarget(background);
     SDL_DisplayMode DM;
     SDL_GetCurrentDisplayMode(0, &DM);
     std::cout << DM.w << " " << DM.h << "\n";
    
-   
-    window.clearWindow();
     maze.createBase(&window, 0, 0, boundaryColor);
     maze.createBasicStructure(&window);
     maze.generateMazeRandom(&window);
+    
     Pacman pac(&maze);
-    pac.render(&window);
-    window.updateWindow();
+    
+    window.setRenderTarget(NULL);
+    window.clearWindow();
 
     bool quit = false;
     SDL_Event event;
@@ -54,6 +56,7 @@ int main(int argc, char** argv) {
             }
             pac.handleEvent(event);
             pac.move();
+            window.renderTexture(background);
             pac.render(&window);
             window.updateWindow();
         }

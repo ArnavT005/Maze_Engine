@@ -19,10 +19,11 @@ class Pacman {
     void checkAlignment();
     void boundingAlignedAll();
     void boundingAlignedRow();
-    void boundingAlignedCol();
+    void boundingAlignedCol(int i);
     void handleEvent(SDL_Event &e);		// handle dynamics
     void move();						
-    void render(Window* window);                      // render PACMAN
+    void render(Window* window);        // render PACMAN
+    bool collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2);
 
     bool rowAligned, colAligned;        // To check if pacman is row/column aligned
     Maze* maze;                         // Maze
@@ -117,8 +118,10 @@ void Pacman::boundingAlignedRow() {
 		offset = dotSize + blockSize;
 	boundingRect.clear();
 	bool dot1 = false, dot2 = false;
+
 	SDL_Point point = maze->screenToBlockCoordinate(screenX, screenY);
-	SDL_Point screen = maze->getBlockScreenCoordinate(point.x + 1, point.y + 1);
+	SDL_Point screen = maze->getBlockScreenCoordinate(point.x, point.y);
+
 	std::vector<SDL_Rect> rectangles = { {screen.x, screen.y - dotSize, blockSize, dotSize},
 										 {screen.x + blockSize, screen.y - dotSize, dotSize, dotSize},
 										 {screen.x + offset, screen.y - dotSize, blockSize, dotSize},
@@ -163,7 +166,7 @@ void Pacman::boundingAlignedRow() {
 	}
 }
 
-void Pacman::boundingAlignedCol() {
+void Pacman::boundingAlignedCol(int i = 0) {
 	int blockSize = maze->blockSize,
 		dotSize = maze->dotSize,
 		padding = maze->padding,
@@ -171,7 +174,8 @@ void Pacman::boundingAlignedCol() {
 	boundingRect.clear();
 	bool dot1 = false, dot2 = false;
 	SDL_Point point = maze->screenToBlockCoordinate(screenX, screenY);
-	SDL_Point screen = maze->getBlockScreenCoordinate(point.x + 1, point.y + 1);
+	//if(i != 0) std::cout << point.x << " " << point.y << "\n";
+	SDL_Point screen = maze->getBlockScreenCoordinate(point.x, point.y);
 	std::vector<SDL_Rect> rectangles = { {screen.x + blockSize, screen.y, dotSize, blockSize},
 										 {screen.x + blockSize, screen.y + blockSize, dotSize, dotSize},
 										 {screen.x + blockSize, screen.y + offset, dotSize, blockSize},
@@ -246,7 +250,7 @@ void Pacman::move() {
 		boundingAlignedRow();
 	}
 	else if(colAligned) {
-		boundingAlignedCol();
+		boundingAlignedCol(1);
 	}
 	else {
 		boundingRect.clear();
@@ -259,7 +263,7 @@ void Pacman::move() {
 	bool collision = false;
 	int size = boundingRect.size();
 	for(int i = 0; i < size; i ++) {
-		if(SDL_IntersectRect(&colliderBox, &boundingRect[i], &temp) == SDL_TRUE) {
+		if(collisionDetectorRect(&colliderBox, &boundingRect[i])) {
 			screenX -= velX;
 			screenY -= velY;
 			colliderBox.x = screenX;
@@ -273,4 +277,16 @@ void Pacman::move() {
 void Pacman::render(Window* window) {
 	SDL_Color color = {0x00, 0x00, 0xFF, 0xFF};
 	window->renderRect(&colliderBox, color);
+}
+
+bool Pacman::collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2) {
+	int top1 = rect1->y, top2 = rect2->y, bottom1 = rect1->y + rect1->h, bottom2 = rect2->y + rect2->h,
+		right1 = rect1->x + rect1->w, right2 = rect2->x + rect2->w, left1 = rect1->x, left2 = rect2->x;
+
+	if(bottom1 <= top2 || top1 >= bottom2 || left1 >= right2 || left2 >= right1) {
+		return false;
+	}	
+	else {
+		return true;
+	}
 }
