@@ -87,12 +87,12 @@ Maze::Maze(int dimension, int blockSize, int dotSize, int padding) {
     }
 }
 
-
+// 0-indexed
 SDL_Point Maze::getBlockScreenCoordinate(int i, int j) {
     SDL_Point point = {-1, -1};
     if(i < dimension && j < dimension && i >= 0 && j >= 0) {
-        point.x = padding + j * dotSize + (j - 1) * blockSize;
-        point.y = padding + i * dotSize + (i - 1) * blockSize;
+        point.x = padding + (j + 1) * dotSize + j * blockSize;
+        point.y = padding + (i + 1) * dotSize + i * blockSize;
         return point;
     }
     else 
@@ -115,6 +115,7 @@ SDL_Point Maze::screenToDotCoordinate(int x, int y) {
     return point;
 }
 
+// 0-indexed
 SDL_Point Maze::screenToBlockCoordinate(int x, int y) {
     int offset = blockSize + dotSize;
     SDL_Point point = {(y + blockSize - padding) / offset - 1, (x + blockSize - padding) / offset - 1};

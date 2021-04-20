@@ -16,6 +16,7 @@ class Window {
     void free();
     void renderTexture(SDL_Texture* texture, SDL_Rect* srcrect = NULL, SDL_Rect* dstrect = NULL, double angle = 0.0, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
     void renderRect(SDL_Rect* rect, SDL_Color color);
+    void setRenderTarget(SDL_Texture* texture);
     void clearWindow();
     void updateWindow();
     
@@ -91,6 +92,10 @@ void Window::renderTexture(SDL_Texture* texture, SDL_Rect* srcrect, SDL_Rect* ds
 void Window::renderRect(SDL_Rect* rect, SDL_Color color) {
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
     SDL_RenderFillRect(renderer, rect);
+}
+
+void Window::setRenderTarget(SDL_Texture *texture) {
+    SDL_SetRenderTarget(renderer, texture);
 }
 
 void Window::clearWindow() {

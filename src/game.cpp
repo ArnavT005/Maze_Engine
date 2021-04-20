@@ -1,5 +1,7 @@
 #include "window.hpp"
 #include "maze.hpp"
+#include "pacman.hpp"
+#include "ghost.hpp"
 
 
 bool SDL_init() {
@@ -28,27 +30,51 @@ int main(int argc, char** argv) {
     // 20, 35, 13, 25
     Maze maze(16, 45, 15, 25);
     SDL_Color boundaryColor = {0x00, 0x00, 0x00, 0xFF};
-   
+    SDL_Texture* background = SDL_CreateTexture(window.getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
+
+
+    window.setRenderTarget(background);
     SDL_DisplayMode DM;
     SDL_GetCurrentDisplayMode(0, &DM);
     std::cout << DM.w << " " << DM.h << "\n";
    
-   
-    window.clearWindow();
     maze.createBase(&window, 0, 0, boundaryColor);
     maze.createBasicStructure(&window);
     maze.generateMazeRandom(&window);
-    window.updateWindow();
+    
+    Pacman pac(&maze);
+    Ghost g1(&maze, 1);
+    
+    window.setRenderTarget(NULL);
+    window.clearWindow();
 
     bool quit = false;
     SDL_Event event;
     
     while(!quit) {
+    	bool flagCheck = true;
         while(SDL_PollEvent(& event)) {
-            if(event.type == SDL_KEYDOWN) {
+            if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
                 quit = true;
             }
+            pac.handleEvent(event);
+            pac.move();
+            g1.handleEvent(maze.screenToBlockCoordinate(pac.screenX, pac.screenY), pac.velX, pac.velY);
+        	g1.move();
+            window.renderTexture(background);
+            pac.render(&window);
+            g1.render(&window);
+            window.updateWindow();
+            flagCheck = false;
         }
+        if (flagCheck){
+            g1.handleEvent(maze.screenToBlockCoordinate(pac.screenX, pac.screenY), pac.velX, pac.velY);
+        	g1.move();
+        	window.renderTexture(background);
+            pac.render(&window);
+            g1.render(&window);
+            window.updateWindow();
+            }
     }
     window.free();
     close();
