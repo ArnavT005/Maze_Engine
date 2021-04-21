@@ -74,7 +74,11 @@ int main(int argc, char** argv) {
             pac.render(&window);
             g1.render(&window);
             window.updateWindow();
+            //break;
             }
+    }
+    while(SDL_PollEvent(& event)) {
+            if(event.type == SDL_QUIT){break;}
     }
     window.free();
     close();

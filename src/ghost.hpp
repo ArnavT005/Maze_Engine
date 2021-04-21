@@ -266,7 +266,7 @@ int Ghost::moveTo(){
 				que.push_back(vector<int> {pt[0], pt[1]+1});
 			}
 			if(maze->maze[pt[0]][pt[1]].left != ALL_DENIED && m[pt[0]][pt[1]-1] == -1){
-				m[pt[0]-1][pt[1]-1] = m[pt[0]][pt[1]] + 1;
+				m[pt[0]][pt[1]-1] = m[pt[0]][pt[1]] + 1;
 				que.push_back(vector<int> {pt[0], pt[1]-1});
 			} 
 		}
