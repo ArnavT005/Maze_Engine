@@ -1,10 +1,12 @@
 #pragma once
 
 #include <vector>
+#include <stdlib.h>
+#include <time.h>
 #include "maze.hpp"
 #include "window.hpp"
 
-
+using namespace std;
 
 class Ghost {
 
@@ -26,13 +28,13 @@ class Ghost {
     void boundingAlignedCol(int i);
     void handleEvent(SDL_Point P, int vx, int vy);		// handle dynamics
     void move();						
-    void render(Window* window);        // render PACMAN
+    void render(Window* window);        // render GHOST
     bool collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2);
 
-    bool rowAligned, colAligned;        // To check if pacman is row/column aligned
+    bool rowAligned, colAligned;        // To check if ghost is row/column aligned
     Maze* maze;                         // Maze
     std::vector<SDL_Rect> boundingRect; // bounding rectangles
-    int screenX, screenY;				// screen coordinates of pacman
+    int screenX, screenY;				// screen coordinates of ghost
     int velX, velY;						// horizontal and vertical velocities in pixels per frame
     SDL_Rect colliderBox;
     int moveTo();
@@ -40,6 +42,7 @@ class Ghost {
     SDL_Point pacLoc;
     int pacVelX;
     int pacVelY;
+    int direction;
 };
 
 
@@ -50,8 +53,8 @@ Ghost::Ghost() {
 	velX = velY = 0;
 	maze = NULL;
 	boundingRect.clear();
-	colliderBox.x = 0;
-	colliderBox.y = 0;
+	colliderBox.x = screenX;
+	colliderBox.y = screenY;
 	colliderBox.w = PACMAN_WIDTH;
 	colliderBox.h = PACMAN_HEIGHT;
 	type = 1;
@@ -64,7 +67,7 @@ Ghost::Ghost(Maze* maze, int ghostType) {
 		padding = maze->padding;
 	
 	rowAligned = colAligned = true;
-	screenX = screenY = padding + dotSize;
+	screenX = screenY = maze->getBlockScreenCoordinate(7, 7).x;
 	velX = velY = 0;
 	this->maze = maze;
 	boundingRect.clear();
@@ -108,16 +111,16 @@ void Ghost::boundingAlignedAll() {
 										 {screenX, screenY + blockSize, blockSize, dotSize},
 										 {screenX - dotSize, screenY, dotSize, blockSize}};	
 	SDL_Point point = maze->screenToBlockCoordinate(screenX, screenY);
-	if(maze->maze[point.x][point.y].up == ALL_DENIED || maze->maze[point.x][point.y].up == PACMAN_DENIED) {
+	if(maze->maze[point.x][point.y].up == ALL_DENIED) {
 		boundingRect.push_back(rectangles[0]);
 	}
-	if(maze->maze[point.x][point.y].right == ALL_DENIED || maze->maze[point.x][point.y].right == PACMAN_DENIED) {
+	if(maze->maze[point.x][point.y].right == ALL_DENIED) {
 		boundingRect.push_back(rectangles[1]);
 	}
-	if(maze->maze[point.x][point.y].down == ALL_DENIED || maze->maze[point.x][point.y].down == PACMAN_DENIED) {
+	if(maze->maze[point.x][point.y].down == ALL_DENIED) {
 		boundingRect.push_back(rectangles[2]);
 	}
-	if(maze->maze[point.x][point.y].left == ALL_DENIED || maze->maze[point.x][point.y].left == PACMAN_DENIED) {
+	if(maze->maze[point.x][point.y].left == ALL_DENIED) {
 		boundingRect.push_back(rectangles[3]);
 	}
 }
@@ -139,24 +142,24 @@ void Ghost::boundingAlignedRow() {
 										 {screen.x, screen.y + blockSize, blockSize, dotSize},
 										 {screen.x + blockSize, screen.y + blockSize, dotSize, dotSize},
 										 {screen.x + offset, screen.y + blockSize, blockSize, dotSize} };	
-	if(maze->maze[point.x][point.y].up == ALL_DENIED || maze->maze[point.x][point.y].up == PACMAN_DENIED) {
+	if(maze->maze[point.x][point.y].up == ALL_DENIED) {
 		boundingRect.push_back(rectangles[0]);
 		boundingRect.push_back(rectangles[1]);
 		dot1 = true;
 	}
-	if(maze->maze[point.x][point.y + 1].up == ALL_DENIED || maze->maze[point.x][point.y + 1].up == PACMAN_DENIED) {
+	if(maze->maze[point.x][point.y + 1].up == ALL_DENIED) {
 		boundingRect.push_back(rectangles[2]);
 		if(!dot1) {
 			boundingRect.push_back(rectangles[1]);
 			dot1 = true;
 		}
 	}
-	if(maze->maze[point.x][point.y].down == ALL_DENIED || maze->maze[point.x][point.y].down == PACMAN_DENIED) {
+	if(maze->maze[point.x][point.y].down == ALL_DENIED) {
 		boundingRect.push_back(rectangles[3]);
 		boundingRect.push_back(rectangles[4]);
 		dot2 = true;
 	}
-	if(maze->maze[point.x][point.y + 1].down == ALL_DENIED || maze->maze[point.x][point.y + 1].down == PACMAN_DENIED) {
+	if(maze->maze[point.x][point.y + 1].down == ALL_DENIED) {
 		boundingRect.push_back(rectangles[5]);
 		if(!dot2) {
 			boundingRect.push_back(rectangles[4]);
@@ -164,13 +167,13 @@ void Ghost::boundingAlignedRow() {
 		}
 	}
 	if(!dot1) {
-		if(maze->maze[point.x - 1][point.y].right == ALL_DENIED || maze->maze[point.x - 1][point.y].right == PACMAN_DENIED) {
+		if(maze->maze[point.x - 1][point.y].right == ALL_DENIED) {
 			boundingRect.push_back(rectangles[1]);
 			dot1 = true;	
 		}
 	}
 	if(!dot2) {
-		if(maze->maze[point.x + 1][point.y].right == ALL_DENIED || maze->maze[point.x + 1][point.y].right == PACMAN_DENIED) {
+		if(maze->maze[point.x + 1][point.y].right == ALL_DENIED) {
 			boundingRect.push_back(rectangles[4]);
 			dot2 = true;	
 		}
@@ -193,24 +196,24 @@ void Ghost::boundingAlignedCol(int i = 0) {
 										 {screen.x - dotSize, screen.y + offset, dotSize, blockSize},
 										 {screen.x - dotSize, screen.y + blockSize, dotSize, dotSize},
 										 {screen.x - dotSize, screen.y, dotSize, blockSize} };	
-	if(maze->maze[point.x][point.y].right == ALL_DENIED || maze->maze[point.x][point.y].right == PACMAN_DENIED) {
+	if(maze->maze[point.x][point.y].right == ALL_DENIED) {
 		boundingRect.push_back(rectangles[0]);
 		boundingRect.push_back(rectangles[1]);
 		dot1 = true;
 	}
-	if(maze->maze[point.x + 1][point.y].right == ALL_DENIED || maze->maze[point.x + 1][point.y].right == PACMAN_DENIED) {
+	if(maze->maze[point.x + 1][point.y].right == ALL_DENIED) {
 		boundingRect.push_back(rectangles[2]);
 		if(!dot1) {
 			boundingRect.push_back(rectangles[1]);
 			dot1 = true;
 		}
 	}
-	if(maze->maze[point.x][point.y].left == ALL_DENIED || maze->maze[point.x][point.y].left == PACMAN_DENIED) {
+	if(maze->maze[point.x][point.y].left == ALL_DENIED) {
 		boundingRect.push_back(rectangles[3]);
 		boundingRect.push_back(rectangles[4]);
 		dot2 = true;
 	}
-	if(maze->maze[point.x + 1][point.y].left == ALL_DENIED || maze->maze[point.x + 1][point.y].left == PACMAN_DENIED) {
+	if(maze->maze[point.x + 1][point.y].left == ALL_DENIED) {
 		boundingRect.push_back(rectangles[5]);
 		if(!dot2) {
 			boundingRect.push_back(rectangles[4]);
@@ -218,13 +221,13 @@ void Ghost::boundingAlignedCol(int i = 0) {
 		}
 	}
 	if(!dot1) {
-		if(maze->maze[point.x][point.y + 1].down == ALL_DENIED || maze->maze[point.x][point.y + 1].down == PACMAN_DENIED) {
+		if(maze->maze[point.x][point.y + 1].down == ALL_DENIED) {
 			boundingRect.push_back(rectangles[1]);
 			dot1 = true;	
 		}
 	}
 	if(!dot2) {
-		if(maze->maze[point.x][point.y - 1].down == ALL_DENIED || maze->maze[point.x][point.y - 1].down == PACMAN_DENIED) {
+		if(maze->maze[point.x][point.y - 1].down == ALL_DENIED) {
 			boundingRect.push_back(rectangles[4]);
 			dot2 = true;	
 		}
@@ -232,8 +235,57 @@ void Ghost::boundingAlignedCol(int i = 0) {
 }
 
 int Ghost::moveTo(){
-	return RIGHT;
-	if(type == 1){}
+	//srand(time(0));
+	//return (4 + rand()%4)%4+1;
+	if(type == 1){
+		int destX = pacLoc.x, destY = pacLoc.y;
+		int size = maze->dimension;
+		vector<vector<int>> m(size);
+		for(int i = 0; i < size; i++){
+			m[i] = vector<int>(size);
+			for(int j = 0; j < size; j++){
+				m[i][j] = -1;	
+			}
+		}
+		m[destX][destY] = 0;
+		vector<vector<int>> que;
+		que.push_back(vector<int> {destX, destY});
+		while(!que.empty()){
+			vector<int> pt = que[0];
+			que.erase(que.begin());
+			if(maze->maze[pt[0]][pt[1]].up != ALL_DENIED && m[pt[0]-1][pt[1]] == -1){
+				m[pt[0]-1][pt[1]] = m[pt[0]][pt[1]] + 1; 
+				que.push_back(vector<int> {pt[0]-1, pt[1]});
+			}
+			if(maze->maze[pt[0]][pt[1]].down != ALL_DENIED && m[pt[0]+1][pt[1]] == -1){
+				m[pt[0]+1][pt[1]] = m[pt[0]][pt[1]] + 1;
+				que.push_back(vector<int> {pt[0]+1, pt[1]});
+			}
+			if(maze->maze[pt[0]][pt[1]].right != ALL_DENIED && m[pt[0]][pt[1]+1] == -1){
+				m[pt[0]][pt[1]+1] = m[pt[0]][pt[1]] + 1;
+				que.push_back(vector<int> {pt[0], pt[1]+1});
+			}
+			if(maze->maze[pt[0]][pt[1]].left != ALL_DENIED && m[pt[0]][pt[1]-1] == -1){
+				m[pt[0]-1][pt[1]-1] = m[pt[0]][pt[1]] + 1;
+				que.push_back(vector<int> {pt[0], pt[1]-1});
+			} 
+		}
+	for(int i = 0; i < size; i++){
+			for(int j = 0; j < size; j++){
+				cout << m[i][j] << " ";	
+			}
+			cout<<"\n";
+		}
+        int blkX = maze->screenToBlockCoordinate(screenX, screenY).x, blkY = maze->screenToBlockCoordinate(screenX, screenY).y;
+        int score = m[blkX][blkY];
+        int move = 0;
+        if(maze->maze[blkX][blkY].up != ALL_DENIED && score>m[blkX-1][blkY] ){score = m[blkX-1][blkY]; move = UP;}
+        if(maze->maze[blkX][blkY].down != ALL_DENIED && score>m[blkX+1][blkY] ){score = m[blkX+1][blkY]; move = DOWN;}
+        if(maze->maze[blkX][blkY].left != ALL_DENIED && score>m[blkX][blkY-1] ){score = m[blkX][blkY-1]; move = LEFT;}
+        if(maze->maze[blkX][blkY].right != ALL_DENIED && score>m[blkX][blkY+1] ){score = m[blkX][blkY+1]; move = RIGHT;}
+        cout<< (maze->maze[blkX][blkY].left != ALL_DENIED) << " | MOVE: " << move<<"\n";
+        return move;
+	}
 	else if(type == 2){}
 	else if(type == 3){}
 	else if(type == 4){}
@@ -244,12 +296,15 @@ void Ghost::handleEvent(SDL_Point p, int vx, int vy) {
 	pacLoc = p;
 	pacVelX = vx;
 	pacVelY = vy;
-	int direction = moveTo();
+    	checkAlignment();
+    	if(rowAligned && colAligned){
+    	cout << "Aligned\n";
+    	direction = moveTo();}
 	switch(direction) {
-		case UP: velY = -PACMAN_VEL; break;
-		case DOWN: velY = PACMAN_VEL; break;
-		case RIGHT: velX = PACMAN_VEL; break;
-		case LEFT: velX = -PACMAN_VEL; break;
+		case UP: velX = 0; velY = -PACMAN_VEL; break;
+		case DOWN: velX = 0; velY = PACMAN_VEL; break;
+		case RIGHT: velY = 0; velX = PACMAN_VEL; break;
+		case LEFT: velY = 0; velX = -PACMAN_VEL; break;
 		default: break;
 	}
 }
