@@ -3,10 +3,7 @@
 #include "window.hpp"
 #include "maze.hpp"
 #include "pacman.hpp"
-<<<<<<< HEAD
 #include "ghost.hpp"
-=======
->>>>>>> main
 
 
 bool SDL_init() {
@@ -39,12 +36,11 @@ int main(int argc, char** argv) {
     if(!window.getSuccess()) {
         return 0;
     }
+    srand(time(0));
     // 20, 35, 13, 25
     Maze maze(16, 45, 15, 25);
     SDL_Color boundaryColor = {0x00, 0x00, 0x00, 0xFF};
     SDL_Texture* background = SDL_CreateTexture(window.getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
-
-    SDL_Renderer* renderer = SDL_GetRenderer(window.getWindow());
 
     window.setRenderTarget(background);
     SDL_DisplayMode DM;
@@ -54,14 +50,15 @@ int main(int argc, char** argv) {
     maze.createBase(&window, 0, 0, boundaryColor);
     maze.createBasicStructure(&window);
     maze.generateMazeRandom(&window);
+
+    window.setRenderTarget(NULL);
     
-    Pacman pac(&maze);
+    Pacman pac(&maze, &window);
     Ghost g1(&maze, 1, 1);
     Ghost g2(&maze, 2, 1);
-    Ghost g3(&maze, 3, 1);
-    Ghost g4(&maze, 4, 2);
+    Ghost g3(&maze, 3, 2);
+    Ghost g4(&maze, 4, 1);
     
-    window.setRenderTarget(NULL);
     window.clearWindow();
 
     bool quit = false;
@@ -69,7 +66,6 @@ int main(int argc, char** argv) {
     
     while(!quit) {
         int i = 0;
-    	bool flagCheck = true;
         while(SDL_PollEvent(& event)) {
             if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
                 quit = true;
@@ -94,15 +90,6 @@ int main(int argc, char** argv) {
         g4.render(&window);
         window.updateWindow();
         SDL_Delay(20);
-        if (false){
-            g1.handleEvent(maze.screenToBlockCoordinate(pac.screenX, pac.screenY), pac.velX, pac.velY);
-        	g1.move();
-        	window.renderTexture(background);
-            pac.render(&window);
-            g1.render(&window);
-            window.updateWindow();
-            //break;
-            }
     }
     
     window.free();
