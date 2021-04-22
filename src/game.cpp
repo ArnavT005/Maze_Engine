@@ -1,7 +1,12 @@
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include "window.hpp"
 #include "maze.hpp"
 #include "pacman.hpp"
+<<<<<<< HEAD
 #include "ghost.hpp"
+=======
+>>>>>>> main
 
 
 bool SDL_init() {
@@ -10,10 +15,17 @@ bool SDL_init() {
         std::cout << "SDL unable to initialize! SDL Error: " << SDL_GetError() << "\n";
         success = false;
     }
+    else {
+        if(IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
+            std::cout << "IMG unable to initialize! SDL_Image Error: " << IMG_GetError() << "\n";
+            success = false;
+        }
+    }
     return success;
 }
 
 void close() {
+    IMG_Quit();
     SDL_Quit();
 }
 
@@ -32,6 +44,7 @@ int main(int argc, char** argv) {
     SDL_Color boundaryColor = {0x00, 0x00, 0x00, 0xFF};
     SDL_Texture* background = SDL_CreateTexture(window.getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
 
+    SDL_Renderer* renderer = SDL_GetRenderer(window.getWindow());
 
     window.setRenderTarget(background);
     SDL_DisplayMode DM;
