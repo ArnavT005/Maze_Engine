@@ -91,7 +91,7 @@ Pacman::Pacman(Maze* maze, Window* window) {
 	screenX = screenY = padding + dotSize;
 	velX = velY = 0;
 	this->maze = maze;
-	boundingRect = maze->boundaryRect;
+	boundingRect = maze->boundaryRectPacman;
 	colliderBox.x = screenX;
 	colliderBox.y = screenY;
 	colliderBox.w = BOX_WIDTH;
@@ -105,7 +105,7 @@ Pacman::Pacman(Maze* maze, Window* window) {
 	loadTexture(window);
 }
 
-
+void Pacman::loadTexture(Window* window) {
 	SDL_Surface* upSurf = IMG_Load("../img/pacman/upMotion.png");
 	if(upSurf == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
@@ -173,7 +173,6 @@ void Pacman::handleEvent(SDL_Event &e) {
 			case SDLK_DOWN: velY += PACMAN_VEL; state = MOVE_DOWN; frameCount = 0; break;
 			case SDLK_RIGHT: velX += PACMAN_VEL; state = MOVE_RIGHT; frameCount = 0; break;
 			case SDLK_LEFT: velX -= PACMAN_VEL; state = MOVE_LEFT; frameCount = 0; break;
->>>>>>> main
 			default: break;
 		}
 	}

@@ -249,7 +249,7 @@ void Ghost::handleEvent(SDL_Point p, int vx, int vy) {
 		case DOWN: velX = 0; velY = GHOST_VEL; state = MOVE_DOWN; break;
 		case RIGHT: velY = 0; velX = GHOST_VEL; state = MOVE_RIGHT; break;
 		case LEFT: velY = 0; velX = -GHOST_VEL; state = MOVE_LEFT; break;
-		default: velX = 0; velY = 0; std::cout << direction << " " << type << "\n";break;
+		default: ;break;
 	}
 }
 
