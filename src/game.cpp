@@ -43,7 +43,10 @@ int main(int argc, char** argv) {
     maze.generateMazeRandom(&window);
     
     Pacman pac(&maze);
-    Ghost g1(&maze, 1);
+    Ghost g1(&maze, 1, 1);
+    Ghost g2(&maze, 2, 1);
+    Ghost g3(&maze, 3, 1);
+    Ghost g4(&maze, 4, 2);
     
     window.setRenderTarget(NULL);
     window.clearWindow();
@@ -52,22 +55,33 @@ int main(int argc, char** argv) {
     SDL_Event event;
     
     while(!quit) {
+        int i = 0;
     	bool flagCheck = true;
         while(SDL_PollEvent(& event)) {
             if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
                 quit = true;
             }
             pac.handleEvent(event);
-            pac.move();
-            g1.handleEvent(maze.screenToBlockCoordinate(pac.screenX, pac.screenY), pac.velX, pac.velY);
-        	g1.move();
-            window.renderTexture(background);
-            pac.render(&window);
-            g1.render(&window);
-            window.updateWindow();
-            flagCheck = false;
+            break;
         }
-        if (flagCheck){
+        g1.handleEvent(maze.screenToBlockCoordinate(pac.screenX, pac.screenY), pac.velX, pac.velY);
+        g2.handleEvent(maze.screenToBlockCoordinate(pac.screenX, pac.screenY), pac.velX, pac.velY);
+        g3.handleEvent(maze.screenToBlockCoordinate(pac.screenX, pac.screenY), pac.velX, pac.velY);
+        g4.handleEvent(maze.screenToBlockCoordinate(pac.screenX, pac.screenY), pac.velX, pac.velY);
+        pac.move();
+        g1.move();
+        g2.move();
+        g3.move();
+        g4.move();
+        window.renderTexture(background);
+        pac.render(&window);
+        g1.render(&window);
+        g2.render(&window);
+        g3.render(&window);
+        g4.render(&window);
+        window.updateWindow();
+        SDL_Delay(20);
+        if (false){
             g1.handleEvent(maze.screenToBlockCoordinate(pac.screenX, pac.screenY), pac.velX, pac.velY);
         	g1.move();
         	window.renderTexture(background);
