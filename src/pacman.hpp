@@ -8,12 +8,19 @@
 #include "texture.hpp"
 
 
-const int PACMAN_WIDTH = 45;
-const int PACMAN_HEIGHT = 45;
+const int BOX_WIDTH = 45;
+const int BOX_HEIGHT = 45;
+const int PACMAN_WIDTH = 31;
+const int PACMAN_HEIGHT = 41;
 const int PACMAN_VEL = 5;    	 		// 5 pixel per frame
 
 const int ANIMATION_FRAMES = 4;
 
+
+struct Circle {
+	int radius;
+	SDL_Point center;
+};
 
 enum STATE {
 	STILL_UP,
@@ -33,21 +40,19 @@ class Pacman {
     Pacman();
     Pacman(Maze* maze, Window* window);
     void loadTexture(Window* window);
-    void checkAlignment();
-    void boundingAlignedAll();
-    void boundingAlignedRow();
-    void boundingAlignedCol(int i);
     void handleEvent(SDL_Event &e);		// handle dynamics
     void move();						
     void render(Window* window);        // render PACMAN
     bool collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2);
+    bool collisionDetectorCircle(Circle* circle, SDL_Rect* rect);
 
     bool rowAligned, colAligned;        // To check if pacman is row/column aligned
     Maze* maze;                         // Maze
     std::vector<SDL_Rect> boundingRect; // bounding rectangles
     int screenX, screenY;				// screen coordinates of pacman
     int velX, velY;						// horizontal and vertical velocities in pixels per frame
-    SDL_Rect colliderBox;				// rectangular collision detection
+    SDL_Rect colliderBox;				// rectangular collision detector box
+    Circle colliderSphere;				// circular collision detector box	
     int state;							// motion state of pacman							
     int frameCount;						// frame count number
     SDL_Texture* up;
@@ -67,8 +72,11 @@ Pacman::Pacman() {
 	boundingRect.clear();
 	colliderBox.x = 0;
 	colliderBox.y = 0;
-	colliderBox.w = PACMAN_WIDTH;
-	colliderBox.h = PACMAN_HEIGHT;
+	colliderBox.w = BOX_WIDTH;
+	colliderBox.h = BOX_HEIGHT;
+	colliderSphere.radius = (PACMAN_WIDTH - 1) / 2;
+	colliderSphere.center.x = BOX_WIDTH / 2;
+	colliderSphere.center.y = BOX_HEIGHT / 2;
 	state = STILL_RIGHT;
 	frameCount = 0;
 	success = true;
@@ -84,11 +92,14 @@ Pacman::Pacman(Maze* maze, Window* window) {
 	screenX = screenY = padding + dotSize;
 	velX = velY = 0;
 	this->maze = maze;
-	boundingRect.clear();
+	boundingRect = maze->boundaryRect;
 	colliderBox.x = screenX;
 	colliderBox.y = screenY;
-	colliderBox.w = PACMAN_WIDTH;
-	colliderBox.h = PACMAN_HEIGHT;
+	colliderBox.w = BOX_WIDTH;
+	colliderBox.h = BOX_HEIGHT;
+	colliderSphere.radius = (PACMAN_WIDTH - 1) / 2;
+	colliderSphere.center.x = screenX + BOX_WIDTH / 2;
+	colliderSphere.center.y = screenY + BOX_HEIGHT / 2;
 	state = STILL_RIGHT;
 	frameCount = 0;
 	success = true;
@@ -155,160 +166,7 @@ void Pacman::loadTexture(Window* window) {
 }
 
 
-void Pacman::checkAlignment() {
-	
-	int blockSize = maze->blockSize,
-		dotSize = maze->dotSize,
-		padding = maze->padding,
-		offset = dotSize + blockSize,
-		residue = (padding - blockSize + 100 * offset) % offset; // positive quantity
-	if(screenX % offset == residue) {
-		colAligned = true;
-	}
-	else {
-		colAligned = false;
-	}
-	if(screenY % offset == residue) {
-		rowAligned = true;
-	}
-	else {
-		rowAligned = false;
-	}
-}
 
-void Pacman::boundingAlignedAll() {
-	int blockSize = maze->blockSize,
-		dotSize = maze->dotSize,
-		padding = maze->padding,
-		offset = dotSize + blockSize;
-	boundingRect.clear();
-	std::vector<SDL_Rect> rectangles = { {screenX, screenY - dotSize, blockSize, dotSize},
-										 {screenX + blockSize, screenY, dotSize, blockSize},
-										 {screenX, screenY + blockSize, blockSize, dotSize},
-										 {screenX - dotSize, screenY, dotSize, blockSize}};	
-	SDL_Point point = maze->screenToBlockCoordinate(screenX, screenY);
-	if(maze->maze[point.x][point.y].up == ALL_DENIED || maze->maze[point.x][point.y].up == PACMAN_DENIED) {
-		boundingRect.push_back(rectangles[0]);
-	}
-	if(maze->maze[point.x][point.y].right == ALL_DENIED || maze->maze[point.x][point.y].right == PACMAN_DENIED) {
-		boundingRect.push_back(rectangles[1]);
-	}
-	if(maze->maze[point.x][point.y].down == ALL_DENIED || maze->maze[point.x][point.y].down == PACMAN_DENIED) {
-		boundingRect.push_back(rectangles[2]);
-	}
-	if(maze->maze[point.x][point.y].left == ALL_DENIED || maze->maze[point.x][point.y].left == PACMAN_DENIED) {
-		boundingRect.push_back(rectangles[3]);
-	}
-}
-
-void Pacman::boundingAlignedRow() {
-	int blockSize = maze->blockSize,
-		dotSize = maze->dotSize,
-		padding = maze->padding,
-		offset = dotSize + blockSize;
-	boundingRect.clear();
-	bool dot1 = false, dot2 = false;
-
-	SDL_Point point = maze->screenToBlockCoordinate(screenX, screenY);
-	SDL_Point screen = maze->getBlockScreenCoordinate(point.x, point.y);
-
-	std::vector<SDL_Rect> rectangles = { {screen.x, screen.y - dotSize, blockSize, dotSize},
-										 {screen.x + blockSize, screen.y - dotSize, dotSize, dotSize},
-										 {screen.x + offset, screen.y - dotSize, blockSize, dotSize},
-										 {screen.x, screen.y + blockSize, blockSize, dotSize},
-										 {screen.x + blockSize, screen.y + blockSize, dotSize, dotSize},
-										 {screen.x + offset, screen.y + blockSize, blockSize, dotSize} };	
-	if(maze->maze[point.x][point.y].up == ALL_DENIED || maze->maze[point.x][point.y].up == PACMAN_DENIED) {
-		boundingRect.push_back(rectangles[0]);
-		boundingRect.push_back(rectangles[1]);
-		dot1 = true;
-	}
-	if(maze->maze[point.x][point.y + 1].up == ALL_DENIED || maze->maze[point.x][point.y + 1].up == PACMAN_DENIED) {
-		boundingRect.push_back(rectangles[2]);
-		if(!dot1) {
-			boundingRect.push_back(rectangles[1]);
-			dot1 = true;
-		}
-	}
-	if(maze->maze[point.x][point.y].down == ALL_DENIED || maze->maze[point.x][point.y].down == PACMAN_DENIED) {
-		boundingRect.push_back(rectangles[3]);
-		boundingRect.push_back(rectangles[4]);
-		dot2 = true;
-	}
-	if(maze->maze[point.x][point.y + 1].down == ALL_DENIED || maze->maze[point.x][point.y + 1].down == PACMAN_DENIED) {
-		boundingRect.push_back(rectangles[5]);
-		if(!dot2) {
-			boundingRect.push_back(rectangles[4]);
-			dot2 = true;
-		}
-	}
-	if(!dot1) {
-		if(maze->maze[point.x - 1][point.y].right == ALL_DENIED || maze->maze[point.x - 1][point.y].right == PACMAN_DENIED) {
-			boundingRect.push_back(rectangles[1]);
-			dot1 = true;	
-		}
-	}
-	if(!dot2) {
-		if(maze->maze[point.x + 1][point.y].right == ALL_DENIED || maze->maze[point.x + 1][point.y].right == PACMAN_DENIED) {
-			boundingRect.push_back(rectangles[4]);
-			dot2 = true;	
-		}
-	}
-}
-
-void Pacman::boundingAlignedCol(int i = 0) {
-	int blockSize = maze->blockSize,
-		dotSize = maze->dotSize,
-		padding = maze->padding,
-		offset = dotSize + blockSize;
-	boundingRect.clear();
-	bool dot1 = false, dot2 = false;
-	SDL_Point point = maze->screenToBlockCoordinate(screenX, screenY);
-	//if(i != 0) std::cout << point.x << " " << point.y << "\n";
-	SDL_Point screen = maze->getBlockScreenCoordinate(point.x, point.y);
-	std::vector<SDL_Rect> rectangles = { {screen.x + blockSize, screen.y, dotSize, blockSize},
-										 {screen.x + blockSize, screen.y + blockSize, dotSize, dotSize},
-										 {screen.x + blockSize, screen.y + offset, dotSize, blockSize},
-										 {screen.x - dotSize, screen.y + offset, dotSize, blockSize},
-										 {screen.x - dotSize, screen.y + blockSize, dotSize, dotSize},
-										 {screen.x - dotSize, screen.y, dotSize, blockSize} };	
-	if(maze->maze[point.x][point.y].right == ALL_DENIED || maze->maze[point.x][point.y].right == PACMAN_DENIED) {
-		boundingRect.push_back(rectangles[0]);
-		boundingRect.push_back(rectangles[1]);
-		dot1 = true;
-	}
-	if(maze->maze[point.x + 1][point.y].right == ALL_DENIED || maze->maze[point.x + 1][point.y].right == PACMAN_DENIED) {
-		boundingRect.push_back(rectangles[2]);
-		if(!dot1) {
-			boundingRect.push_back(rectangles[1]);
-			dot1 = true;
-		}
-	}
-	if(maze->maze[point.x][point.y].left == ALL_DENIED || maze->maze[point.x][point.y].left == PACMAN_DENIED) {
-		boundingRect.push_back(rectangles[3]);
-		boundingRect.push_back(rectangles[4]);
-		dot2 = true;
-	}
-	if(maze->maze[point.x + 1][point.y].left == ALL_DENIED || maze->maze[point.x + 1][point.y].left == PACMAN_DENIED) {
-		boundingRect.push_back(rectangles[5]);
-		if(!dot2) {
-			boundingRect.push_back(rectangles[4]);
-			dot2 = true;
-		}
-	}
-	if(!dot1) {
-		if(maze->maze[point.x][point.y + 1].down == ALL_DENIED || maze->maze[point.x][point.y + 1].down == PACMAN_DENIED) {
-			boundingRect.push_back(rectangles[1]);
-			dot1 = true;	
-		}
-	}
-	if(!dot2) {
-		if(maze->maze[point.x][point.y - 1].down == ALL_DENIED || maze->maze[point.x][point.y - 1].down == PACMAN_DENIED) {
-			boundingRect.push_back(rectangles[4]);
-			dot2 = true;	
-		}
-	}
-}
 
 void Pacman::handleEvent(SDL_Event &e) {
 	if(e.type == SDL_KEYDOWN && e.key.repeat == 0) {
@@ -332,20 +190,7 @@ void Pacman::handleEvent(SDL_Event &e) {
 }
 
 void Pacman::move() {
-	checkAlignment();
-	if(rowAligned && colAligned) {
-		boundingAlignedAll();
-	}
-	else if(rowAligned) {
-		boundingAlignedRow();
-	}
-	else if(colAligned) {
-		boundingAlignedCol(1);
-	}
-	else {
-		boundingRect.clear();
-	}
-	SDL_Rect temp;
+	
 	bool collision = false;
 	int size = boundingRect.size();
 	if(velX != 0) {
@@ -353,11 +198,13 @@ void Pacman::move() {
 		state = velX > 0 ? MOVE_RIGHT : MOVE_LEFT;
 		colliderBox.x = screenX;
 		colliderBox.y = screenY;
+		colliderSphere.center.x += velX;
 		for(int i = 0; i < size; i ++) {
-			if(collisionDetectorRect(&colliderBox, &boundingRect[i])) {
+			if(collisionDetectorCircle(&colliderSphere, &boundingRect[i])) {
 				screenX -= velX;
 				colliderBox.x = screenX;
 				colliderBox.y = screenY;
+				colliderSphere.center.x -= velX;
 				collision = true;
 				state = velX > 0 ? STILL_RIGHT : STILL_LEFT;
 				break;
@@ -369,11 +216,13 @@ void Pacman::move() {
 		state = velY > 0 ? MOVE_DOWN : MOVE_UP;
 		colliderBox.x = screenX;
 		colliderBox.y = screenY;
+		colliderSphere.center.y += velY;
 		for(int i = 0; i < size; i ++) {
-			if(collisionDetectorRect(&colliderBox, &boundingRect[i])) {
+			if(collisionDetectorCircle(&colliderSphere, &boundingRect[i])) {
 				screenY -= velY;
 				colliderBox.x = screenX;
 				colliderBox.y = screenY;
+				colliderSphere.center.y -= velY;
 				state = velY > 0 ? STILL_DOWN : STILL_UP;
 				collision = true;
 				break;
@@ -432,5 +281,36 @@ bool Pacman::collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2) {
 	}	
 	else {
 		return true;
+	}
+}
+
+bool Pacman::collisionDetectorCircle(Circle* circle, SDL_Rect *rect) {
+	SDL_Point closestPoint;
+	if(circle->center.x < rect->x) {
+		closestPoint.x = rect->x;
+	}
+	else if(circle->center.x > rect->x + rect->w) {
+		closestPoint.x = rect->x + rect->w;
+	}
+	else {
+		closestPoint.x = circle->center.x;
+	}
+	if(circle->center.y < rect->y) {
+		closestPoint.y = rect->y;
+	}
+	else if(circle->center.y > rect->y + rect->h) {
+		closestPoint.y = rect->y + rect->h;
+	}
+	else {
+		closestPoint.y = circle->center.y;
+	}
+	// check collision
+	int distanceSq = (closestPoint.x - circle->center.x) * (closestPoint.x - circle->center.x) + 
+				     (closestPoint.y - circle->center.y) * (closestPoint.y - circle->center.y);
+	if(distanceSq < circle->radius * circle->radius) {
+		return true;
+	} 
+	else {
+		return false;
 	}
 }
