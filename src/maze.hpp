@@ -134,10 +134,8 @@ SDL_Point Maze::screenToDotCoordinate(int x, int y) {
     return point;
 }
 
-<<<<<<< HEAD
-=======
+
 // 0-indexed
->>>>>>> pacman
 SDL_Point Maze::screenToBlockCoordinate(int x, int y) {
     int offset = blockSize + dotSize;
     SDL_Point point = {(y + blockSize - padding) / offset - 1, (x + blockSize - padding) / offset - 1};

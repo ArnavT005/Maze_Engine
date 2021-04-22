@@ -5,7 +5,6 @@
 #include <SDL2/SDL_image.h>
 #include "maze.hpp"
 #include "window.hpp"
-#include "texture.hpp"
 
 
 const int BOX_WIDTH = 45;
