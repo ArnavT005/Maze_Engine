@@ -40,6 +40,7 @@ int main(int argc, char** argv) {
     SDL_Color boundaryColor = {0x00, 0x00, 0x00, 0xFF};
     SDL_Texture* background = SDL_CreateTexture(window.getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
 
+    SDL_Renderer* renderer = SDL_GetRenderer(window.getWindow());
 
     window.setRenderTarget(background);
     SDL_DisplayMode DM;
@@ -49,10 +50,11 @@ int main(int argc, char** argv) {
     maze.createBase(&window, 0, 0, boundaryColor);
     maze.createBasicStructure(&window);
     maze.generateMazeRandom(&window);
-    
-    Pacman pac(&maze, &window);
-    
     window.setRenderTarget(NULL);
+
+
+    Pacman pac(&maze, &window);
+
     window.clearWindow();
 
     bool quit = false;
@@ -68,6 +70,7 @@ int main(int argc, char** argv) {
             window.renderTexture(background);
             pac.render(&window);
             window.updateWindow();
+            SDL_Delay(20);
         }
     }
     window.free();

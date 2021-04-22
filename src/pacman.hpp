@@ -2,47 +2,29 @@
 
 #include <vector>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include "maze.hpp"
 #include "window.hpp"
 #include "texture.hpp"
 
 
+const int PACMAN_WIDTH = 45;
+const int PACMAN_HEIGHT = 45;
+const int PACMAN_VEL = 5;    	 		// 5 pixel per frame
 
-Texture PACMAN_SPRITE[9];
-// PACMAN_SPRITE[0].loadImgTexture("../img/pacman/still.png");
-// PACMAN_SPRITE[1].loadImgTexture("../img/pacman/upHalf.png");
-// PACMAN_SPRITE[2].loadImgTexture("../img/pacman/upFull.png");
-// PACMAN_SPRITE[3].loadImgTexture("../img/pacman/rightHalf.png");
-// PACMAN_SPRITE[4].loadImgTexture("../img/pacman/rightFull.png");
-// PACMAN_SPRITE[5].loadImgTexture("../img/pacman/downHalf.png");
-// PACMAN_SPRITE[6].loadImgTexture("../img/pacman/downFull.png");
-// PACMAN_SPRITE[7].loadImgTexture("../img/pacman/leftHalf.png");
-// PACMAN_SPRITE[8].loadImgTexture("../img/pacman/leftFull.png");
+const int ANIMATION_FRAMES = 4;
 
 
-const int PACMAN_WIDTH = 35;
-const int PACMAN_HEIGHT = 35;
-const int PACMAN_VEL = 5;     // 5 pixel per frame
-
-enum SIDE {
-	STILL,
-	SIDE_UP,
-	SIDE_RIGHT,
-	SIDE_DOWN,
-	SIDE_LEFT
+enum STATE {
+	STILL_UP,
+	STILL_RIGHT,
+	STILL_DOWN,
+	STILL_LEFT,
+	MOVE_UP,
+	MOVE_RIGHT,
+	MOVE_DOWN,
+	MOVE_LEFT
 };
-
-void loadSprite(SDL_Renderer* renderer) {
-	if(!PACMAN_SPRITE[0].loadImgTexture("../img/pacman/still.png", renderer)) std::cout << "Hello\n";
-	PACMAN_SPRITE[1].loadImgTexture("../img/pacman/upHalf.png", renderer);
-	PACMAN_SPRITE[2].loadImgTexture("../img/pacman/upFull.png", renderer);
-	PACMAN_SPRITE[3].loadImgTexture("../img/pacman/rightHalf.png", renderer);
-	PACMAN_SPRITE[4].loadImgTexture("../img/pacman/rightFull.png", renderer);
-	PACMAN_SPRITE[5].loadImgTexture("../img/pacman/downHalf.png", renderer);
-	PACMAN_SPRITE[6].loadImgTexture("../img/pacman/downFull.png", renderer);
-	PACMAN_SPRITE[7].loadImgTexture("../img/pacman/leftHalf.png", renderer);
-	PACMAN_SPRITE[8].loadImgTexture("../img/pacman/leftFull.png", renderer);
-}
 
 class Pacman {
 
@@ -50,6 +32,7 @@ class Pacman {
 
     Pacman();
     Pacman(Maze* maze, Window* window);
+    void loadTexture(Window* window);
     void checkAlignment();
     void boundingAlignedAll();
     void boundingAlignedRow();
@@ -65,14 +48,13 @@ class Pacman {
     int screenX, screenY;				// screen coordinates of pacman
     int velX, velY;						// horizontal and vertical velocities in pixels per frame
     SDL_Rect colliderBox;				// rectangular collision detection
-    int side;
-    int frameCount;
-    int spriteIndex;
-    std::vector<Texture> up;
-    std::vector<Texture> right;
-    std::vector<Texture> down;
-    std::vector<Texture> left;
-
+    int state;							// motion state of pacman							
+    int frameCount;						// frame count number
+    SDL_Texture* up;
+    SDL_Texture* right;
+    SDL_Texture* down;
+    SDL_Texture* left;
+    bool success;					    // error reporting flag
 };
 
 
@@ -87,13 +69,9 @@ Pacman::Pacman() {
 	colliderBox.y = 0;
 	colliderBox.w = PACMAN_WIDTH;
 	colliderBox.h = PACMAN_HEIGHT;
-	side = STILL;
+	state = STILL_RIGHT;
 	frameCount = 0;
-	spriteIndex = 0;
-	up.clear();
-	right.clear();
-	down.clear();
-	left.clear();
+	success = true;
 }
 
 Pacman::Pacman(Maze* maze, Window* window) {
@@ -111,22 +89,69 @@ Pacman::Pacman(Maze* maze, Window* window) {
 	colliderBox.y = screenY;
 	colliderBox.w = PACMAN_WIDTH;
 	colliderBox.h = PACMAN_HEIGHT;
+	state = STILL_RIGHT;
 	frameCount = 0;
-	spriteIndex = 0;
-	side = STILL;
-	up.clear();
-	right.clear();
-	down.clear();
-	left.clear();
-	loadSprite(window->getRenderer());
-	up.push_back(PACMAN_SPRITE[0]); up.push_back(PACMAN_SPRITE[1]); 
-	up.push_back(PACMAN_SPRITE[2]); up.push_back(PACMAN_SPRITE[1]);
-	right.push_back(PACMAN_SPRITE[0]); right.push_back(PACMAN_SPRITE[3]); 
-	right.push_back(PACMAN_SPRITE[4]); right.push_back(PACMAN_SPRITE[3]);
-	down.push_back(PACMAN_SPRITE[0]); down.push_back(PACMAN_SPRITE[5]); 
-	down.push_back(PACMAN_SPRITE[6]); down.push_back(PACMAN_SPRITE[5]);
-	left.push_back(PACMAN_SPRITE[0]); left.push_back(PACMAN_SPRITE[7]); 
-	left.push_back(PACMAN_SPRITE[8]); left.push_back(PACMAN_SPRITE[7]);
+	success = true;
+	loadTexture(window);
+}
+
+void Pacman::loadTexture(Window* window) {
+
+	SDL_Surface* upSurf = IMG_Load("../img/pacman/upMotion.png");
+	if(upSurf == NULL) {
+		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+		success = false;
+	}
+	else {
+		up = SDL_CreateTextureFromSurface(window->getRenderer(), upSurf);
+		if(up == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+			success = false;
+		}
+		SDL_FreeSurface(upSurf);
+	}
+
+	SDL_Surface* rightSurf = IMG_Load("../img/pacman/rightMotion.png");
+	if(rightSurf == NULL) {
+		std::cout << "Unable to load Right motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+		success = false;
+	}
+	else {
+		right = SDL_CreateTextureFromSurface(window->getRenderer(), rightSurf);
+		if(right == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+			success = false;
+		}
+		SDL_FreeSurface(rightSurf);
+	}
+
+	SDL_Surface* downSurf = IMG_Load("../img/pacman/downMotion.png");
+	if(downSurf == NULL) {
+		std::cout << "Unable to load Down motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+		success = false;
+	}
+	else {
+		down = SDL_CreateTextureFromSurface(window->getRenderer(), downSurf);
+		if(down == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+			success = false;
+		}
+		SDL_FreeSurface(downSurf);
+	}
+
+	SDL_Surface* leftSurf = IMG_Load("../img/pacman/leftMotion.png");
+	if(leftSurf == NULL) {
+		std::cout << "Unable to load Left motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+		success = false;
+	}
+	else {
+		left = SDL_CreateTextureFromSurface(window->getRenderer(), leftSurf);
+		if(left == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+			success = false;
+		}
+		SDL_FreeSurface(leftSurf);
+	}
 }
 
 
@@ -288,19 +313,19 @@ void Pacman::boundingAlignedCol(int i = 0) {
 void Pacman::handleEvent(SDL_Event &e) {
 	if(e.type == SDL_KEYDOWN && e.key.repeat == 0) {
 		switch(e.key.keysym.sym) {
-			case SDLK_UP: velY -= PACMAN_VEL; break;
-			case SDLK_DOWN: velY += PACMAN_VEL; break;
-			case SDLK_RIGHT: velX += PACMAN_VEL; break;
-			case SDLK_LEFT: velX -= PACMAN_VEL; break;
+			case SDLK_UP: velY -= PACMAN_VEL; state = MOVE_UP; frameCount = 0; break;
+			case SDLK_DOWN: velY += PACMAN_VEL; state = MOVE_DOWN; frameCount = 0; break;
+			case SDLK_RIGHT: velX += PACMAN_VEL; state = MOVE_RIGHT; frameCount = 0; break;
+			case SDLK_LEFT: velX -= PACMAN_VEL; state = MOVE_LEFT; frameCount = 0; break;
 			default: break;
 		}
 	}
 	else if(e.type == SDL_KEYUP && e.key.repeat == 0) {
 		switch(e.key.keysym.sym) {
-			case SDLK_UP: velY += PACMAN_VEL; break;
-			case SDLK_DOWN: velY -= PACMAN_VEL; break;
-			case SDLK_RIGHT: velX -= PACMAN_VEL; break;
-			case SDLK_LEFT: velX += PACMAN_VEL; break;
+			case SDLK_UP: velY += PACMAN_VEL; state = STILL_UP; frameCount = 0; break;
+			case SDLK_DOWN: velY -= PACMAN_VEL; state = STILL_DOWN; frameCount = 0; break;
+			case SDLK_RIGHT: velX -= PACMAN_VEL; state = STILL_RIGHT; frameCount = 0; break;
+			case SDLK_LEFT: velX += PACMAN_VEL; state = STILL_LEFT; frameCount = 0; break;
 			default: break;
 		}
 	}
@@ -320,91 +345,82 @@ void Pacman::move() {
 	else {
 		boundingRect.clear();
 	}
-
-	colliderBox.x = screenX;
-	colliderBox.y = screenY;
 	SDL_Rect temp;
 	bool collision = false;
 	int size = boundingRect.size();
-	for(int i = 0; i < size; i ++) {
-		if(collisionDetectorRect(&colliderBox, &boundingRect[i])) {
-			screenX -= velX;
-			screenY -= velY;
-			colliderBox.x = screenX;
-			colliderBox.y = screenY;
-			collision = true;
-			break;
-		}
-	}
-	if(velX != 0 && !collision) {
+	if(velX != 0) {
 		screenX += velX;
-		side = velX > 0 ? SIDE_RIGHT : SIDE_LEFT;
+		state = velX > 0 ? MOVE_RIGHT : MOVE_LEFT;
+		colliderBox.x = screenX;
+		colliderBox.y = screenY;
+		for(int i = 0; i < size; i ++) {
+			if(collisionDetectorRect(&colliderBox, &boundingRect[i])) {
+				screenX -= velX;
+				colliderBox.x = screenX;
+				colliderBox.y = screenY;
+				collision = true;
+				state = velX > 0 ? STILL_RIGHT : STILL_LEFT;
+				break;
+			}
+		}	
 	}
-	else if(velY != 0 && !collision) {
+	else if(velY != 0) {
 		screenY += velY;
-		side = velY > 0 ? SIDE_DOWN : SIDE_UP;
-	}
-	else {
-		side = STILL;
-		frameCount = 0;
-		spriteIndex = 0;
+		state = velY > 0 ? MOVE_DOWN : MOVE_UP;
+		colliderBox.x = screenX;
+		colliderBox.y = screenY;
+		for(int i = 0; i < size; i ++) {
+			if(collisionDetectorRect(&colliderBox, &boundingRect[i])) {
+				screenY -= velY;
+				colliderBox.x = screenX;
+				colliderBox.y = screenY;
+				state = velY > 0 ? STILL_DOWN : STILL_UP;
+				collision = true;
+				break;
+			}
+		}
 	}
 }
 
 void Pacman::render(Window* window) {
 	SDL_Color color = {0x00, 0x00, 0xFF, 0xFF};
-	// window->renderRect(&colliderBox, color);
-	if(side != STILL) {
-		switch(side) {
-			case SIDE_UP:
-				if(frameCount == 4) {
-					spriteIndex ++;
-					if(spriteIndex == 5) {
-						spriteIndex = 0;
-					}
-					frameCount = 0;
-				}
-				window->renderTexture(up[spriteIndex].texture, NULL, &colliderBox);
-				frameCount ++; break;
-			case SIDE_RIGHT:
-				if(frameCount == 4) {
-					spriteIndex ++;
-					if(spriteIndex == 5) {
-						spriteIndex = 0;
-					}
-					frameCount = 0;
-				}
-				window->renderTexture(right[spriteIndex].texture, NULL, &colliderBox);
-				frameCount ++; break;
-			case SIDE_DOWN:
-				if(frameCount == 4) {
-					spriteIndex ++;
-					if(spriteIndex == 5) {
-						spriteIndex = 0;
-					}
-					frameCount = 0;
-				}
-				window->renderTexture(down[spriteIndex].texture, NULL, &colliderBox);
-				frameCount ++; break;
-			case SIDE_LEFT:
-				if(frameCount == 4) {
-					spriteIndex ++;
-					if(spriteIndex == 5) {
-						spriteIndex = 0;
-					}
-					frameCount = 0;
-				}
-				window->renderTexture(left[spriteIndex].texture, NULL, &colliderBox);
-				frameCount ++; break;			
-		}	
-		
+	SDL_Rect stillPosition = {0, 0, 45, 45};
+	SDL_Rect movingPosition = {(frameCount / ANIMATION_FRAMES) * 45, 0, 45, 45};
+
+	switch(state) {
+		case STILL_UP: 
+			window->renderTexture(up, &stillPosition, &colliderBox);
+			break;
+		case STILL_RIGHT: 
+			window->renderTexture(right, &stillPosition, &colliderBox);
+			break;
+		case STILL_DOWN: 
+			window->renderTexture(down, &stillPosition, &colliderBox);
+			break;
+		case STILL_LEFT: 
+			window->renderTexture(left, &stillPosition, &colliderBox);
+			break;			
+		case MOVE_UP:
+			window->renderTexture(up, &movingPosition, &colliderBox);
+			frameCount++;
+			break;
+		case MOVE_RIGHT:
+			window->renderTexture(right, &movingPosition, &colliderBox);
+			frameCount++;
+			break;
+		case MOVE_DOWN:
+			window->renderTexture(down, &movingPosition, &colliderBox);
+			frameCount++;
+			break;
+		case MOVE_LEFT:
+			window->renderTexture(left, &movingPosition, &colliderBox);
+			frameCount++;
+			break;			
 	}
-	else {
+	if(frameCount == 16) {
 		frameCount = 0;
-		spriteIndex = 0;
-		window->renderTexture(PACMAN_SPRITE[0].texture, NULL, &colliderBox);
-		window->renderRect(&colliderBox, color);
 	}
+
 }
 
 bool Pacman::collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2) {

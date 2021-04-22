@@ -553,7 +553,7 @@ void Maze::createEdge(Window* window, int i, int j, int side) {
 void Maze::generateMazeRandom(Window* window) {
 
     srand(time(0));
-    int mirrorI, mirrorJ, side;
+    int mirrorI, mirrorJ, side, deg1 = 1, deg2 = 1;
     for(int i = 2; i <= dimension; i ++) {
         for(int j = 2; j <= dimension / 2; j ++) {
             if(i==dimension/2+1||j==dimension/2+1)
@@ -566,6 +566,8 @@ void Maze::generateMazeRandom(Window* window) {
             int counter = 0;
             int extra;
             side = rand() % 4;
+            deg1 = rand() % 2 + 1;
+            deg2 = rand() % 2 + 1;
             while(!flag && counter < 16) {
                 
                 switch(side) {
@@ -574,7 +576,7 @@ void Maze::generateMazeRandom(Window* window) {
                             side = rand() % 4;
                             break;
                         }
-                        if(maze[i-2][j-2].degree <= 1 || maze[i-2][j-1].degree <= 1){
+                        if(maze[i-2][j-2].degree <= deg1 || maze[i-2][j-1].degree <= deg2){
                             side = 2;
                             break;
                         }
@@ -599,7 +601,7 @@ void Maze::generateMazeRandom(Window* window) {
                             side = rand() % 4;
                             break;
                         }
-                        if(maze[i-1][j-1].degree <= 1 || maze[i-2][j-1].degree <= 1){
+                        if(maze[i-1][j-1].degree <= deg1 || maze[i-2][j-1].degree <= deg2){
                             side = 3;
                             break;
                         }
@@ -624,7 +626,7 @@ void Maze::generateMazeRandom(Window* window) {
                             side = rand() % 4;
                             break;
                         }
-                        if(maze[i-1][j-2].degree <= 1 || maze[i-1][j-1].degree <= 1) {
+                        if(maze[i-1][j-2].degree <= deg1 || maze[i-1][j-1].degree <= deg2) {
                             side = 0;
                             break;
                         }
@@ -649,7 +651,7 @@ void Maze::generateMazeRandom(Window* window) {
                             side = rand() % 4;
                             break;
                         }
-                        if(maze[i-1][j-2].degree <= 1 || maze[i-2][j-2].degree <= 1){
+                        if(maze[i-1][j-2].degree <= deg1 || maze[i-2][j-2].degree <= deg2){
                             side = 1;
                             break;
                         }
