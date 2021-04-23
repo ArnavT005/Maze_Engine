@@ -30,12 +30,14 @@ class Ghost {
 
     public:
 
-    static const int GHOST_WIDTH = 45;
+    static const int BOX_WIDTH = 45;
+    static const int BOX_HEIGHT = 45;
+    static const int GHOST_WIDTH = 35;
     static const int GHOST_HEIGHT = 45;
     static const int ANIMATION_FRAMES = 2;
 
     Ghost();
-    Ghost(Maze* maze, int j, int k);
+    Ghost(Maze* maze, int j, int k, Window* window);
     void loadTexture(Window* window);
     void checkAlignment();
     void handleEvent(Pacman* pac1);		// handle dynamics
@@ -44,6 +46,8 @@ class Ghost {
     bool collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2);
     int BFS(int i, int j, vector<vector<int>> &V);
     int moveTo();
+    void checkPacmanCollision(Pacman* pac1);
+
     
     bool rowAligned, colAligned;        // To check if ghost is row/column aligned
     Maze* maze;                         // Maze
@@ -51,6 +55,8 @@ class Ghost {
     int screenX, screenY;				// screen coordinates of ghost
     int velX, velY;						// horizontal and vertical velocities in pixels per frame
     SDL_Rect colliderBox;
+    Circle colliderSphere;				// circular collision detector box	
+
     int type;
     Pacman* pac1;				// pacman
     int direction;
@@ -84,8 +90,11 @@ Ghost::Ghost() {
 	boundingRect.clear();
 	colliderBox.x = screenX;
 	colliderBox.y = screenY;
-	colliderBox.w = GHOST_WIDTH;
-	colliderBox.h = GHOST_HEIGHT;
+	colliderBox.w = BOX_WIDTH;
+	colliderBox.h = BOX_HEIGHT;
+	colliderSphere.radius = (GHOST_WIDTH - 1) / 2;
+	colliderSphere.center.x = screenX + BOX_WIDTH / 2;
+	colliderSphere.center.y = screenY + BOX_HEIGHT / 2;
 	type = 1;
 	mode = 1;
 	GHOST_VEL = 1;
@@ -97,7 +106,7 @@ Ghost::Ghost() {
 	randomOn = false;
 }
 
-Ghost::Ghost(Maze* maze, int ghostType, int mode) {
+Ghost::Ghost(Maze* maze, int ghostType, int mode, Window* window) {
 
     this->mode = mode;
 	rowAligned = colAligned = true;
@@ -131,14 +140,18 @@ Ghost::Ghost(Maze* maze, int ghostType, int mode) {
 	boundingRect = maze->boundaryRectGhost;
 	colliderBox.x = screenX;
 	colliderBox.y = screenY;
-	colliderBox.w = GHOST_WIDTH;
-	colliderBox.h = GHOST_HEIGHT;
+	colliderBox.w = BOX_WIDTH;
+	colliderBox.h = BOX_HEIGHT;
+	colliderSphere.radius = (GHOST_WIDTH - 1) / 2;
+	colliderSphere.center.x = screenX + BOX_WIDTH / 2;
+	colliderSphere.center.y = screenY + BOX_HEIGHT / 2;
 	type = ghostType;
 	direction = INITIAL;
 	state = STILL_UP;
 	success = true;
 	frameCount = 0;
 	randomOn = false;
+	loadTexture(window);
 }
 
 
@@ -459,6 +472,7 @@ void Ghost::move() {
 		state = velX > 0 ? MOVE_RIGHT : MOVE_LEFT;
 		colliderBox.x = screenX;
 		colliderBox.y = screenY;
+		colliderSphere.center.x += velX;		
 		for(int i = 0; i < size; i ++) {
 			if(collisionDetectorRect(&colliderBox, &boundingRect[i])) {
 				screenX -= velX;
@@ -475,6 +489,7 @@ void Ghost::move() {
 		state = velY > 0 ? MOVE_DOWN : MOVE_UP;
 		colliderBox.x = screenX;
 		colliderBox.y = screenY;
+		colliderSphere.center.y += velY;
 		for(int i = 0; i < size; i ++) {
 			if(collisionDetectorRect(&colliderBox, &boundingRect[i])) {
 				screenY -= velY;
@@ -563,5 +578,21 @@ bool Ghost::collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2) {
 	}	
 	else {
 		return true;
+	}
+}
+
+void Ghost::checkPacmanCollision(Pacman* pac1) {
+	int r1 = colliderSphere.radius;
+	int r2 = pac1->colliderSphere.radius;
+
+	SDL_Point point1 = colliderSphere.center;
+	SDL_Point point2 = pac1->colliderSphere.center;
+
+	int distanceSq = (point1.x - point2.x) * (point1.x - point2.x) + (point1.y - point2.y) * (point1.y - point2.y);
+	if(distanceSq < (r1 + r2) * (r1 + r2)) {
+		if(!pac1->isDead) {
+			pac1->isDead = true;
+			pac1->frameCount = 0;
+		}
 	}
 }
