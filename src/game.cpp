@@ -54,11 +54,16 @@ int main(int argc, char** argv) {
     window.setRenderTarget(NULL);
     
     Pacman pac(&maze, &window);
-    Ghost g1(&maze, 1, 1);
-    Ghost g2(&maze, 2, 1);
-    Ghost g3(&maze, 3, 2);
-    Ghost g4(&maze, 4, 1);
-    
+    Ghost g1(&maze, TYPE_BLINKY, 1);
+    Ghost g2(&maze, TYPE_PINKY, 1);
+    Ghost g3(&maze, TYPE_INKY, 1);
+    Ghost g4(&maze, TYPE_CLYDE, 1);
+    g1.loadTexture(&window);
+    g2.loadTexture(&window);
+    g3.loadTexture(&window);
+    g4.loadTexture(&window);
+
+
     window.clearWindow();
 
     bool quit = false;
@@ -73,10 +78,10 @@ int main(int argc, char** argv) {
             pac.handleEvent(event);
             break;
         }
-        g1.handleEvent(maze.screenToBlockCoordinate(pac.screenX, pac.screenY), pac.velX, pac.velY);
-        g2.handleEvent(maze.screenToBlockCoordinate(pac.screenX, pac.screenY), pac.velX, pac.velY);
-        g3.handleEvent(maze.screenToBlockCoordinate(pac.screenX, pac.screenY), pac.velX, pac.velY);
-        g4.handleEvent(maze.screenToBlockCoordinate(pac.screenX, pac.screenY), pac.velX, pac.velY);
+        g1.handleEvent(&pac);
+        g2.handleEvent(&pac);
+        g3.handleEvent(&pac);
+        g4.handleEvent(&pac);
         pac.move();
         g1.move();
         g2.move();

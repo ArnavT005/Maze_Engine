@@ -487,29 +487,29 @@ void Maze::createBasicStructure(Window* window) {
     updateBlock(dimension / 2 - 3, dimension / 2 - 2, 3, 0, 0, 2, 0);
     updateBlock(dimension / 2 - 3, dimension / 2 - 1, 3, 0, 0, 1, 0);
     updateBlock(dimension / 2 - 3, dimension / 2, 3, 0, 0, 1, 0);
-    updateBlock(dimension / 2 - 2, dimension / 2 - 1, 3, 1, 0, 0, 0);
-    updateBlock(dimension / 2 - 2, dimension / 2, 3, 1, 0, 0, 0);
+    updateBlock(dimension / 2 - 2, dimension / 2 - 1, 2, 1, 0, 0, 2);
+    updateBlock(dimension / 2 - 2, dimension / 2, 2, 1, 2, 0, 0);
     updateBlock(dimension / 2 - 3, dimension / 2 + 1, 3, 0, 0, 2, 0);
 
     updateBlock(dimension / 2 + 2, dimension / 2 - 2, 3, 2, 0, 0, 0);
     updateBlock(dimension / 2 + 2, dimension / 2 - 1, 3, 1, 0, 0, 0);
     updateBlock(dimension / 2 + 2, dimension / 2, 3, 1, 0, 0, 0);
-    updateBlock(dimension / 2 + 1, dimension / 2 - 1, 3, 0, 0, 1, 0);
-    updateBlock(dimension / 2 + 1, dimension / 2, 3, 0, 0, 1, 0);
+    updateBlock(dimension / 2 + 1, dimension / 2 - 1, 2, 0, 0, 1, 2);
+    updateBlock(dimension / 2 + 1, dimension / 2, 2, 0, 2, 1, 0);
     updateBlock(dimension / 2 + 2, dimension / 2 + 1, 3, 2, 0, 0, 0);
 
     updateBlock(dimension / 2 - 2, dimension / 2 - 3, 3, 0, 2, 0, 0);
     updateBlock(dimension / 2 - 1, dimension / 2 - 3, 3, 0, 1, 0, 0);
     updateBlock(dimension / 2, dimension / 2 - 3, 3, 0, 1, 0, 0);
-    updateBlock(dimension / 2 - 1, dimension / 2 - 2, 3, 0, 0, 0, 1);
-    updateBlock(dimension / 2, dimension / 2 - 2, 3, 0, 0, 0, 1);
+    updateBlock(dimension / 2 - 1, dimension / 2 - 2, 2, 2, 0, 0, 1);
+    updateBlock(dimension / 2, dimension / 2 - 2, 2, 0, 0, 2, 1);
     updateBlock(dimension / 2 + 1, dimension / 2 - 3, 3, 0, 2, 0, 0);
 
     updateBlock(dimension / 2 - 2, dimension / 2 + 2, 3, 0, 0, 0, 2);
     updateBlock(dimension / 2 - 1, dimension / 2 + 2, 3, 0, 0, 0, 1);
     updateBlock(dimension / 2, dimension / 2 + 2, 3, 0, 0, 0, 1);
-    updateBlock(dimension / 2 - 1, dimension / 2 + 1, 3, 0, 1, 0, 0);
-    updateBlock(dimension / 2, dimension / 2 + 1, 3, 0, 1, 0, 0);
+    updateBlock(dimension / 2 - 1, dimension / 2 + 1, 2, 2, 1, 0, 0);
+    updateBlock(dimension / 2, dimension / 2 + 1, 2, 0, 1, 2, 0);
     updateBlock(dimension / 2 + 1, dimension / 2 + 2, 3, 0, 0, 0, 2);
 
 
