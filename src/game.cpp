@@ -4,6 +4,7 @@
 #include "maze.hpp"
 #include "pacman.hpp"
 #include "ghost.hpp"
+#include "manager.hpp"
 
 
 bool SDL_init() {
@@ -39,8 +40,10 @@ int main(int argc, char** argv) {
     srand(time(0));
     // 20, 35, 13, 25
     Maze maze(16, 45, 15, 25);
-    SDL_Color boundaryColor = {0x00, 0x00, 0x00, 0xFF};
+    SDL_Color boundaryColor = {0xFF, 0x00, 0x00, 0xFF};
     SDL_Texture* background = SDL_CreateTexture(window.getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
+
+    maze.loadTexture(&window);
 
     window.setRenderTarget(background);
     SDL_DisplayMode DM;
@@ -51,10 +54,19 @@ int main(int argc, char** argv) {
     maze.createBasicStructure(&window);
     maze.generateMazeRandom(&window);
 
+
     window.setRenderTarget(NULL);
     
     Pacman pac(&maze, &window);
-    Ghost g1(&maze, TYPE_BLINKY, 1, &window);
+    Manager manager(&maze);
+    manager.generateEatables(&window);
+    int numEat = manager.eatables.size();
+
+    for(int k = 0; k < numEat; k ++) {
+        manager.eatables[k].setPacman(&pac);
+    }
+
+    Ghost g1(&maze, TYPE_BLINKY, 2, &window);
     Ghost g2(&maze, TYPE_PINKY, 1, &window);
     Ghost g3(&maze, TYPE_INKY, 1, &window);
     Ghost g4(&maze, TYPE_CLYDE, 1, &window);
@@ -67,17 +79,18 @@ int main(int argc, char** argv) {
     
     while(!quit) {
         int i = 0;
+
         while(SDL_PollEvent(& event)) {
             if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
                 quit = true;
             }
-            pac.handleEvent(event);
-            break;
+            pac.handleEvent(event, SDL_GetKeyboardState(NULL));
+           // break;
         }
-        g1.handleEvent(&pac);
-        g2.handleEvent(&pac);
-        g3.handleEvent(&pac);
-        g4.handleEvent(&pac);
+        g1.update(&pac);
+        g2.update(&pac);
+        g3.update(&pac);
+        g4.update(&pac);
         pac.move();
         g1.move();
         g2.move();
@@ -88,6 +101,10 @@ int main(int argc, char** argv) {
         g3.checkPacmanCollision(&pac);
         g4.checkPacmanCollision(&pac);
         window.renderTexture(background);
+        for(i = 0; i < numEat; i ++) {
+            manager.eatables[i].checkIfEaten();
+            manager.eatables[i].render(&window);
+        }
         pac.render(&window);
         g1.render(&window);
         g2.render(&window);

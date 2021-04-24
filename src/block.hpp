@@ -3,7 +3,8 @@
 enum BlockAccess{
     ACCESS_ALLOWED,
     PACMAN_DENIED,
-    ALL_DENIED
+    ALL_DENIED,
+    GHOST_DENIED
 };
 
 class Block {

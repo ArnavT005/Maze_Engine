@@ -40,10 +40,12 @@ class Ghost {
     Ghost(Maze* maze, int j, int k, Window* window);
     void loadTexture(Window* window);
     void checkAlignment();
-    void handleEvent(Pacman* pac1);		// handle dynamics
+    void update(Pacman* pac1);		// handle dynamics
     void move();						
     void render(Window* window);        // render GHOST
+    void handleEvent(SDL_Event event, Pacman* pac1);
     bool collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2);
+    bool collisionDetectorCircle(Circle* circle1, Circle* circle2);
     int BFS(int i, int j, vector<vector<int>> &V);
     int moveTo();
     void checkPacmanCollision(Pacman* pac1);
@@ -74,7 +76,8 @@ class Ghost {
     SDL_Texture* rightAngry;
     SDL_Texture* downAngry;
     SDL_Texture* leftAngry;		// rendering angry textures
-    bool randomOn;
+    bool randomOn;				
+    bool isDead;
 
    // int random_seed;
 
@@ -104,6 +107,7 @@ Ghost::Ghost() {
 	success = true;
 	frameCount = 0;
 	randomOn = false;
+	isDead = false;
 }
 
 Ghost::Ghost(Maze* maze, int ghostType, int mode, Window* window) {
@@ -151,6 +155,7 @@ Ghost::Ghost(Maze* maze, int ghostType, int mode, Window* window) {
 	success = true;
 	frameCount = 0;
 	randomOn = false;
+	isDead = false;
 	loadTexture(window);
 }
 
@@ -303,30 +308,31 @@ int Ghost::BFS(int destX, int destY, vector<vector<int>> &m){
     while(!que.empty()){
         vector<int> pt = que[0];
         que.erase(que.begin());
-        if(maze->maze[pt[0]][pt[1]].up != ALL_DENIED && pt[0] > 0 && m[pt[0]-1][pt[1]] == -1){
+        if(maze->maze[pt[0]][pt[1]].up != ALL_DENIED && maze->maze[pt[0]][pt[1]].up != GHOST_DENIED && pt[0] > 0 && m[pt[0]-1][pt[1]] == -1){
             m[pt[0]-1][pt[1]] = m[pt[0]][pt[1]] + 1;
             que.push_back(vector<int> {pt[0]-1, pt[1]});
         }
-        if(maze->maze[pt[0]][pt[1]].down != ALL_DENIED && pt[0] < size - 1 && m[pt[0]+1][pt[1]] == -1){
+        if(maze->maze[pt[0]][pt[1]].down != ALL_DENIED && maze->maze[pt[0]][pt[1]].down != GHOST_DENIED && pt[0] < size - 1 && m[pt[0]+1][pt[1]] == -1){
             m[pt[0]+1][pt[1]] = m[pt[0]][pt[1]] + 1;
             que.push_back(vector<int> {pt[0]+1, pt[1]});
         }
-        if(maze->maze[pt[0]][pt[1]].right != ALL_DENIED && pt[1] < size - 1 && m[pt[0]][pt[1]+1] == -1){
+        if(maze->maze[pt[0]][pt[1]].right != ALL_DENIED && maze->maze[pt[0]][pt[1]].right != GHOST_DENIED && pt[1] < size - 1 && m[pt[0]][pt[1]+1] == -1){
             m[pt[0]][pt[1]+1] = m[pt[0]][pt[1]] + 1;
             que.push_back(vector<int> {pt[0], pt[1]+1});
         }
-        if(maze->maze[pt[0]][pt[1]].left != ALL_DENIED && pt[1] > 0 && m[pt[0]][pt[1]-1] == -1){
+        if(maze->maze[pt[0]][pt[1]].left != ALL_DENIED && maze->maze[pt[0]][pt[1]].left != GHOST_DENIED && pt[1] > 0 && m[pt[0]][pt[1]-1] == -1){
             m[pt[0]][pt[1]-1] = m[pt[0]][pt[1]] + 1;
             que.push_back(vector<int> {pt[0], pt[1]-1});
         }
     }
     int blkX = maze->screenToBlockCoordinate(screenX, screenY).x, blkY = maze->screenToBlockCoordinate(screenX, screenY).y;
     int score = m[blkX][blkY], move = 0;
+
     // Add randomness in case multiple directions have same distance
-    if(maze->maze[blkX][blkY].up != ALL_DENIED && blkX > 0 && score>m[blkX-1][blkY] ){score = m[blkX-1][blkY]; move = UP;}
-    if(maze->maze[blkX][blkY].down != ALL_DENIED && blkX < size - 1 && score>m[blkX+1][blkY] ){score = m[blkX+1][blkY]; move = DOWN;}
-    if(maze->maze[blkX][blkY].left != ALL_DENIED && blkY > 0 && score>m[blkX][blkY-1] ){score = m[blkX][blkY-1]; move = LEFT;}
-    if(maze->maze[blkX][blkY].right != ALL_DENIED && blkY < size - 1 && score>m[blkX][blkY+1] ){score = m[blkX][blkY+1]; move = RIGHT;}
+    if(maze->maze[blkX][blkY].up != ALL_DENIED && maze->maze[blkX][blkY].up != GHOST_DENIED && blkX > 0 && score>m[blkX-1][blkY] ){score = m[blkX-1][blkY]; move = UP;}
+    if(maze->maze[blkX][blkY].down != ALL_DENIED && maze->maze[blkX][blkY].down != GHOST_DENIED && blkX < size - 1 && score>m[blkX+1][blkY] ){score = m[blkX+1][blkY]; move = DOWN;}
+    if(maze->maze[blkX][blkY].left != ALL_DENIED && maze->maze[blkX][blkY].left != GHOST_DENIED &&blkY > 0 && score>m[blkX][blkY-1] ){score = m[blkX][blkY-1]; move = LEFT;}
+    if(maze->maze[blkX][blkY].right != ALL_DENIED && maze->maze[blkX][blkY].right != GHOST_DENIED && blkY < size - 1 && score>m[blkX][blkY+1] ){score = m[blkX][blkY+1]; move = RIGHT;}
     
     return move;   // returns 0 if the block is unreachable or if the object is at the destination
 }
@@ -448,7 +454,7 @@ int Ghost::moveTo(){
 	}
 }
 
-void Ghost::handleEvent(Pacman* pac1) {
+void Ghost::update(Pacman* pac1) {
 	this->pac1 = pac1;
     checkAlignment();
 	if(rowAligned && colAligned){
@@ -478,6 +484,7 @@ void Ghost::move() {
 				screenX -= velX;
 				colliderBox.x = screenX;
 				colliderBox.y = screenY;
+				colliderSphere.center.x -= velX;
 				collision = true;
 				state = velX > 0 ? STILL_RIGHT : STILL_LEFT;
 				break;
@@ -495,6 +502,7 @@ void Ghost::move() {
 				screenY -= velY;
 				colliderBox.x = screenX;
 				colliderBox.y = screenY;
+				colliderSphere.center.y -= velY;
 				state = velY > 0 ? STILL_DOWN : STILL_UP;
 				collision = true;
 				break;
@@ -569,6 +577,11 @@ void Ghost::render(Window* window) {
 
 }
 
+void Ghost::handleEvent(SDL_Event event, Pacman *pac1) {
+
+}
+
+
 bool Ghost::collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2) {
 	int top1 = rect1->y, top2 = rect2->y, bottom1 = rect1->y + rect1->h, bottom2 = rect2->y + rect2->h,
 		right1 = rect1->x + rect1->w, right2 = rect2->x + rect2->w, left1 = rect1->x, left2 = rect2->x;
@@ -581,15 +594,26 @@ bool Ghost::collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2) {
 	}
 }
 
-void Ghost::checkPacmanCollision(Pacman* pac1) {
-	int r1 = colliderSphere.radius;
-	int r2 = pac1->colliderSphere.radius;
+bool Ghost::collisionDetectorCircle(Circle* circle1, Circle* circle2) {
+	int r1 = circle1->radius, r2 = circle2->radius;
+	SDL_Point point1 = circle1->center, point2 = circle2->center;
 
-	SDL_Point point1 = colliderSphere.center;
-	SDL_Point point2 = pac1->colliderSphere.center;
-
+	// check collision
 	int distanceSq = (point1.x - point2.x) * (point1.x - point2.x) + (point1.y - point2.y) * (point1.y - point2.y);
 	if(distanceSq < (r1 + r2) * (r1 + r2)) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+
+void Ghost::checkPacmanCollision(Pacman* pac1) {
+	
+	bool checkCollision = collisionDetectorCircle(&colliderSphere, &(pac1->colliderSphere));
+
+	if(checkCollision) {
 		if(!pac1->isDead) {
 			pac1->isDead = true;
 			pac1->frameCount = 0;

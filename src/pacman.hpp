@@ -3,8 +3,8 @@
 #include <vector>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "maze.hpp"
 #include "window.hpp"
+#include "maze.hpp"
 
 const int BOX_WIDTH = 45;
 const int BOX_HEIGHT = 45;
@@ -38,7 +38,7 @@ class Pacman {
     Pacman();
     Pacman(Maze* maze, Window* window);
     void loadTexture(Window* window);
-    void handleEvent(SDL_Event &e);		// handle dynamics
+    void handleEvent(SDL_Event &e, const Uint8* keyStates);		// handle dynamics
     void move();						
     void render(Window* window);        // render PACMAN
     bool collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2);
@@ -197,15 +197,22 @@ void Pacman::loadTexture(Window* window) {
 
 
 
-void Pacman::handleEvent(SDL_Event &e) {
+void Pacman::handleEvent(SDL_Event &e, const Uint8* keyStates) {
 	if(!isDead) {
 		if(e.type == SDL_KEYDOWN && e.key.repeat == 0) {
-			switch(e.key.keysym.sym) {
-				case SDLK_UP: velY -= PACMAN_VEL; state = MOVE_UP; frameCount = 0; break;
-				case SDLK_DOWN: velY += PACMAN_VEL; state = MOVE_DOWN; frameCount = 0; break;
-				case SDLK_RIGHT: velX += PACMAN_VEL; state = MOVE_RIGHT; frameCount = 0; break;
-				case SDLK_LEFT: velX -= PACMAN_VEL; state = MOVE_LEFT; frameCount = 0; break;
-				default: break;
+			int num = 0;
+			if(keyStates[SDL_SCANCODE_UP] == 1) num ++;
+			if(keyStates[SDL_SCANCODE_RIGHT] == 1) num ++;
+			if(keyStates[SDL_SCANCODE_DOWN] == 1) num ++;
+			if(keyStates[SDL_SCANCODE_LEFT] == 1) num ++;
+			if(num <= 1) {
+				switch(e.key.keysym.sym) {
+					case SDLK_UP: velY -= PACMAN_VEL; state = MOVE_UP; frameCount = 0; break;
+					case SDLK_DOWN: velY += PACMAN_VEL; state = MOVE_DOWN; frameCount = 0; break;
+					case SDLK_RIGHT: velX += PACMAN_VEL; state = MOVE_RIGHT; frameCount = 0; break;
+					case SDLK_LEFT: velX -= PACMAN_VEL; state = MOVE_LEFT; frameCount = 0; break;
+					default: break;
+				}
 			}
 		}
 		else if(e.type == SDL_KEYUP && e.key.repeat == 0) {
@@ -238,6 +245,7 @@ void Pacman::move() {
 				colliderSphere.center.x -= velX;
 				collision = true;
 				state = velX > 0 ? STILL_RIGHT : STILL_LEFT;
+				velX = 0;
 				break;
 			}
 		}	
@@ -256,6 +264,7 @@ void Pacman::move() {
 				colliderSphere.center.y -= velY;
 				state = velY > 0 ? STILL_DOWN : STILL_UP;
 				collision = true;
+				velY = 0;
 				break;
 			}
 		}
