@@ -57,6 +57,8 @@ class Pacman {
 
     bool success;					    // error reporting flag
     bool isDead;
+
+    bool isBuffed;
     
     SDL_Texture* up;
     SDL_Texture* right;
@@ -91,6 +93,7 @@ Pacman::Pacman() {
 
 	success = true;
 	isDead = false;
+	isBuffed = false;
 }
 
 Pacman::Pacman(Maze* maze, Window* window) {
@@ -119,6 +122,7 @@ Pacman::Pacman(Maze* maze, Window* window) {
 
 	success = true;
 	isDead = false;
+	isBuffed = false;
 
 	loadTexture(window);
 }

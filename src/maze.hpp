@@ -160,7 +160,7 @@ void Maze::updateBlock(int i, int j, int degree, int up, int right, int down, in
 
 
 void Maze::loadTexture(Window* window) {
-    SDL_Surface* surf = IMG_Load("../img/background.png");
+    SDL_Surface* surf = IMG_Load("../img/background2.png");
     if(surf == NULL) {
         std::cout << "Unable to load background image! SDL_Image Error: " << IMG_GetError() << "\n";
     }

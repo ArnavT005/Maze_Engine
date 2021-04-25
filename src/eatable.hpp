@@ -119,13 +119,6 @@ void Eatable::loadTexture(Window* window) {
 
 void Eatable::render(Window* window) {
 	if(!isEaten) {
-		// SDL_Color color = {0xFF, 0xFF, 0x00, 0xFF};
-		// if(type == TEN_POINT) window->renderRect(&location, color);
-		// else if(type == FIFTY_POINT) {
-		// 	color.g = 0x00;
-		// 	color.b = 0xFF;
-		// 	window->renderRect(&location, color);
-		// }
 		window->renderTexture(texture, NULL, &location);
 	}
 }
@@ -141,6 +134,9 @@ void Eatable::checkIfEaten() {
 	// }
 	if(ifCollision1 || ifCollision2) {
 		isEaten = true;
+		if(type == FIFTY_POINT) {
+			p1->isBuffed = true;
+		}
 	}
 }
 

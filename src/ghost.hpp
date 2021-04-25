@@ -65,8 +65,10 @@ class Ghost {
     int destinationX;
     int destinationY;		
     int mode;					// set value default
+    int prevMode;
     int state;
     int GHOST_VEL;     			// 1 pixel per frame
+    int prevVel;
     bool success;				// error reporting flag
     int frameCount;
     SDL_Texture* up;
@@ -76,6 +78,14 @@ class Ghost {
     SDL_Texture* rightAngry;
     SDL_Texture* downAngry;
     SDL_Texture* leftAngry;		// rendering angry textures
+    SDL_Texture* upScared;
+    SDL_Texture* rightScared;
+    SDL_Texture* downScared;
+    SDL_Texture* leftScared;    // rendering scared textures
+    SDL_Texture* rightDead;
+    SDL_Texture* upDead;
+    SDL_Texture* downDead;
+    SDL_Texture* leftDead;
     bool randomOn;				
     bool isDead;
 
@@ -269,6 +279,59 @@ void Ghost::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(leftSurf2);
 	}
+	SDL_Surface* scaredUp = IMG_Load("../img/Scared/upScared.png");
+	SDL_Surface* scaredRight = IMG_Load("../img/Scared/rightScared.png");
+	SDL_Surface* scaredDown = IMG_Load("../img/Scared/downScared.png");
+	SDL_Surface* scaredLeft = IMG_Load("../img/Scared/leftScared.png");
+
+	if(scaredUp == NULL || scaredRight == NULL || scaredDown == NULL || scaredLeft == NULL) {
+		std::cout << "Unable to load scared images! SDL_Image Error: " << IMG_GetError() << "\n";
+		success = false;
+	}
+	upScared = SDL_CreateTextureFromSurface(window->getRenderer(), scaredUp);
+	rightScared = SDL_CreateTextureFromSurface(window->getRenderer(), scaredRight);
+	downScared = SDL_CreateTextureFromSurface(window->getRenderer(), scaredDown);
+	leftScared = SDL_CreateTextureFromSurface(window->getRenderer(), scaredLeft);
+
+	if(upScared == NULL || rightScared == NULL || downScared == NULL || leftScared == NULL) {
+		std::cout <<  "Unable to create texture from image! SDL_Image Error: " << IMG_GetError() << "\n";
+		success = false;
+	}
+	if(scaredUp != NULL)
+		SDL_FreeSurface(scaredUp);
+	if(scaredRight != NULL)
+		SDL_FreeSurface(scaredRight);
+	if(scaredDown != NULL)
+		SDL_FreeSurface(scaredDown);
+	if(scaredLeft != NULL)
+		SDL_FreeSurface(scaredLeft);
+
+	SDL_Surface* deadUp = IMG_Load("../img/Dead/upDead.png");
+	SDL_Surface* deadRight = IMG_Load("../img/Dead/rightDead.png");
+	SDL_Surface* deadDown = IMG_Load("../img/Dead/downDead.png");
+	SDL_Surface* deadLeft = IMG_Load("../img/Dead/leftDead.png");
+
+	if(deadUp == NULL || deadRight == NULL || deadDown == NULL || deadLeft == NULL) {
+		std::cout << "Unable to load dead images! SDL_Image Error: " << IMG_GetError() << "\n";
+		success = false;
+	}
+	upDead = SDL_CreateTextureFromSurface(window->getRenderer(), deadUp);
+	rightDead = SDL_CreateTextureFromSurface(window->getRenderer(), deadRight);
+	downDead = SDL_CreateTextureFromSurface(window->getRenderer(), deadDown);
+	leftDead = SDL_CreateTextureFromSurface(window->getRenderer(), deadLeft);
+
+	if(upDead == NULL || rightDead == NULL || downDead == NULL || leftDead == NULL) {
+		std::cout <<  "Unable to create texture from image! SDL_Image Error: " << IMG_GetError() << "\n";
+		success = false;
+	}
+	if(deadUp != NULL)
+		SDL_FreeSurface(deadUp);
+	if(deadRight != NULL)
+		SDL_FreeSurface(deadRight);
+	if(deadDown != NULL)
+		SDL_FreeSurface(deadDown);
+	if(deadLeft != NULL)
+		SDL_FreeSurface(deadLeft);
 }
 
 void Ghost::checkAlignment() {
@@ -384,7 +447,7 @@ int Ghost::moveTo(){
     	}
         return moveDir;
     }
-    else {
+    else if(mode == 2){
 		if(type == TYPE_BLINKY){
 	        destinationY = pacLoc.y; destinationX = pacLoc.x;
 	        return BFS(destinationX, destinationY, distance);
@@ -452,11 +515,177 @@ int Ghost::moveTo(){
 	        return moveDir;
 	    }
 	}
+	else if(mode == 3){
+		// mode = 3 (scared)
+		// move away from pacman if possible, otherwise accept your fate
+		int vert = pacLoc.x - blkX >= 0 ? pacLoc.x - blkX : blkX - pacLoc.x;
+		int horiz  = pacLoc.y - blkY >= 0 ? pacLoc.y - blkY : blkY - pacLoc.y;
+		BFS(pacLoc.x, pacLoc.y, distance);
+		if(distance[blkX][blkY] <= 3) {
+			if(pacLoc.x >= blkX) {
+				if(pacLoc.y >= blkY) {
+					if(maze->maze[blkX][blkY].left == ALL_DENIED || maze->maze[blkX][blkY].left == GHOST_DENIED) {
+						if(maze->maze[blkX][blkY].up == ALL_DENIED || maze->maze[blkX][blkY].up == GHOST_DENIED) {
+							if(horiz <= vert) {
+								if(maze->maze[blkX][blkY].right != ALL_DENIED && maze->maze[blkX][blkY].right != GHOST_DENIED)
+									return RIGHT;
+								else
+									return DOWN;
+							}	
+							else {
+								if(maze->maze[blkX][blkY].down != ALL_DENIED && maze->maze[blkX][blkY].down != GHOST_DENIED)
+									return DOWN;
+								else
+									return RIGHT;
+							}
+						}
+						else
+							return UP;
+					}
+					else {
+						if(maze->maze[blkX][blkY].up == ALL_DENIED || maze->maze[blkX][blkY].up == GHOST_DENIED)
+							return LEFT;
+						else {	
+							if(horiz <= vert)
+								return LEFT;
+							else
+								return UP;
+						}
+					}
+				}
+				else {
+					// pacLoc.y < blkY
+					if(maze->maze[blkX][blkY].right == ALL_DENIED || maze->maze[blkX][blkY].right == GHOST_DENIED) {
+						if(maze->maze[blkX][blkY].up == ALL_DENIED || maze->maze[blkX][blkY].up == GHOST_DENIED) {
+							if(horiz <= vert) {
+								if(maze->maze[blkX][blkY].left != ALL_DENIED && maze->maze[blkX][blkY].left != GHOST_DENIED)
+									return LEFT;
+								else
+									return DOWN;
+							}
+							else {
+								if(maze->maze[blkX][blkY].down != ALL_DENIED && maze->maze[blkX][blkY].down != GHOST_DENIED)
+									return DOWN;
+								else 
+									return LEFT;
+							}
+						}
+						else
+							return UP;
+					}
+					else {
+						if(maze->maze[blkX][blkY].up == ALL_DENIED || maze->maze[blkX][blkY].up == GHOST_DENIED)
+							return RIGHT;
+						else {	
+							if(horiz <= vert)
+								return RIGHT;
+							else
+								return UP;
+						}
+					}
+				}
+			}
+			else {
+				// pacLoc.x < blkX
+				if(pacLoc.y >= blkY) {
+					if(maze->maze[blkX][blkY].left == ALL_DENIED || maze->maze[blkX][blkY].left == GHOST_DENIED) {
+						if(maze->maze[blkX][blkY].down == ALL_DENIED || maze->maze[blkX][blkY].down == GHOST_DENIED) {
+							if(horiz <= vert) {
+								if(maze->maze[blkX][blkY].right != ALL_DENIED && maze->maze[blkX][blkY].right != GHOST_DENIED)
+									return RIGHT;
+								else
+									return UP;
+							}
+							else {
+								if(maze->maze[blkX][blkY].up != ALL_DENIED && maze->maze[blkX][blkY].up!= GHOST_DENIED)
+									return UP;
+								else 
+									return RIGHT;
+							}
+						}
+						else
+							return DOWN;
+					}
+					else {
+						if(maze->maze[blkX][blkY].down == ALL_DENIED || maze->maze[blkX][blkY].down == GHOST_DENIED)
+							return LEFT;
+						else {	
+							if(horiz <= vert)
+								return LEFT;
+							else
+								return DOWN;
+						}
+					}
+				}
+				else {
+					// pacLoc.y < blkY
+					if(maze->maze[blkX][blkY].right == ALL_DENIED || maze->maze[blkX][blkY].right == GHOST_DENIED) {
+						if(maze->maze[blkX][blkY].down == ALL_DENIED || maze->maze[blkX][blkY].down == GHOST_DENIED) {
+							if(horiz <= vert) {
+								if(maze->maze[blkX][blkY].left != ALL_DENIED && maze->maze[blkX][blkY].left != GHOST_DENIED)
+									return LEFT;
+								else
+									return UP;
+							}
+							else {
+								if(maze->maze[blkX][blkY].up != ALL_DENIED && maze->maze[blkX][blkY].up != GHOST_DENIED)
+									return UP;
+								else
+									return LEFT;
+							}
+						}
+						else
+							return DOWN;
+					}
+					else {
+						if(maze->maze[blkX][blkY].down == ALL_DENIED || maze->maze[blkX][blkY].down == GHOST_DENIED)
+							return RIGHT;
+						else {	
+							if(horiz <= vert)
+								return RIGHT;
+							else
+								return DOWN;
+						}
+					}
+				}
+			}
+		}	
+		else {
+			// distance > 3, move randomly
+			if(success) {
+			std::cout << "3 " << type << "\n"; success = false;} 
+			moveDir = BFS(destinationX, destinationY, distance);
+			while(moveDir == 0) {
+				destinationX = rand() % dimension;
+				destinationY = rand() % dimension;
+				moveDir = BFS(destinationX, destinationY, distance);
+			}
+			return moveDir;
+		}
+	}
+	else {
+		// mode = 4
+		std::cout << type << "\n";
+		if(blkX == destinationX && blkY == destinationY) {
+			mode = prevMode;
+			GHOST_VEL = prevVel;
+			return 0;
+		}
+		else {
+			moveDir = BFS(destinationX, destinationY, distance);
+			std::cout << moveDir << " " << type << "\n";
+			return moveDir;
+		}
+	}
 }
 
 void Ghost::update(Pacman* pac1) {
 	this->pac1 = pac1;
     checkAlignment();
+    if(pac1->isBuffed && mode != 3 && mode != 4) {
+    	prevMode = mode;
+    	mode = 3;
+    }
 	if(rowAligned && colAligned){
 		direction = moveTo();
 	}
@@ -519,55 +748,73 @@ void Ghost::render(Window* window) {
 
 	switch(state) {
 		case STILL_UP: 
-			window->renderTexture(up, &stillPosition, &onScreenRect);
+			if(mode == 1 || mode == 2)
+				window->renderTexture(up, &stillPosition, &onScreenRect);
+			else
+				window->renderTexture(upScared, &stillPosition, &onScreenRect);	
 			break;
 		case STILL_RIGHT: 
 			if(mode == 1)
 				window->renderTexture(right, &stillPosition, &onScreenRect);
+			else if(mode == 2)
+				window->renderTexture(rightAngry, &stillPosition, &onScreenRect);	
 			else
-				window->renderTexture(rightAngry, &stillPosition, &onScreenRect);				
+				window->renderTexture(rightScared, &stillPosition, &onScreenRect);				
 			break;
 		case STILL_DOWN: 
 			if(mode == 1)
 				window->renderTexture(down, &stillPosition, &onScreenRect);
-			else
+			else if(mode == 2)
 				window->renderTexture(downAngry, &stillPosition, &onScreenRect);
+			else
+				window->renderTexture(downScared, &stillPosition, &onScreenRect);	
 			break;
 		case STILL_LEFT: 
 			if(mode == 1)
 				window->renderTexture(left, &stillPosition, &onScreenRect);
-			else
+			else if(mode == 2)
 				window->renderTexture(leftAngry, &stillPosition, &onScreenRect);
+			else
+				window->renderTexture(leftScared, &stillPosition, &onScreenRect);	
 			break;			
 		case MOVE_UP:
-			window->renderTexture(up, &movingPosition, &onScreenRect);
+			if(mode == 1 || mode == 2)
+				window->renderTexture(up, &movingPosition, &onScreenRect);
+			else
+				window->renderTexture(upScared, &movingPosition, &onScreenRect);	
 			frameCount++;
 			break;
 		case MOVE_RIGHT:
 			if(mode == 1) {
 				window->renderTexture(right, &movingPosition, &onScreenRect);
 			}
-			else {
+			else if(mode == 2){
 				window->renderTexture(rightAngry, &movingPosition, &onScreenRect);
 			}
+			else
+				window->renderTexture(rightScared, &movingPosition, &onScreenRect);
 			frameCount++;
 			break;
 		case MOVE_DOWN:
 			if(mode == 1) {
 				window->renderTexture(down, &movingPosition, &onScreenRect);
 			}
-			else {
+			else if(mode == 2){
 				window->renderTexture(downAngry, &movingPosition, &onScreenRect);
 			}
+			else
+				window->renderTexture(downScared, &movingPosition, &onScreenRect);
 			frameCount++;
 			break;
 		case MOVE_LEFT:
 			if(mode == 1) {
 				window->renderTexture(left, &movingPosition, &onScreenRect);
 			}
-			else {
+			else if(mode == 2){
 				window->renderTexture(leftAngry, &movingPosition, &onScreenRect);
 			}
+			else
+				window->renderTexture(leftScared, &movingPosition, &onScreenRect);
 			frameCount++;
 			break;			
 	}
@@ -613,10 +860,18 @@ void Ghost::checkPacmanCollision(Pacman* pac1) {
 	
 	bool checkCollision = collisionDetectorCircle(&colliderSphere, &(pac1->colliderSphere));
 
-	if(checkCollision) {
-		if(!pac1->isDead) {
+	if(checkCollision && !(pac1->isBuffed) && mode != 4 && mode != 3) {
+		if(!(pac1->isDead)) {
 			pac1->isDead = true;
 			pac1->frameCount = 0;
 		}
+	}
+	else if(checkCollision && pac1->isBuffed && mode == 3 && mode != 4){
+		mode = 4;
+		success = true;
+		prevVel = GHOST_VEL;
+		GHOST_VEL = 5;
+		destinationX = maze->dimension / 2;
+		destinationY = maze->dimension / 2;
 	}
 }
