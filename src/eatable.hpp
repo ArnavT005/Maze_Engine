@@ -137,6 +137,9 @@ void Eatable::checkIfEaten() {
 		if(type == FIFTY_POINT) {
 			p1->isBuffed = true;
 		}
+		else {
+			p1->isBuffed = false;
+		}
 	}
 }
 

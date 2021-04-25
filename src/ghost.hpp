@@ -88,6 +88,7 @@ class Ghost {
     SDL_Texture* leftDead;
     bool randomOn;				
     bool isDead;
+    bool isScared;
 
    // int random_seed;
 
@@ -118,6 +119,7 @@ Ghost::Ghost() {
 	frameCount = 0;
 	randomOn = false;
 	isDead = false;
+	isScared = false;
 }
 
 Ghost::Ghost(Maze* maze, int ghostType, int mode, Window* window) {
@@ -166,6 +168,7 @@ Ghost::Ghost(Maze* maze, int ghostType, int mode, Window* window) {
 	frameCount = 0;
 	randomOn = false;
 	isDead = false;
+	isScared = false;
 	loadTexture(window);
 }
 
@@ -652,8 +655,6 @@ int Ghost::moveTo(){
 		}	
 		else {
 			// distance > 3, move randomly
-			if(success) {
-			std::cout << "3 " << type << "\n"; success = false;} 
 			moveDir = BFS(destinationX, destinationY, distance);
 			while(moveDir == 0) {
 				destinationX = rand() % dimension;
@@ -665,15 +666,15 @@ int Ghost::moveTo(){
 	}
 	else {
 		// mode = 4
-		std::cout << type << "\n";
 		if(blkX == destinationX && blkY == destinationY) {
+			isDead = false;
+			isScared = false;
 			mode = prevMode;
 			GHOST_VEL = prevVel;
 			return 0;
 		}
 		else {
 			moveDir = BFS(destinationX, destinationY, distance);
-			std::cout << moveDir << " " << type << "\n";
 			return moveDir;
 		}
 	}
@@ -685,6 +686,8 @@ void Ghost::update(Pacman* pac1) {
     if(pac1->isBuffed && mode != 3 && mode != 4) {
     	prevMode = mode;
     	mode = 3;
+    	isScared = true;
+    	isDead = false;
     }
 	if(rowAligned && colAligned){
 		direction = moveTo();
@@ -750,72 +753,110 @@ void Ghost::render(Window* window) {
 		case STILL_UP: 
 			if(mode == 1 || mode == 2)
 				window->renderTexture(up, &stillPosition, &onScreenRect);
-			else
+			else if(mode == 3)
 				window->renderTexture(upScared, &stillPosition, &onScreenRect);	
+			else 
+				window->renderTexture(upDead, &stillPosition, &onScreenRect);
 			break;
 		case STILL_RIGHT: 
 			if(mode == 1)
 				window->renderTexture(right, &stillPosition, &onScreenRect);
 			else if(mode == 2)
 				window->renderTexture(rightAngry, &stillPosition, &onScreenRect);	
-			else
-				window->renderTexture(rightScared, &stillPosition, &onScreenRect);				
+			else if(mode == 3)
+				window->renderTexture(rightScared, &stillPosition, &onScreenRect);	
+			else 
+				window->renderTexture(rightDead, &stillPosition, &onScreenRect);				
 			break;
 		case STILL_DOWN: 
 			if(mode == 1)
 				window->renderTexture(down, &stillPosition, &onScreenRect);
 			else if(mode == 2)
 				window->renderTexture(downAngry, &stillPosition, &onScreenRect);
-			else
-				window->renderTexture(downScared, &stillPosition, &onScreenRect);	
+			else if(mode == 3)
+				window->renderTexture(downScared, &stillPosition, &onScreenRect);
+			else 
+				window->renderTexture(downDead, &stillPosition, &onScreenRect);		
 			break;
 		case STILL_LEFT: 
 			if(mode == 1)
 				window->renderTexture(left, &stillPosition, &onScreenRect);
 			else if(mode == 2)
 				window->renderTexture(leftAngry, &stillPosition, &onScreenRect);
-			else
+			else if(mode == 3)
 				window->renderTexture(leftScared, &stillPosition, &onScreenRect);	
+			else 
+				window->renderTexture(leftDead, &stillPosition, &onScreenRect);
 			break;			
 		case MOVE_UP:
-			if(mode == 1 || mode == 2)
+			if(mode == 1 || mode == 2) {
 				window->renderTexture(up, &movingPosition, &onScreenRect);
-			else
-				window->renderTexture(upScared, &movingPosition, &onScreenRect);	
-			frameCount++;
+				frameCount++;
+			}
+			else if(mode == 3) {
+				window->renderTexture(upScared, &movingPosition, &onScreenRect);
+				frameCount++;
+			}
+			else {
+				window->renderTexture(upDead, &stillPosition, &onScreenRect);		
+				frameCount = 0;
+			}
 			break;
 		case MOVE_RIGHT:
 			if(mode == 1) {
 				window->renderTexture(right, &movingPosition, &onScreenRect);
+				frameCount++;
 			}
 			else if(mode == 2){
 				window->renderTexture(rightAngry, &movingPosition, &onScreenRect);
+				frameCount++;
 			}
-			else
+			else if(mode == 3) {
 				window->renderTexture(rightScared, &movingPosition, &onScreenRect);
-			frameCount++;
+				frameCount++;
+			}
+			else  {
+				window->renderTexture(rightDead, &stillPosition, &onScreenRect);
+				frameCount = 0;
+			}
 			break;
 		case MOVE_DOWN:
 			if(mode == 1) {
 				window->renderTexture(down, &movingPosition, &onScreenRect);
+				frameCount++;
 			}
 			else if(mode == 2){
 				window->renderTexture(downAngry, &movingPosition, &onScreenRect);
+				frameCount++;
 			}
-			else
+			else if(mode == 3) {
 				window->renderTexture(downScared, &movingPosition, &onScreenRect);
-			frameCount++;
+				frameCount++;
+			}
+			else {
+				window->renderTexture(downDead, &stillPosition, &onScreenRect);
+				frameCount = 0;
+			}
 			break;
 		case MOVE_LEFT:
 			if(mode == 1) {
 				window->renderTexture(left, &movingPosition, &onScreenRect);
+				frameCount++;
 			}
 			else if(mode == 2){
 				window->renderTexture(leftAngry, &movingPosition, &onScreenRect);
+				frameCount++;
+
 			}
-			else
+			else if(mode == 3) {
 				window->renderTexture(leftScared, &movingPosition, &onScreenRect);
-			frameCount++;
+				frameCount++;
+
+			}
+			else {
+				window->renderTexture(leftDead, &stillPosition, &onScreenRect);
+				frameCount = 0;
+			}
 			break;			
 	}
 	if(frameCount == 8) {
@@ -860,17 +901,27 @@ void Ghost::checkPacmanCollision(Pacman* pac1) {
 	
 	bool checkCollision = collisionDetectorCircle(&colliderSphere, &(pac1->colliderSphere));
 
-	if(checkCollision && !(pac1->isBuffed) && mode != 4 && mode != 3) {
+	if(checkCollision && !isScared && !isDead) {
 		if(!(pac1->isDead)) {
 			pac1->isDead = true;
 			pac1->frameCount = 0;
 		}
 	}
-	else if(checkCollision && pac1->isBuffed && mode == 3 && mode != 4){
+	else if(checkCollision && !isDead){
+		//std::cout << "Hello\n";
 		mode = 4;
-		success = true;
 		prevVel = GHOST_VEL;
 		GHOST_VEL = 5;
+		isScared = false;
+		isDead = true;
+		SDL_Point point = maze->screenToBlockCoordinate(screenX, screenY);
+		SDL_Point screenPoint = maze->getBlockScreenCoordinate(point.x, point.y);
+		screenX = screenPoint.x;
+		screenY = screenPoint.y;
+		colliderBox.x = screenX;
+		colliderBox.y = screenY;
+		colliderSphere.center.x = screenX + BOX_WIDTH / 2;
+		colliderSphere.center.y = screenY + BOX_HEIGHT / 2;
 		destinationX = maze->dimension / 2;
 		destinationY = maze->dimension / 2;
 	}
