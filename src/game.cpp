@@ -76,9 +76,11 @@ int main(int argc, char** argv) {
 
     bool quit = false;
     SDL_Event event;
+    bool temp;
     
     while(!quit) {
         int i = 0;
+        temp = false;
 
         while(SDL_PollEvent(& event)) {
             if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
@@ -87,11 +89,17 @@ int main(int argc, char** argv) {
             pac.handleEvent(event, SDL_GetKeyboardState(NULL));
            // break;
         }
+        window.renderTexture(background);
+        pac.move();
+        for(i = 0; i < numEat; i ++) {
+            manager.eatables[i].checkIfEaten(temp);
+            manager.eatables[i].render(&window);
+        }
+        pac.isBuffed = temp;
         g1.update(&pac);
         g2.update(&pac);
         g3.update(&pac);
         g4.update(&pac);
-        pac.move();
         g1.move();
         g2.move();
         g3.move();
@@ -100,11 +108,6 @@ int main(int argc, char** argv) {
         g2.checkPacmanCollision(&pac);
         g3.checkPacmanCollision(&pac);
         g4.checkPacmanCollision(&pac);
-        window.renderTexture(background);
-        for(i = 0; i < numEat; i ++) {
-            manager.eatables[i].checkIfEaten();
-            manager.eatables[i].render(&window);
-        }
         pac.render(&window);
         g1.render(&window);
         g2.render(&window);

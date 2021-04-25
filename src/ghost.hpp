@@ -452,8 +452,20 @@ int Ghost::moveTo(){
     }
     else if(mode == 2){
 		if(type == TYPE_BLINKY){
-	        destinationY = pacLoc.y; destinationX = pacLoc.x;
-	        return BFS(destinationX, destinationY, distance);
+	        destY = pacLoc.y; destX = pacLoc.x;
+	        moveDir = BFS(destX, destY, distance);
+	        if(moveDir != 0)
+	        	return moveDir;
+	        else {
+	        	moveDir = BFS(destinationX, destinationY, distance);
+	        	while(moveDir == 0) {
+	        		destinationX = rand() % dimension;
+	        		destinationY = rand() % dimension;
+	        		moveDir = BFS(destinationX, destinationY, distance);
+	        	}
+	        	return moveDir;	
+	        }
+	        
 		}
 		else if(type == TYPE_PINKY){
 	        if(!randomOn) {	

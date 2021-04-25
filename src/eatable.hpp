@@ -21,7 +21,7 @@ class Eatable {
 	void setPacman(Pacman* p1);
 	void loadTexture(Window* window);
 	void render(Window* window);
-	void checkIfEaten();
+	void checkIfEaten(bool& isBuffed);
 
 	SDL_Texture* texture;
 	SDL_Rect location;
@@ -123,7 +123,7 @@ void Eatable::render(Window* window) {
 	}
 }
 
-void Eatable::checkIfEaten() {
+void Eatable::checkIfEaten(bool &isBuffed) {
 
 	bool ifCollision1 = false, ifCollision2 = false;
 	if(p1 != NULL) { 
@@ -133,12 +133,12 @@ void Eatable::checkIfEaten() {
 	// 	ifCollision2 = p2->collisionDetectorCircle(&(p2->colliderSphere), &location);		
 	// }
 	if(ifCollision1 || ifCollision2) {
-		isEaten = true;
-		if(type == FIFTY_POINT) {
-			p1->isBuffed = true;
-		}
-		else {
-			p1->isBuffed = false;
+		if(!isEaten) {
+			isEaten = true;
+			if(type == FIFTY_POINT) {
+				isBuffed = true;
+
+			}
 		}
 	}
 }
