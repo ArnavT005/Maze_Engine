@@ -295,7 +295,8 @@ void Pacman::render(Window* window) {
 
 	SDL_Color color[] = { {0xFF, 0x00, 0xFF, 0x50}, {0x00, 0xFF, 0xFF, 0x50}, {0xFF, 0xFF, 0x00, 0x50} };
 	window->renderCircle(&parryCircle, color[parryCount % 3]);
-	parryCount ++;
+	if(parry)
+		parryCount ++;
 	SDL_Rect stillPosition = {0, 0, 45, 45};
 	SDL_Rect movingPosition = {(frameCount / ANIMATION_FRAMES) * 45, 0, 45, 45};
 

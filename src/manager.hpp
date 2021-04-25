@@ -5,16 +5,23 @@
 #include <random>
 #include <chrono>
 #include "eatable.hpp"
+#include "portal.hpp"
 #include "window.hpp"
+
 
 class Manager {
 
 	public:
 	Manager(Maze* maze);
 	void generateEatables(Window* window);
+    void generatePortals(Window* window);
+    void updatePortals();
+    void renderPortals(Window* window);
+    void checkIfTeleport(Pacman* pac);
 	
 	Maze* maze;
 	std::vector<Eatable> eatables;
+    std::vector<Portal> portals;
 
 };
 
@@ -22,6 +29,7 @@ class Manager {
 Manager::Manager(Maze* maze) {
 	this->maze = maze;
 	eatables.clear();
+    portals.clear();
 }
 
 
@@ -62,6 +70,68 @@ void Manager::generateEatables(Window* window) {
                     num ++;
                 }
             }   
+        }
+    }
+}
+
+
+void Manager::generatePortals(Window* window) {
+    SDL_Point p1 = maze->getBlockScreenCoordinate(maze->dimension / 2, 0);
+    SDL_Point p2 = maze->getBlockScreenCoordinate(maze->dimension - 1, maze->dimension / 2);
+    SDL_Point p3 = maze->getBlockScreenCoordinate(maze->dimension / 2 - 1, maze->dimension - 1);
+    SDL_Point p4 = maze->getBlockScreenCoordinate(0, maze->dimension / 2 - 1);
+
+    portals.push_back(Portal(p1.x, p1.y, window));
+    portals.push_back(Portal(p2.x, p2.y, window));
+    portals.push_back(Portal(p3.x, p3.y, window));
+    portals.push_back(Portal(p4.x, p4.y, window));
+}
+
+void Manager::updatePortals() {
+    int size = portals.size();
+    for(int i = 0; i < size; i ++) {
+        portals[i].updatePortal();
+    }
+}
+
+void Manager::renderPortals(Window* window) {
+    int size = portals.size();
+    for(int i = 0; i < size; i ++) {
+        portals[i].render(window);
+    }
+}
+
+void Manager::checkIfTeleport(Pacman* pac) {
+    int size = portals.size();
+    SDL_Rect rect;
+    int num = 0;
+    for(int i = 0; i < size; i ++) {
+        if(portals[i].isActive)
+            num ++;
+    }
+    if(num < 2)
+        return;
+    for(int i = 0; i < size; i ++) {
+        if(portals[i].isActive) {
+            rect.x = portals[i].screenX;
+            rect.y = portals[i].screenY;
+            rect.w = rect.h = 45;
+            if(pac->collisionDetectorCircle(&pac->colliderSphere, &rect) && !pac->isDead) {
+                int portalNum = rand() % size;
+                while(portalNum == i || !portals[portalNum].isActive) {
+                    portalNum = rand() % size;
+                }
+                pac->screenX = portals[portalNum].screenX;
+                pac->screenY = portals[portalNum].screenY;
+                pac->colliderBox.x = pac->screenX;
+                pac->colliderBox.y = pac->screenY;
+                pac->colliderSphere.center.x = pac->parryCircle.center.x = pac->screenX + BOX_WIDTH / 2;
+                pac->colliderSphere.center.y = pac->parryCircle.center.y = pac->screenY + BOX_HEIGHT / 2;
+                portals[portalNum].closePortal();
+            }    
+        }
+        else {
+            continue;
         }
     }
 }

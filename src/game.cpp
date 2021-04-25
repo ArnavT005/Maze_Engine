@@ -110,6 +110,7 @@ int main(int argc, char** argv) {
     Pacman pac(&maze, &window);
     Manager manager(&maze);
     manager.generateEatables(&window);
+    manager.generatePortals(&window);
     int numEat = manager.eatables.size();
 
     for(int k = 0; k < numEat; k ++) {
@@ -159,6 +160,9 @@ int main(int argc, char** argv) {
             changedMode = true;
         }
         GhostUpdate(&pac, &g1, &g2, &g3, &g4);
+        manager.updatePortals();
+        manager.checkIfTeleport(&pac);
+        manager.renderPortals(&window);
         RenderElements(&pac, &g1, &g2, &g3, &g4, &window);
         // g1.update(&pac);
         // g2.update(&pac);
