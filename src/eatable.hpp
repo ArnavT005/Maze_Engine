@@ -137,7 +137,10 @@ void Eatable::checkIfEaten(bool &isBuffed) {
 			isEaten = true;
 			if(type == FIFTY_POINT) {
 				isBuffed = true;
-
+				p1->score += 50;
+			}
+			else if(type == TEN_POINT) {
+				p1->score += 10;
 			}
 		}
 	}

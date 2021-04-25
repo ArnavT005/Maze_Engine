@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
         return 0;
     }
     // 1023
-    Window window("Maze", 1025, 1025);
+    Window window("Maze", 1405, 1025);
     if(!window.getSuccess()) {
         return 0;
     }
@@ -92,6 +92,7 @@ int main(int argc, char** argv) {
     Maze maze(16, 45, 15, 25);
     SDL_Color boundaryColor = {0xFF, 0x00, 0x00, 0xFF};
     SDL_Texture* background = SDL_CreateTexture(window.getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
+    SDL_Rect bg = {0, 0, 1025, 1025};
     SDL_SetTextureBlendMode(background, SDL_BLENDMODE_BLEND);
     maze.loadTexture(&window);
 
@@ -145,10 +146,9 @@ int main(int argc, char** argv) {
             g2.handleEvent(event, &pac);
             g3.handleEvent(event, &pac);
             g4.handleEvent(event, &pac);
-
-           // break;
         }
-        window.renderTexture(background);
+        window.clearWindow();
+        window.renderTexture(background, NULL, &bg);
         pac.move();
         for(i = 0; i < numEat; i ++) {
             manager.eatables[i].checkIfEaten(temp);
@@ -164,23 +164,6 @@ int main(int argc, char** argv) {
         manager.checkIfTeleport(&pac);
         manager.renderPortals(&window);
         RenderElements(&pac, &g1, &g2, &g3, &g4, &window);
-        // g1.update(&pac);
-        // g2.update(&pac);
-        // g3.update(&pac);
-        // g4.update(&pac);
-        // g1.move();
-        // g2.move();
-        // g3.move();
-        // g4.move();
-        // g1.checkPacmanCollision(&pac);
-        // g2.checkPacmanCollision(&pac);
-        // g3.checkPacmanCollision(&pac);
-        // g4.checkPacmanCollision(&pac);
-        // pac.render(&window);
-        // g1.render(&window);
-        // g2.render(&window);
-        // g3.render(&window);
-        // g4.render(&window);
         window.updateWindow();
         SDL_Delay(17);
     }

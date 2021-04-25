@@ -53,6 +53,8 @@ class Pacman {
     bool success;					    // error reporting flag
     bool isDead;
 
+    int score;							// game score
+
     bool isBuffed;
     bool parry;
     
@@ -88,6 +90,7 @@ Pacman::Pacman() {
 	parryCircle.center.y = colliderSphere.center.y;
 	state = STILL_RIGHT;
 	frameCount = 0;
+	score = 0;
 
 	respawnPoint.x = 0;
 	respawnPoint.y = 0;
@@ -122,6 +125,7 @@ Pacman::Pacman(Maze* maze, Window* window) {
 	parryCircle.center.y = colliderSphere.center.y;
 	state = STILL_RIGHT;
 	frameCount = 0;
+	score = 0;
 
 	respawnPoint.x = screenX;
 	respawnPoint.y = screenY;

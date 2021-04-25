@@ -181,7 +181,7 @@ void Maze::createBase(Window *window, int x, int y, SDL_Color boundaryColor) {
 
     SDL_GetWindowSize(window->getWindow(), &windowWidth, &windowHeight);
 
-    SDL_Rect horizontalLayer = {x, y, windowWidth, padding};
+    SDL_Rect horizontalLayer = {x, y, windowHeight, padding};
     SDL_Rect verticalLayer = {x, y, padding, windowHeight};
 
     // window->renderRect(&horizontalLayer, boundaryColor);
@@ -195,7 +195,7 @@ void Maze::createBase(Window *window, int x, int y, SDL_Color boundaryColor) {
     boundaryRectPacman.push_back(verticalLayer);
 
     horizontalLayer.y += windowHeight - padding;
-    verticalLayer.x += windowWidth - padding;
+    verticalLayer.x += windowHeight - padding;
 
     // window->renderRect(&horizontalLayer, boundaryColor);
     // window->renderRect(&verticalLayer, boundaryColor);
