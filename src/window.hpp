@@ -3,6 +3,11 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 
+struct Circle {
+    int radius;
+    SDL_Point center;
+};
+
 
 class Window {
     
@@ -16,6 +21,7 @@ class Window {
     void free();
     void renderTexture(SDL_Texture* texture, SDL_Rect* srcrect = NULL, SDL_Rect* dstrect = NULL, double angle = 0.0, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
     void renderRect(SDL_Rect* rect, SDL_Color color);
+    void renderCircle(Circle* circle, SDL_Color color);
     void setRenderTarget(SDL_Texture* texture);
     void clearWindow();
     void updateWindow();
@@ -92,6 +98,22 @@ void Window::renderTexture(SDL_Texture* texture, SDL_Rect* srcrect, SDL_Rect* ds
 void Window::renderRect(SDL_Rect* rect, SDL_Color color) {
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
     SDL_RenderFillRect(renderer, rect);
+}
+
+void Window::renderCircle(Circle* circle, SDL_Color color) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    int radius = circle->radius;
+    int x0 = circle->center.x, y0 = circle->center.y;
+    for(int x = x0 - radius; x < x0 + radius; x ++) {
+        for(int y = y0 - radius; y < y0 + radius; y ++) {
+            int distanceSq = (x0 - x) * (x0 - x) + (y0 - y) * (y0 - y);
+            if(distanceSq <= radius * radius) {
+                SDL_RenderDrawPoint(renderer, x, y);
+            }
+        }
+    }
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 }
 
 void Window::setRenderTarget(SDL_Texture *texture) {

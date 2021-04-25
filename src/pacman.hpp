@@ -3,9 +3,8 @@
 #include <vector>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "maze.hpp"
 #include "window.hpp"
-
+#include "maze.hpp"
 
 const int BOX_WIDTH = 45;
 const int BOX_HEIGHT = 45;
@@ -14,12 +13,6 @@ const int PACMAN_HEIGHT = 41;
 const int PACMAN_VEL = 5;    	 		// 5 pixel per frame
 
 const int ANIMATION_FRAMES = 4;
-
-
-struct Circle {
-	int radius;
-	SDL_Point center;
-};
 
 enum STATE {
 	STILL_UP,
@@ -39,7 +32,7 @@ class Pacman {
     Pacman();
     Pacman(Maze* maze, Window* window);
     void loadTexture(Window* window);
-    void handleEvent(SDL_Event &e);		// handle dynamics
+    void handleEvent(SDL_Event &e, const Uint8* keyStates);		// handle dynamics
     void move();						
     void render(Window* window);        // render PACMAN
     bool collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2);
@@ -52,13 +45,27 @@ class Pacman {
     int velX, velY;						// horizontal and vertical velocities in pixels per frame
     SDL_Rect colliderBox;				// rectangular collision detector box
     Circle colliderSphere;				// circular collision detector box	
+    Circle parryCircle;
     int state;							// motion state of pacman							
     int frameCount;						// frame count number
+    SDL_Point respawnPoint;
+    Uint32 parryStart;
+    bool success;					    // error reporting flag
+    bool isDead;
+
+    bool isBuffed;
+    bool parry;
+    
+    int parryCount;
+
     SDL_Texture* up;
     SDL_Texture* right;
     SDL_Texture* down;
     SDL_Texture* left;
-    bool success;					    // error reporting flag
+
+    SDL_Texture* die;
+    SDL_Texture* respawn;
+
 };
 
 
@@ -76,9 +83,20 @@ Pacman::Pacman() {
 	colliderSphere.radius = (PACMAN_WIDTH - 1) / 2;
 	colliderSphere.center.x = BOX_WIDTH / 2;
 	colliderSphere.center.y = BOX_HEIGHT / 2;
+	parryCircle.radius = colliderSphere.radius + 10;
+	parryCircle.center.x = colliderSphere.center.x;
+	parryCircle.center.y = colliderSphere.center.y;
 	state = STILL_RIGHT;
 	frameCount = 0;
+
+	respawnPoint.x = 0;
+	respawnPoint.y = 0;
+
+	parryCount = 0;
 	success = true;
+	isDead = false;
+	isBuffed = false;
+	parry = false;
 }
 
 Pacman::Pacman(Maze* maze, Window* window) {
@@ -99,9 +117,21 @@ Pacman::Pacman(Maze* maze, Window* window) {
 	colliderSphere.radius = (PACMAN_WIDTH - 1) / 2;
 	colliderSphere.center.x = screenX + BOX_WIDTH / 2;
 	colliderSphere.center.y = screenY + BOX_HEIGHT / 2;
+	parryCircle.radius = colliderSphere.radius + 10;
+	parryCircle.center.x = colliderSphere.center.x;
+	parryCircle.center.y = colliderSphere.center.y;
 	state = STILL_RIGHT;
 	frameCount = 0;
+
+	respawnPoint.x = screenX;
+	respawnPoint.y = screenY;
+
+	parryCount = 0;
 	success = true;
+	isDead = false;
+	isBuffed = false;
+	parry = false;
+
 	loadTexture(window);
 }
 
@@ -161,28 +191,50 @@ void Pacman::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(leftSurf);
 	}
+	SDL_Surface* dieSurf = IMG_Load("../img/pacman/die.png");
+	if(dieSurf == NULL) {
+		std::cout << "Unable to load die sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+		success = false;
+	}
+	else {
+		die = SDL_CreateTextureFromSurface(window->getRenderer(), dieSurf);
+		if(die == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+			success = false;
+		}
+		SDL_FreeSurface(dieSurf);
+	}
 }
 
 
 
 
-void Pacman::handleEvent(SDL_Event &e) {
-	if(e.type == SDL_KEYDOWN && e.key.repeat == 0) {
-		switch(e.key.keysym.sym) {
-			case SDLK_UP: velY -= PACMAN_VEL; state = MOVE_UP; frameCount = 0; break;
-			case SDLK_DOWN: velY += PACMAN_VEL; state = MOVE_DOWN; frameCount = 0; break;
-			case SDLK_RIGHT: velX += PACMAN_VEL; state = MOVE_RIGHT; frameCount = 0; break;
-			case SDLK_LEFT: velX -= PACMAN_VEL; state = MOVE_LEFT; frameCount = 0; break;
-			default: break;
+void Pacman::handleEvent(SDL_Event &e, const Uint8* keyStates) {
+	if(!isDead) {
+		if(e.type == SDL_KEYDOWN && e.key.repeat == 0) {
+			int num = 0;
+			if(keyStates[SDL_SCANCODE_UP] == 1) num ++;
+			if(keyStates[SDL_SCANCODE_RIGHT] == 1) num ++;
+			if(keyStates[SDL_SCANCODE_DOWN] == 1) num ++;
+			if(keyStates[SDL_SCANCODE_LEFT] == 1) num ++;
+			if(num <= 1) {
+				switch(e.key.keysym.sym) {
+					case SDLK_UP: velY -= PACMAN_VEL; state = MOVE_UP; frameCount = 0; break;
+					case SDLK_DOWN: velY += PACMAN_VEL; state = MOVE_DOWN; frameCount = 0; break;
+					case SDLK_RIGHT: velX += PACMAN_VEL; state = MOVE_RIGHT; frameCount = 0; break;
+					case SDLK_LEFT: velX -= PACMAN_VEL; state = MOVE_LEFT; frameCount = 0; break;
+					default: break;
+				}
+			}
 		}
-	}
-	else if(e.type == SDL_KEYUP && e.key.repeat == 0) {
-		switch(e.key.keysym.sym) {
-			case SDLK_UP: velY += PACMAN_VEL; state = STILL_UP; frameCount = 0; break;
-			case SDLK_DOWN: velY -= PACMAN_VEL; state = STILL_DOWN; frameCount = 0; break;
-			case SDLK_RIGHT: velX -= PACMAN_VEL; state = STILL_RIGHT; frameCount = 0; break;
-			case SDLK_LEFT: velX += PACMAN_VEL; state = STILL_LEFT; frameCount = 0; break;
-			default: break;
+		else if(e.type == SDL_KEYUP && e.key.repeat == 0) {
+			switch(e.key.keysym.sym) {
+				case SDLK_UP: if(velY < 0) { velY += PACMAN_VEL; state = STILL_UP; } frameCount = 0; break;
+				case SDLK_DOWN: if(velY > 0) { velY -= PACMAN_VEL; state = STILL_DOWN; } frameCount = 0; break;
+				case SDLK_RIGHT: if(velX > 0) { velX -= PACMAN_VEL; state = STILL_RIGHT; } frameCount = 0; break;
+				case SDLK_LEFT: if(velX < 0) { velX += PACMAN_VEL; state = STILL_LEFT; } frameCount = 0; break;
+				default: break;
+			}
 		}
 	}
 }
@@ -191,38 +243,44 @@ void Pacman::move() {
 	
 	bool collision = false;
 	int size = boundingRect.size();
-	if(velX != 0) {
+	if(velX != 0 && !isDead) {
 		screenX += velX;
 		state = velX > 0 ? MOVE_RIGHT : MOVE_LEFT;
 		colliderBox.x = screenX;
 		colliderBox.y = screenY;
 		colliderSphere.center.x += velX;
+		parryCircle.center.x += velX;
 		for(int i = 0; i < size; i ++) {
 			if(collisionDetectorCircle(&colliderSphere, &boundingRect[i])) {
 				screenX -= velX;
 				colliderBox.x = screenX;
 				colliderBox.y = screenY;
 				colliderSphere.center.x -= velX;
+				parryCircle.center.x -= velX;
 				collision = true;
 				state = velX > 0 ? STILL_RIGHT : STILL_LEFT;
+				velX = 0;
 				break;
 			}
 		}	
 	}
-	else if(velY != 0) {
+	else if(velY != 0 && !isDead) {
 		screenY += velY;
 		state = velY > 0 ? MOVE_DOWN : MOVE_UP;
 		colliderBox.x = screenX;
 		colliderBox.y = screenY;
 		colliderSphere.center.y += velY;
+		parryCircle.center.y += velY;
 		for(int i = 0; i < size; i ++) {
 			if(collisionDetectorCircle(&colliderSphere, &boundingRect[i])) {
 				screenY -= velY;
 				colliderBox.x = screenX;
 				colliderBox.y = screenY;
 				colliderSphere.center.y -= velY;
+				parryCircle.center.y -= velY;
 				state = velY > 0 ? STILL_DOWN : STILL_UP;
 				collision = true;
+				velY = 0;
 				break;
 			}
 		}
@@ -230,44 +288,71 @@ void Pacman::move() {
 }
 
 void Pacman::render(Window* window) {
-	SDL_Color color = {0x00, 0x00, 0xFF, 0xFF};
+	if(SDL_GetTicks() - parryStart >= 10000) {
+		parry = false;
+		parryCount = 0;
+	}
+
+	SDL_Color color[] = { {0xFF, 0x00, 0xFF, 0x50}, {0x00, 0xFF, 0xFF, 0x50}, {0xFF, 0xFF, 0x00, 0x50} };
+	window->renderCircle(&parryCircle, color[parryCount % 3]);
+	parryCount ++;
 	SDL_Rect stillPosition = {0, 0, 45, 45};
 	SDL_Rect movingPosition = {(frameCount / ANIMATION_FRAMES) * 45, 0, 45, 45};
 
-	switch(state) {
-		case STILL_UP: 
-			window->renderTexture(up, &stillPosition, &colliderBox);
-			break;
-		case STILL_RIGHT: 
-			window->renderTexture(right, &stillPosition, &colliderBox);
-			break;
-		case STILL_DOWN: 
-			window->renderTexture(down, &stillPosition, &colliderBox);
-			break;
-		case STILL_LEFT: 
-			window->renderTexture(left, &stillPosition, &colliderBox);
-			break;			
-		case MOVE_UP:
-			window->renderTexture(up, &movingPosition, &colliderBox);
-			frameCount++;
-			break;
-		case MOVE_RIGHT:
-			window->renderTexture(right, &movingPosition, &colliderBox);
-			frameCount++;
-			break;
-		case MOVE_DOWN:
-			window->renderTexture(down, &movingPosition, &colliderBox);
-			frameCount++;
-			break;
-		case MOVE_LEFT:
-			window->renderTexture(left, &movingPosition, &colliderBox);
-			frameCount++;
-			break;			
+	if(!isDead) {	
+		switch(state) {
+			case STILL_UP: 
+				window->renderTexture(up, &stillPosition, &colliderBox);
+				break;
+			case STILL_RIGHT: 
+				window->renderTexture(right, &stillPosition, &colliderBox);
+				break;
+			case STILL_DOWN: 
+				window->renderTexture(down, &stillPosition, &colliderBox);
+				break;
+			case STILL_LEFT: 
+				window->renderTexture(left, &stillPosition, &colliderBox);
+				break;			
+			case MOVE_UP:
+				window->renderTexture(up, &movingPosition, &colliderBox);
+				frameCount++;
+				break;
+			case MOVE_RIGHT:
+				window->renderTexture(right, &movingPosition, &colliderBox);
+				frameCount++;
+				break;
+			case MOVE_DOWN:
+				window->renderTexture(down, &movingPosition, &colliderBox);
+				frameCount++;
+				break;
+			case MOVE_LEFT:
+				window->renderTexture(left, &movingPosition, &colliderBox);
+				frameCount++;
+				break;			
+		}
+		if(frameCount == 16) {
+			frameCount = 0;
+		}
 	}
-	if(frameCount == 16) {
-		frameCount = 0;
-	}
-
+	else {
+		movingPosition.x = (frameCount / 6) * 45;
+		window->renderTexture(die, &movingPosition, &colliderBox);
+		frameCount ++;
+		if(frameCount == 66) {
+			frameCount = 0;
+			isDead = false;
+			screenX = respawnPoint.x;
+			screenY = respawnPoint.x;
+			velX = velY = 0;
+			colliderBox.x = respawnPoint.x;
+			colliderBox.y = respawnPoint.y;
+			colliderSphere.center.x = screenX + BOX_WIDTH / 2;
+			colliderSphere.center.y = screenY + BOX_HEIGHT / 2;
+			parryCircle.center.x = colliderSphere.center.x;
+			parryCircle.center.y = colliderSphere.center.y;
+			state = STILL_UP;
+		}
+	}	
 }
 
 bool Pacman::collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2) {
@@ -312,3 +397,6 @@ bool Pacman::collisionDetectorCircle(Circle* circle, SDL_Rect *rect) {
 		return false;
 	}
 }
+
+
+
