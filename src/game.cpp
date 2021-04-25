@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
     Maze maze(16, 45, 15, 25);
     SDL_Color boundaryColor = {0xFF, 0x00, 0x00, 0xFF};
     SDL_Texture* background = SDL_CreateTexture(window.getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
-
+    SDL_SetTextureBlendMode(background, SDL_BLENDMODE_BLEND);
     maze.loadTexture(&window);
 
     window.setRenderTarget(background);
@@ -87,6 +87,11 @@ int main(int argc, char** argv) {
                 quit = true;
             }
             pac.handleEvent(event, SDL_GetKeyboardState(NULL));
+            g1.handleEvent(event, &pac);
+            g2.handleEvent(event, &pac);
+            g3.handleEvent(event, &pac);
+            g4.handleEvent(event, &pac);
+
            // break;
         }
         window.renderTexture(background);

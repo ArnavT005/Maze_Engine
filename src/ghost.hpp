@@ -43,6 +43,7 @@ class Ghost {
     void update(Pacman* pac1);		// handle dynamics
     void move();						
     void render(Window* window);        // render GHOST
+    bool parryPossible(Pacman* pac1);
     void handleEvent(SDL_Event event, Pacman* pac1);
     bool collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2);
     bool collisionDetectorCircle(Circle* circle1, Circle* circle2);
@@ -71,6 +72,7 @@ class Ghost {
     int prevVel;
     bool success;				// error reporting flag
     int frameCount;
+    Uint32 scareStart;
     SDL_Texture* up;
     SDL_Texture* right;
     SDL_Texture* down;
@@ -700,6 +702,24 @@ void Ghost::update(Pacman* pac1) {
     	mode = 3;
     	isScared = true;
     	isDead = false;
+    	scareStart = SDL_GetTicks();
+    }
+    else{
+    	if(pac1->isBuffed) {
+    		if(mode == 3) {
+    			scareStart = SDL_GetTicks();
+    		}
+    	}
+    	else {
+    		if(mode == 3) {
+    			if(SDL_GetTicks() - scareStart >= 10000) {
+    				// it has been 10 seconds
+    				mode = prevMode;
+    				isScared = false;
+    				isDead = false;
+    			}
+    		}
+    	}
     }
 	if(rowAligned && colAligned){
 		direction = moveTo();
@@ -877,8 +897,83 @@ void Ghost::render(Window* window) {
 
 }
 
-void Ghost::handleEvent(SDL_Event event, Pacman *pac1) {
+bool Ghost::parryPossible(Pacman* pac1) {
+	switch(state) {
+		case MOVE_UP:
+			if(pac1->state == STILL_DOWN || pac1->state == MOVE_DOWN) {
+				if(pac1->colliderSphere.center.y < colliderSphere.center.y)
+					return true;
+				else
+					return false;
+			}
+			else 
+				return false;
+			break;
+		case MOVE_RIGHT:
+			if(pac1->state == STILL_LEFT || pac1->state == MOVE_LEFT) {
+				if(pac1->colliderSphere.center.x > colliderSphere.center.x)
+					return true;
+				else
+					return false;
+			}
+			else 
+				return false;
+			break;
+		case MOVE_DOWN: 
+			if(pac1->state == STILL_UP || pac1->state == MOVE_UP) {
+				if(pac1->colliderSphere.center.y > colliderSphere.center.y)
+					return true;
+				else
+					return false;
+			}
+			else 
+				return false;
+			break;	
+		case MOVE_LEFT:
+			if(pac1->state == STILL_RIGHT || pac1->state == MOVE_RIGHT) {
+				if(pac1->colliderSphere.center.x < colliderSphere.center.x)
+					return true;
+				else
+					return false;
+			}
+			else 
+				return false;
+			break;	
+		default:
+			return false;
+			break;	
+	}
+}
 
+void Ghost::handleEvent(SDL_Event event, Pacman *pac1) {
+	if(pac1->isDead || pac1->parry)
+		return;
+	if(event.type == SDL_KEYDOWN && event.key.repeat == 0 && event.key.keysym.sym == SDLK_x) {
+		if(!collisionDetectorCircle(&colliderSphere, &pac1->colliderSphere)) {
+			if(collisionDetectorCircle(&colliderSphere, &pac1->parryCircle) && parryPossible(pac1)) {
+				if(mode != 3)
+					prevMode = mode;
+				mode = 4;
+				prevVel = GHOST_VEL;
+				GHOST_VEL = 5;
+				isScared = false;
+				isDead = true;
+				SDL_Point point = maze->screenToBlockCoordinate(screenX, screenY);
+				SDL_Point screenPoint = maze->getBlockScreenCoordinate(point.x, point.y);
+				screenX = screenPoint.x;
+				screenY = screenPoint.y;
+				colliderBox.x = screenX;
+				colliderBox.y = screenY;
+				colliderSphere.center.x = screenX + BOX_WIDTH / 2;
+				colliderSphere.center.y = screenY + BOX_HEIGHT / 2;
+				destinationX = maze->dimension / 2;
+				destinationY = maze->dimension / 2;
+				pac1->parry = true;   // parry successful
+				pac1->parryStart = SDL_GetTicks();
+				pac1->parryCount = 0;
+			}
+		}
+	}
 }
 
 
