@@ -699,6 +699,7 @@ void Ghost::update(Pacman* pac1) {
     checkAlignment();
     if(pac1->isBuffed && mode != 3 && mode != 4) {
     	prevMode = mode;
+    	GHOST_VEL = 1;
     	mode = 3;
     	isScared = true;
     	isDead = false;

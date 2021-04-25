@@ -214,7 +214,7 @@ void Maze::createBase(Window *window, int x, int y, SDL_Color boundaryColor) {
              hEdge = {startPoint.x + dotSize, startPoint.y, blockSize, dotSize},
              block = {startPoint.x + dotSize, startPoint.y + dotSize, blockSize, blockSize};
 
-    SDL_Color dotInnerColor = /*{0x02, 0xc9, 0x70, 0x40}*/{0x00, 0x00, 0x00, 0x00},   // blue
+    SDL_Color dotInnerColor = /*{0x02, 0xc9, 0x70, 0x40}*/{0x00, 0x00, 0x00, 0xFF},   // blue
               dotOuterColor = {0x00, 0x00, 0xFF, 0xFF},   // red
               edgeColor = {0x3B, 0x27, 0xBA, 0xFF},       // dark green
               blockColor = {0x00, 0x00, 0x00, 0xFF};      // green

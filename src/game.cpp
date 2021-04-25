@@ -28,6 +28,56 @@ void close() {
 }
 
 
+void GhostUpdate(Pacman* pac, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* g4) {
+    g1->update(pac);
+    g2->update(pac);
+    g3->update(pac);
+    g4->update(pac);
+    g1->move();
+    g2->move();
+    g3->move();
+    g4->move();
+    g1->checkPacmanCollision(pac);
+    g2->checkPacmanCollision(pac);
+    g3->checkPacmanCollision(pac);
+    g4->checkPacmanCollision(pac);
+}   
+
+void RenderElements(Pacman* pac, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Window* window) {
+    pac->render(window);
+    g1->render(window);
+    g2->render(window);
+    g3->render(window);
+    g4->render(window);
+}
+
+void switchGhostMode(Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4) {
+    if(g1->mode != 3 && g1->mode != 4) {
+        g1->mode = 2;
+    }
+    else {
+        g1->prevMode = 2;
+    }
+    if(g2->mode != 3 && g2->mode != 4) {
+        g2->mode = 2;
+    }
+    else {
+        g2->prevMode = 2;
+    }
+    if(g3->mode != 3 && g3->mode != 4) {
+        g3->mode = 2;
+    }
+    else {
+        g3->prevMode = 2;
+    }
+    if(g4->mode != 3 && g4->mode != 4) {
+        g4->mode = 2;
+    }
+    else {
+        g4->prevMode = 2;
+    }
+}
+
 int main(int argc, char** argv) {
     if(!SDL_init()) {
         return 0;
@@ -66,7 +116,7 @@ int main(int argc, char** argv) {
         manager.eatables[k].setPacman(&pac);
     }
 
-    Ghost g1(&maze, TYPE_BLINKY, 2, &window);
+    Ghost g1(&maze, TYPE_BLINKY, 1, &window);
     Ghost g2(&maze, TYPE_PINKY, 1, &window);
     Ghost g3(&maze, TYPE_INKY, 1, &window);
     Ghost g4(&maze, TYPE_CLYDE, 1, &window);
@@ -77,6 +127,9 @@ int main(int argc, char** argv) {
     bool quit = false;
     SDL_Event event;
     bool temp;
+
+    Uint32 startTime = SDL_GetTicks();
+    bool changedMode = false;
     
     while(!quit) {
         int i = 0;
@@ -101,25 +154,31 @@ int main(int argc, char** argv) {
             manager.eatables[i].render(&window);
         }
         pac.isBuffed = temp;
-        g1.update(&pac);
-        g2.update(&pac);
-        g3.update(&pac);
-        g4.update(&pac);
-        g1.move();
-        g2.move();
-        g3.move();
-        g4.move();
-        g1.checkPacmanCollision(&pac);
-        g2.checkPacmanCollision(&pac);
-        g3.checkPacmanCollision(&pac);
-        g4.checkPacmanCollision(&pac);
-        pac.render(&window);
-        g1.render(&window);
-        g2.render(&window);
-        g3.render(&window);
-        g4.render(&window);
+        if(SDL_GetTicks() - startTime >= 30000 && !changedMode) {
+            switchGhostMode(&g1, &g2, &g3, &g4);
+            changedMode = true;
+        }
+        GhostUpdate(&pac, &g1, &g2, &g3, &g4);
+        RenderElements(&pac, &g1, &g2, &g3, &g4, &window);
+        // g1.update(&pac);
+        // g2.update(&pac);
+        // g3.update(&pac);
+        // g4.update(&pac);
+        // g1.move();
+        // g2.move();
+        // g3.move();
+        // g4.move();
+        // g1.checkPacmanCollision(&pac);
+        // g2.checkPacmanCollision(&pac);
+        // g3.checkPacmanCollision(&pac);
+        // g4.checkPacmanCollision(&pac);
+        // pac.render(&window);
+        // g1.render(&window);
+        // g2.render(&window);
+        // g3.render(&window);
+        // g4.render(&window);
         window.updateWindow();
-        SDL_Delay(20);
+        SDL_Delay(17);
     }
     
     window.free();
