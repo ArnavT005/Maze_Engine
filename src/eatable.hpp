@@ -157,6 +157,7 @@ void Eatable::checkIfEaten(bool &isBuffed) {
 				p2->score += 10;
 			}
 		}
+	}
 	
 }
 
