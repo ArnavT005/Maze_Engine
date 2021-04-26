@@ -170,6 +170,8 @@ int main(int argc, char** argv) {
         Uint32 timeNow = SDL_GetTicks() - startTime;
         if( timeNow >= 30000 && !changedMode) {
             switchGhostMode(&g1, &g2, &g3, &g4);
+			g5 = g1;
+			g6 = g2;
             changedMode = true;
         }
         GhostUpdate(&pac, &g1, &g2, &g3, &g4);
