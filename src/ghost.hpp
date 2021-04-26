@@ -37,6 +37,7 @@ class Ghost {
     static const int ANIMATION_FRAMES = 2;
 
     Ghost();
+    Ghost(Ghost &g);
     Ghost(Maze* maze, int j, int k, Window* window);
     void loadTexture(Window* window);
     void checkAlignment();
@@ -124,6 +125,37 @@ Ghost::Ghost() {
 	isScared = false;
 }
 
+Ghost::Ghost(Ghost &g){
+	rowAligned = g.rowAligned;
+	colAligned = g.colAligned;          // To check if ghost is row/column aligned
+    maze = g.maze;                      // Maze
+    boundingRect = g.boundingRect;      // bounding rectangles
+    screenX = g.screenX;
+    screenY = g.screenY;				// screen coordinates of ghost
+    velX = g.velX; velY = g.velY;						// horizontal and vertical velocities in pixels per frame
+    colliderBox = g.colliderBox;
+    type = g.type;
+    direction = g.direction;
+    destinationX = g.destinationX;
+    destinationY = g.destinationY;		
+    mode = g.mode;					// set value default
+    state = g.state;
+    GHOST_VEL = g.GHOST_VEL;     			// 1 pixel per frame
+    success = g.success;				// error reporting flag
+    frameCount = g.frameCount;
+    up = g.up;
+    right = g.right;
+    down = g.down;
+    left = g.left;			// rendering textures
+    rightAngry = g.rightAngry;
+    downAngry = g.downAngry;
+    leftAngry = g.leftAngry;		// rendering angry textures
+    randomOn = g.randomOn;
+	colliderSphere = g.colliderSphere;
+	isDead = g.isDead;
+	isScared = g.isScared;
+}
+
 Ghost::Ghost(Maze* maze, int ghostType, int mode, Window* window) {
 
     this->mode = mode;
@@ -133,13 +165,11 @@ Ghost::Ghost(Maze* maze, int ghostType, int mode, Window* window) {
     if(ghostType == TYPE_BLINKY) {
     	screenX = screenY = maze->getBlockScreenCoordinate(mid, mid).x;
     	destinationX = 0; destinationY = 0;
-    	GHOST_VEL = 1;
     }
     else if(ghostType == TYPE_PINKY) {
     	screenX = maze->getBlockScreenCoordinate(mid, mid + 1).x; 
     	screenY = maze->getBlockScreenCoordinate(mid, mid + 1).y;
     	destinationX = maze->dimension - 1; destinationY = 0;
-    	GHOST_VEL = 1;
     }
     else if(ghostType == TYPE_INKY) {
     	screenX = maze->getBlockScreenCoordinate(mid + 1, mid).x; 
