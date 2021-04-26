@@ -1,10 +1,12 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 #include "window.hpp"
 #include "maze.hpp"
 #include "pacman.hpp"
 #include "ghost.hpp"
 #include "manager.hpp"
+#include "scoreboard.hpp"
 
 
 bool SDL_init() {
@@ -18,15 +20,38 @@ bool SDL_init() {
             std::cout << "IMG unable to initialize! SDL_Image Error: " << IMG_GetError() << "\n";
             success = false;
         }
+        if(TTF_Init() < 0) {
+            std::cout << "TTF unable to initialize! SDL_ttf Error: " << TTF_GetError() << "\n";
+            success = false;
+        }
     }
     return success;
 }
 
 void close() {
+    TTF_Quit();
     IMG_Quit();
     SDL_Quit();
 }
 
+
+void ScoreUpdate(Scoreboard* board, Pacman* pac, Window* window) {
+    int timeSeconds = (SDL_GetTicks() - board->start) / 1000;
+    int timeMinutes = timeSeconds / 60;
+    timeSeconds -= 60 * timeMinutes;
+    board->timeText.str("");
+    board->timeText << "Time- " << timeMinutes << ":" << timeSeconds;
+    board->scoreP1Text.str("");
+    board->scoreP1Text << "Score: ";
+    board->scoreP2Text.str("");
+    board->scoreP2Text << "Score: ";
+    board->livesP1Text.str("");
+    board->livesP1Text << "Lives: ";
+    board->livesP2Text.str("");
+    board->livesP2Text << "Lives: ";
+
+    board->loadRenderedText(window);
+}
 
 void GhostUpdate(Pacman* pac, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* g4) {
     g1->update(pac);
@@ -93,6 +118,7 @@ int main(int argc, char** argv) {
     SDL_Color boundaryColor = {0xFF, 0x00, 0x00, 0xFF};
     SDL_Texture* background = SDL_CreateTexture(window.getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
     SDL_Rect bg = {0, 0, 1025, 1025};
+    SDL_Rect scr = {1025, 0, 380, 1025};
     SDL_SetTextureBlendMode(background, SDL_BLENDMODE_BLEND);
     maze.loadTexture(&window);
 
@@ -108,6 +134,7 @@ int main(int argc, char** argv) {
 
     window.setRenderTarget(NULL);
     
+    Scoreboard scoreBoard(&scr, &window);
     Pacman pac(&maze, &window);
     Manager manager(&maze);
     manager.generateEatables(&window);
@@ -131,6 +158,7 @@ int main(int argc, char** argv) {
     bool temp;
 
     Uint32 startTime = SDL_GetTicks();
+    scoreBoard.start = startTime;
     bool changedMode = false;
     
     while(!quit) {
@@ -160,6 +188,9 @@ int main(int argc, char** argv) {
             changedMode = true;
         }
         GhostUpdate(&pac, &g1, &g2, &g3, &g4);
+        ScoreUpdate(&scoreBoard, &pac, &window);
+        scoreBoard.render(&window);
+
         manager.updatePortals();
         manager.checkIfTeleport(&pac);
         manager.renderPortals(&window);
@@ -171,3 +202,4 @@ int main(int argc, char** argv) {
     window.free();
     close();
 }
+
