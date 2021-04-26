@@ -7,7 +7,7 @@
 #include "manager.hpp"
 
 int timeToChangeMode = 10000;
-	
+int timeToRandomize = 20000;
 bool SDL_init() {
     bool success = true;
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -158,7 +158,7 @@ int main(int argc, char** argv) {
     SDL_Event event;
     bool temp;
     Uint32 startTime = SDL_GetTicks();
-    bool changedMode = false;
+    bool changedMode = false, randomized = false;
     
     while(!quit) {
         int i = 0;
@@ -196,6 +196,16 @@ int main(int argc, char** argv) {
 			g5 = g1;
 			g6 = g2;
             changedMode = true;
+        }
+        if(timeNow >= timeToRandomize && !randomized){
+        	g1.mode = 1;
+        	g2.mode = 1;
+        	g3.mode = 1;
+        	g4.mode = 1;
+        	g5.mode = 1;
+        	g6.mode = 1;
+        	g7.mode = 1;
+        	randomized = true;
         }
         GhostUpdate(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, timeNow);
         manager.updatePortals();
