@@ -460,6 +460,9 @@ int Ghost::moveTo(){
     int state = pac1->state;
    
     if(mode == 1){
+    	if(type == TYPE_INKY) {
+    		GHOST_VEL = 1;
+    	}
     	moveDir = BFS(destX, destY, distance);
     	while(moveDir == INITIAL) {
     		destX = rand() % dimension;
@@ -1016,6 +1019,7 @@ void Ghost::handleEvent(SDL_Event event, Pacman *pac1, Pacman *pac2) {
 				pac1->parry = true;   // parry successful
 				pac1->parryStart = SDL_GetTicks();
 				pac1->parryCount = 0;
+				pac1->score += 40;
 			}
 		}
 	}
@@ -1042,6 +1046,7 @@ void Ghost::handleEvent(SDL_Event event, Pacman *pac1, Pacman *pac2) {
 				pac2->parry = true;   // parry successful
 				pac2->parryStart = SDL_GetTicks();
 				pac2->parryCount = 0;
+				pac2->score += 40;
 			}
 		}
 	}
@@ -1085,6 +1090,7 @@ void Ghost::checkPacmanCollision(Pacman* pac1) {
 			pac1->parry = false;
 			pac1->frameCount = 0;
 			pac1->parryCount = 0;
+			pac1->lives --;
 		}
 	}
 	else if(checkCollision && !isDead){
@@ -1104,5 +1110,6 @@ void Ghost::checkPacmanCollision(Pacman* pac1) {
 		colliderSphere.center.y = screenY + BOX_HEIGHT / 2;
 		destinationX = maze->dimension / 2;
 		destinationY = maze->dimension / 2;
+		pac1->score += 15;
 	}
 }

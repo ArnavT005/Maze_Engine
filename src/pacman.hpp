@@ -37,6 +37,8 @@ class Pacman {
     void render(Window* window);        // render PACMAN
     bool collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2);
     bool collisionDetectorCircle(Circle* circle, SDL_Rect* rect);
+    void pacpacCollision(Pacman* pac);
+    bool collisionDetectorCirclesOnly(Circle* circle1, Circle* circle2);
 
     bool rowAligned, colAligned;        // To check if pacman is row/column aligned
     Maze* maze;                         // Maze
@@ -61,6 +63,7 @@ class Pacman {
     int parryCount;
     
     int type;
+    int lives;
 
     SDL_Texture* up;
     SDL_Texture* right;
@@ -93,6 +96,7 @@ Pacman::Pacman() {
 	state = STILL_RIGHT;
 	frameCount = 0;
 	score = 0;
+	lives = 3;
 
 	respawnPoint.x = 0;
 	respawnPoint.y = 0;
@@ -134,6 +138,7 @@ Pacman::Pacman(Maze* maze, Window* window, int tp) {
 	state = STILL_RIGHT;
 	frameCount = 0;
 	score = 0;
+	lives = 3;
 
 	respawnPoint.x = screenX;
 	respawnPoint.y = screenY;
@@ -440,4 +445,74 @@ bool Pacman::collisionDetectorCircle(Circle* circle, SDL_Rect *rect) {
 }
 
 
+void Pacman::pacpacCollision(Pacman* pac) {
+	if(collisionDetectorCirclesOnly(&(this->colliderSphere), &(pac->colliderSphere))) {
+		int x1 = this->colliderSphere.center.x, x2 = pac->colliderSphere.center.x;
+		int y1 = this->colliderSphere.center.y, y2 = pac->colliderSphere.center.y;
+		int sepX = x1 >= x2 ? x1 - x2 : x2 - x1;
+		int sepY = y1 >= y2 ? y1 - y2 : y2 - y1;
+		if(sepX < sepY) {
+			if(y1 < y2) {
+				this->velY = -7*PACMAN_VEL;
+				this->velX = 0;
+				pac->velY = 7*PACMAN_VEL;
+				pac->velX = 0;
+				this->move();
+				pac->move();
+				this->velY = this->velX = pac->velX = pac->velY = 0; 
+				this->state = STILL_UP;
+				pac->state = STILL_DOWN;
+			}
+			else {
+				this->velY = 7*PACMAN_VEL;
+				this->velX = 0;
+				pac->velY = -7*PACMAN_VEL;
+				pac->velX = 0; 	
+				this->move();
+				pac->move();
+				this->velY = this->velX = pac->velX = pac->velY = 0; 
+				this->state = STILL_DOWN;
+				pac->state = STILL_UP;
+			}
+		}
+		else {
+			if(x1 < x2) {
+				this->velX = -7*PACMAN_VEL;
+				this->velY = 0;
+				pac->velX = 7*PACMAN_VEL;
+				pac->velY = 0; 
+				this->move();
+				pac->move();
+				this->velY = this->velX = pac->velX = pac->velY = 0; 
+				this->state = STILL_LEFT;
+				pac->state = STILL_RIGHT;
+			}
+			else {
+				this->velX = 7*PACMAN_VEL;
+				this->velY = 0;
+				pac->velX = -7*PACMAN_VEL;
+				pac->velY = 0; 	
+				this->move();
+				pac->move();
+				this->velY = this->velX = pac->velX = pac->velY = 0; 
+				this->state = STILL_RIGHT;
+				pac->state = STILL_LEFT;
+			}
+		}
+	}
+}
 
+
+bool Pacman::collisionDetectorCirclesOnly(Circle* circle1, Circle* circle2) {
+	int r1 = circle1->radius, r2 = circle2->radius;
+	SDL_Point point1 = circle1->center, point2 = circle2->center;
+
+	// check collision
+	int distanceSq = (point1.x - point2.x) * (point1.x - point2.x) + (point1.y - point2.y) * (point1.y - point2.y);
+	if(distanceSq < (r1 + r2) * (r1 + r2)) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}

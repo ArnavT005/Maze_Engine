@@ -10,6 +10,8 @@
 
 int timeToChangeMode = 10000;
 int timeToRandomize = 20000;
+bool changedMode1 = false, changedMode2 = false; 
+
 bool SDL_init() {
     bool success = true;
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -37,20 +39,35 @@ void close() {
 
 
 
-void ScoreUpdate(Scoreboard* board, Pacman* pac, Window* window) {
+void ScoreUpdate(Scoreboard* board, Pacman* p1, Pacman* p2, Window* window) {
     int timeSeconds = (SDL_GetTicks() - board->start) / 1000;
     int timeMinutes = timeSeconds / 60;
     timeSeconds -= 60 * timeMinutes;
     board->timeText.str("");
-    board->timeText << "Time- " << timeMinutes << ":" << timeSeconds;
+    if(timeMinutes < 10) {
+        if(timeSeconds < 10) {
+            board->timeText << "Time- 0" << timeMinutes << ":0" << timeSeconds;
+        }
+        else {
+            board->timeText << "Time- 0" << timeMinutes << ":" << timeSeconds;
+        }
+    }
+    else {
+        if(timeSeconds < 10) {
+            board->timeText << "Time- " << timeMinutes << ":0" << timeSeconds;
+        }
+        else {
+            board->timeText << "Time- " << timeMinutes << ":" << timeSeconds;
+        }
+    }
     board->scoreP1Text.str("");
-    board->scoreP1Text << "Score: ";
+    board->scoreP1Text << "Score: " << p1->score;
     board->scoreP2Text.str("");
-    board->scoreP2Text << "Score: ";
+    board->scoreP2Text << "Score: " << p2->score;
     board->livesP1Text.str("");
-    board->livesP1Text << "Lives: ";
+    board->livesP1Text << "Lives: " << p1->lives;
     board->livesP2Text.str("");
-    board->livesP2Text << "Lives: ";
+    board->livesP2Text << "Lives: " << p2->lives;
 
     board->loadRenderedText(window);
 }
@@ -78,14 +95,18 @@ void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* 
     g7->checkPacmanCollision(p2);
 
 	if(time > timeToChangeMode){
-		g5->update(p2, p1);
-		g6->update(p2, p1);
-		g5->move();
-		g6->move();
-		g5->checkPacmanCollision(p1);
-		g6->checkPacmanCollision(p1);
-		g5->checkPacmanCollision(p2);
-		g6->checkPacmanCollision(p2);
+		if(changedMode1) {
+            g5->update(p2, p1);
+		    g5->move();
+            g5->checkPacmanCollision(p1);
+            g5->checkPacmanCollision(p2);
+        }
+        if(changedMode2) {    
+          g6->update(p2, p1);
+		  g6->move();
+		  g6->checkPacmanCollision(p1);	
+		  g6->checkPacmanCollision(p2);
+        }
 	}
 }   
 
@@ -98,8 +119,12 @@ void RenderElements(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost* g3, Gho
     g4->render(window);
     g7->render(window);
     if(time >= timeToChangeMode){
-        g5->render(window);
-        g6->render(window);
+        if(changedMode1) {
+            g5->render(window);
+        }
+        if(changedMode2) {
+            g6->render(window);
+        }    
     }
 }
 
@@ -191,7 +216,7 @@ int main(int argc, char** argv) {
     Uint32 startTime = SDL_GetTicks();
 
     scoreBoard.start = startTime;
-    bool changedMode = false, randomized = false;
+    bool randomized = false;
 
     
     while(!quit) {
@@ -209,8 +234,10 @@ int main(int argc, char** argv) {
             g3.handleEvent(event, &p1, &p2);
             g4.handleEvent(event, &p1, &p2);
             g7.handleEvent(event, &p1, &p2);
-            if(changedMode){
+            if(changedMode1){
                 g5.handleEvent(event, &p1, &p2);
+            }
+            if(changedMode2) {
                 g6.handleEvent(event, &p1, &p2);
             }
         }
@@ -225,24 +252,50 @@ int main(int argc, char** argv) {
         p1.isBuffed = temp;
         p2.isBuffed = temp;
         Uint32 timeNow = SDL_GetTicks() - startTime;
-        if( timeNow >= timeToChangeMode && !changedMode) {
+        if( timeNow >= timeToChangeMode && (!changedMode1 || !changedMode2)) {
             switchGhostMode(&g1, &g2, &g3, &g4);
-			g5 = g1;
-			g6 = g2;
-            changedMode = true;
+			if(g1.mode != 3 && g1.mode != 4) {
+                g5 = g1;
+                changedMode1 = true;
+            }
+            if(g2.mode != 3 && g2.mode != 4) {
+			    g6 = g2;
+                changedMode2 = true;
+            }    
         }
         if(timeNow >= timeToRandomize && !randomized){
-        	g1.mode = 1;
-        	g2.mode = 1;
-        	g3.mode = 1;
-        	g4.mode = 1;
-        	g5.mode = 1;
-        	g6.mode = 1;
-        	g7.mode = 1;
+        	if(g1.mode != 3 && g1.mode != 4)
+                g1.mode = 1;
+            else 
+                g1.prevMode = 1;
+        	if(g2.mode != 3 && g2.mode != 4)
+                g2.mode = 1;
+            else 
+                g2.prevMode = 1;
+            if(g3.mode != 3 && g3.mode != 4)
+                g3.mode = 1;
+            else 
+                g3.prevMode = 1;
+            if(g4.mode != 3 && g4.mode != 4)
+                g4.mode = 1;
+            else 
+                g4.prevMode = 1;
+            if(g5.mode != 3 && g5.mode != 4)
+                g5.mode = 1;
+            else 
+                g5.prevMode = 1;
+            if(g6.mode != 3 && g6.mode != 4)
+                g6.mode = 1;
+            else 
+                g6.prevMode = 1;
+            if(g7.mode != 3 && g7.mode != 4)
+                g7.mode = 1;
+            else 
+                g7.prevMode = 1;
         	randomized = true;
         }
         GhostUpdate(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, timeNow);
-        ScoreUpdate(&scoreBoard, &p1, &window);
+        ScoreUpdate(&scoreBoard, &p1, &p2, &window);
         scoreBoard.render(&window);
 
         manager.updatePortals();
@@ -255,6 +308,7 @@ int main(int argc, char** argv) {
 			manager.checkIfTeleport(&p2);
 			manager.checkIfTeleport(&p1);
 		}
+        p1.pacpacCollision(&p2);
         manager.renderPortals(&window);
         RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, timeNow, &window);
         window.updateWindow();
