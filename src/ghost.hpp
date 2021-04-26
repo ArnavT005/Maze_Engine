@@ -154,6 +154,8 @@ Ghost::Ghost(Ghost &g){
 	colliderSphere = g.colliderSphere;
 	isDead = g.isDead;
 	isScared = g.isScared;
+	loadTexture(window);
+
 }
 
 Ghost::Ghost(Maze* maze, int ghostType, int mode, Window* window) {
@@ -976,10 +978,10 @@ bool Ghost::parryPossible(Pacman* pac1) {
 	}
 }
 
-void Ghost::handleEvent(SDL_Event event, Pacman *pac1) {
-	if(pac1->isDead || pac1->parry)
+void Ghost::handleEvent(SDL_Event event, Pacman *pac1, Pacman *pac2) {
+	if(pac1->isDead || pac1->parry || pac2->isDead || pac2->parry)
 		return;
-	if(event.type == SDL_KEYDOWN && event.key.repeat == 0 && event.key.keysym.sym == SDLK_x) {
+	if(event.type == SDL_KEYDOWN && event.key.repeat == 0 && event.key.keysym.sym == SDLK_m) {
 		if(!collisionDetectorCircle(&colliderSphere, &pac1->colliderSphere)) {
 			if(collisionDetectorCircle(&colliderSphere, &pac1->parryCircle) && parryPossible(pac1)) {
 				if(mode != 3)
@@ -1002,6 +1004,32 @@ void Ghost::handleEvent(SDL_Event event, Pacman *pac1) {
 				pac1->parry = true;   // parry successful
 				pac1->parryStart = SDL_GetTicks();
 				pac1->parryCount = 0;
+			}
+		}
+	}
+	if(event.type == SDL_KEYDOWN && event.key.repeat == 0 && event.key.keysym.sym == SDLK_g) {
+		if(!collisionDetectorCircle(&colliderSphere, &pac2->colliderSphere)) {
+			if(collisionDetectorCircle(&colliderSphere, &pac2->parryCircle) && parryPossible(pac2)) {
+				if(mode != 3)
+					prevMode = mode;
+				mode = 4;
+				prevVel = GHOST_VEL;
+				GHOST_VEL = 5;
+				isScared = false;
+				isDead = true;
+				SDL_Point point = maze->screenToBlockCoordinate(screenX, screenY);
+				SDL_Point screenPoint = maze->getBlockScreenCoordinate(point.x, point.y);
+				screenX = screenPoint.x;
+				screenY = screenPoint.y;
+				colliderBox.x = screenX;
+				colliderBox.y = screenY;
+				colliderSphere.center.x = screenX + BOX_WIDTH / 2;
+				colliderSphere.center.y = screenY + BOX_HEIGHT / 2;
+				destinationX = maze->dimension / 2;
+				destinationY = maze->dimension / 2;
+				pac2->parry = true;   // parry successful
+				pac2->parryStart = SDL_GetTicks();
+				pac2->parryCount = 0;
 			}
 		}
 	}
