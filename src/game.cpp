@@ -47,8 +47,8 @@ void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* 
     g3->checkPacmanCollision(p2);
     g4->checkPacmanCollision(p2);
 	if(time > timeToChangeMode){
-		g5->update(p1, p2);
-		g6->update(p1, p2);
+		g5->update(p2, p1);
+		g6->update(p2, p1);
 		g5->move();
 		g6->move();
 		g5->checkPacmanCollision(p1);
@@ -192,8 +192,15 @@ int main(int argc, char** argv) {
         }
         GhostUpdate(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, timeNow);
         manager.updatePortals();
-        manager.checkIfTeleport(&p1);
-		manager.checkIfTeleport(&p2);
+        int preference = rand()%2 + 1;
+        if(preference == 1){
+		    manager.checkIfTeleport(&p1);
+			manager.checkIfTeleport(&p2);
+		}
+		else if(preference == 2){
+			manager.checkIfTeleport(&p2);
+			manager.checkIfTeleport(&p1);
+		}
         manager.renderPortals(&window);
         RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, timeNow, &window);
         window.updateWindow();

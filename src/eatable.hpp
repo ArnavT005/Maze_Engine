@@ -134,31 +134,28 @@ void Eatable::checkIfEaten(bool &isBuffed) {
 	if(p2 != NULL) {
 		ifCollision2 = p2->collisionDetectorCircle(&(p2->colliderSphere), &location);		
 	}
-	if(ifCollision1) {
+	if(ifCollision1 || ifCollision2) {
 		if(!isEaten) {
 			isEaten = true;
 			if(type == FIFTY_POINT) {
 				isBuffed = true;
-				p1->score += 50;
+				if(ifCollision1 && ifCollision2){
+					p1->score += 25;
+					p2->score += 25;
+				}
+				else if(ifCollision1){p1->score += 50;}
+				else if(ifCollision2){p2->score += 50;}
 			}
 			else if(type == TEN_POINT) {
-				p1->score += 10;
+				if(ifCollision1 && ifCollision2){
+					p1->score += 5;	
+					p2->score += 5;
+				}
+				else if(ifCollision1){p1->score += 10;}
+				else if(ifCollision2){p2->score += 10;}
 			}
 		}
 	}
-	if(ifCollision2) {
-		if(!isEaten) {
-			isEaten = true;
-			if(type == FIFTY_POINT) {
-				isBuffed = true;
-				p2->score += 50;
-			}
-			else if(type == TEN_POINT) {
-				p2->score += 10;
-			}
-		}
-	}
-	
 }
 
 
