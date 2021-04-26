@@ -28,19 +28,33 @@ void close() {
 }
 
 
-void GhostUpdate(Pacman* pac, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* g4) {
-    g1->update(pac);
-    g2->update(pac);
-    g3->update(pac);
-    g4->update(pac);
+void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* g4, Ghost* g5, Ghost* g6, Uint32 time) {
+    g1->update(p1);
+    g2->update(p1);
+    g3->update(p1);
+    g4->update(p1);
     g1->move();
     g2->move();
     g3->move();
     g4->move();
-    g1->checkPacmanCollision(pac);
-    g2->checkPacmanCollision(pac);
-    g3->checkPacmanCollision(pac);
-    g4->checkPacmanCollision(pac);
+    g1->checkPacmanCollision(p1);
+    g2->checkPacmanCollision(p1);
+    g3->checkPacmanCollision(p1);
+    g4->checkPacmanCollision(p1);
+	g1->checkPacmanCollision(p2);
+    g2->checkPacmanCollision(p2);
+    g3->checkPacmanCollision(p2);
+    g4->checkPacmanCollision(p2);
+	if(time > 30000){
+		g5->update(p1);
+		g6->update(p1);
+		g5->move();
+		g6->move();
+		g5->checkPacmanCollision(p1);
+		g6->checkPacmanCollision(p1);
+		g5->checkPacmanCollision(p2);
+		g6->checkPacmanCollision(p2);
+	}
 }   
 
 void RenderElements(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Ghost* g5, Ghost* g6, Uint32 time, Window* window) {
@@ -174,7 +188,7 @@ int main(int argc, char** argv) {
 			g6 = g2;
             changedMode = true;
         }
-        GhostUpdate(&pac, &g1, &g2, &g3, &g4);
+        GhostUpdate(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, timeNow);
         manager.updatePortals();
         manager.checkIfTeleport(&p1);
 		manager.checkIfTeleport(&p2);
