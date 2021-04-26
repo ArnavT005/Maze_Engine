@@ -29,7 +29,7 @@ void close() {
 }
 
 
-void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* g4, Ghost* g5, Ghost* g6, Uint32 time) {
+void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* g4, Ghost* g5, Ghost* g6, Ghost* g7, Uint32 time) {
     g1->update(p1, p2);
     g2->update(p1, p2);
     g3->update(p1, p2);
@@ -49,16 +49,20 @@ void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* 
 	if(time > timeToChangeMode){
 		g5->update(p2, p1);
 		g6->update(p2, p1);
+		g7->update(p2, p1);
 		g5->move();
 		g6->move();
+		g7->move();
 		g5->checkPacmanCollision(p1);
 		g6->checkPacmanCollision(p1);
+		g7->checkPacmanCollision(p1);
 		g5->checkPacmanCollision(p2);
 		g6->checkPacmanCollision(p2);
+		g7->checkPacmanCollision(p2);
 	}
 }   
 
-void RenderElements(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Ghost* g5, Ghost* g6, Uint32 time, Window* window) {
+void RenderElements(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Ghost* g5, Ghost* g6, Ghost* g7, Uint32 time, Window* window) {
     p1->render(window);
     p2->render(window);
     g1->render(window);
@@ -68,6 +72,7 @@ void RenderElements(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost* g3, Gho
     if(time >= timeToChangeMode){
         g5->render(window);
         g6->render(window);
+        g7->render(window);
     }
 }
 
@@ -145,6 +150,7 @@ int main(int argc, char** argv) {
     Ghost g4(&maze, TYPE_CLYDE, 1, &window);
 	Ghost g5;
 	Ghost g6;
+	Ghost g7(&maze, TYPE_CLYDE, 2, &window);
 
     window.clearWindow();
 
@@ -168,6 +174,7 @@ int main(int argc, char** argv) {
             g2.handleEvent(event, &p1, &p2);
             g3.handleEvent(event, &p1, &p2);
             g4.handleEvent(event, &p1, &p2);
+            g7.handleEvent(event, &p1, &p2);
             if(changedMode){
                 g5.handleEvent(event, &p1, &p2);
                 g6.handleEvent(event, &p1, &p2);
@@ -190,7 +197,7 @@ int main(int argc, char** argv) {
 			g6 = g2;
             changedMode = true;
         }
-        GhostUpdate(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, timeNow);
+        GhostUpdate(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, timeNow);
         manager.updatePortals();
         int preference = rand()%2 + 1;
         if(preference == 1){
@@ -202,7 +209,7 @@ int main(int argc, char** argv) {
 			manager.checkIfTeleport(&p1);
 		}
         manager.renderPortals(&window);
-        RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, timeNow, &window);
+        RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, timeNow, &window);
         window.updateWindow();
         SDL_Delay(17);
     }

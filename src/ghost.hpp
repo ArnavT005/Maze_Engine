@@ -506,16 +506,16 @@ int Ghost::moveTo(){
 		else if(type == TYPE_PINKY){
 	        if(!randomOn) {	
 		        int nextX = 0, nextY = 0;
-		        if(state == MOVE_UP || state == STILL_UP) {
+		        if(state == MOVE_UP) {
 		        	nextX = -2;
 		        }
-		        else if(state == MOVE_DOWN || state == STILL_DOWN) {
+		        else if(state == MOVE_DOWN) {
 		        	nextX = 2;
 		        }
-		        else if(state == MOVE_RIGHT || state == STILL_RIGHT) {
+		        else if(state == MOVE_RIGHT) {
 		        	nextY = 2;
 		        }
-		        else if(state == MOVE_LEFT || state == STILL_LEFT) {
+		        else if(state == MOVE_LEFT) {
 		        	nextY = -2;
 		        }
 		        destinationX = (dimension + pacLoc.x + nextX) % dimension; 
@@ -731,7 +731,7 @@ int Ghost::moveTo(){
 void Ghost::update(Pacman* pac1, Pacman* pac2) {
 	this->pac1 = pac1;
     checkAlignment();
-    if(pac1->isBuffed && mode != 3 && mode != 4) {
+    if((pac1->isBuffed||pac2->isBuffed) && mode != 3 && mode != 4) {
     	prevMode = mode;
     	GHOST_VEL = 1;
     	mode = 3;
@@ -740,32 +740,7 @@ void Ghost::update(Pacman* pac1, Pacman* pac2) {
     	scareStart = SDL_GetTicks();
     }
     else{
-    	if(pac1->isBuffed) {
-    		if(mode == 3) {
-    			scareStart = SDL_GetTicks();
-    		}
-    	}
-    	else {
-    		if(mode == 3) {
-    			if(SDL_GetTicks() - scareStart >= 10000) {
-    				// it has been 10 seconds
-    				mode = prevMode;
-    				isScared = false;
-    				isDead = false;
-    			}
-    		}
-    	}
-    }
-	if(pac2->isBuffed && mode != 3 && mode != 4) {
-    	prevMode = mode;
-    	GHOST_VEL = 1;
-    	mode = 3;
-    	isScared = true;
-    	isDead = false;
-    	scareStart = SDL_GetTicks();
-    }
-    else{
-    	if(pac2->isBuffed) {
+    	if(pac1->isBuffed || pac2->isBuffed) {
     		if(mode == 3) {
     			scareStart = SDL_GetTicks();
     		}
@@ -1006,7 +981,7 @@ bool Ghost::parryPossible(Pacman* pac1) {
 }
 
 void Ghost::handleEvent(SDL_Event event, Pacman *pac1, Pacman *pac2) {
-	if(pac1->isDead || pac1->parry || pac2->isDead || pac2->parry)
+	if((pac1->isDead || pac1->parry) && (pac2->isDead || pac2->parry))
 		return;
 	if(event.type == SDL_KEYDOWN && event.key.repeat == 0 && event.key.keysym.sym == SDLK_m) {
 		if(!collisionDetectorCircle(&colliderSphere, &pac1->colliderSphere)) {
@@ -1091,9 +1066,9 @@ bool Ghost::collisionDetectorCircle(Circle* circle1, Circle* circle2) {
 
 
 void Ghost::checkPacmanCollision(Pacman* pac1) {
-	
-	bool checkCollision = collisionDetectorCircle(&colliderSphere, &(pac1->colliderSphere));
 
+	bool checkCollision = collisionDetectorCircle(&colliderSphere, &(pac1->colliderSphere));
+	
 	if(checkCollision && !isScared && !isDead) {
 		if(!(pac1->isDead)) {
 			pac1->isDead = true;
