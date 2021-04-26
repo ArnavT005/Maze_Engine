@@ -41,11 +41,11 @@ class Ghost {
     Ghost(Maze* maze, int j, int k, Window* window);
     void loadTexture(Window* window);
     void checkAlignment();
-    void update(Pacman* pac1);		// handle dynamics
+    void update(Pacman* pac1, Pacman* pac2);		// handle dynamics
     void move();						
     void render(Window* window);        // render GHOST
     bool parryPossible(Pacman* pac1);
-    void handleEvent(SDL_Event event, Pacman* pac1);
+    void handleEvent(SDL_Event event, Pacman* pac1, Pacman* pac2);
     bool collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2);
     bool collisionDetectorCircle(Circle* circle1, Circle* circle2);
     int BFS(int i, int j, vector<vector<int>> &V);
@@ -726,7 +726,7 @@ int Ghost::moveTo(){
 	}
 }
 
-void Ghost::update(Pacman* pac1) {
+void Ghost::update(Pacman* pac1, Pacman* pac2) {
 	this->pac1 = pac1;
     checkAlignment();
     if(pac1->isBuffed && mode != 3 && mode != 4) {
@@ -739,6 +739,31 @@ void Ghost::update(Pacman* pac1) {
     }
     else{
     	if(pac1->isBuffed) {
+    		if(mode == 3) {
+    			scareStart = SDL_GetTicks();
+    		}
+    	}
+    	else {
+    		if(mode == 3) {
+    			if(SDL_GetTicks() - scareStart >= 10000) {
+    				// it has been 10 seconds
+    				mode = prevMode;
+    				isScared = false;
+    				isDead = false;
+    			}
+    		}
+    	}
+    }
+	if(pac2->isBuffed && mode != 3 && mode != 4) {
+    	prevMode = mode;
+    	GHOST_VEL = 1;
+    	mode = 3;
+    	isScared = true;
+    	isDead = false;
+    	scareStart = SDL_GetTicks();
+    }
+    else{
+    	if(pac2->isBuffed) {
     		if(mode == 3) {
     			scareStart = SDL_GetTicks();
     		}
