@@ -43,12 +43,17 @@ void GhostUpdate(Pacman* pac, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* g4) {
     g4->checkPacmanCollision(pac);
 }   
 
-void RenderElements(Pacman* pac, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Window* window) {
-    pac->render(window);
+void RenderElements(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Ghost* g5, Ghost* g6, Uint32 time, Window* window) {
+    p1->render(window);
+    p2->render(window);
     g1->render(window);
     g2->render(window);
     g3->render(window);
     g4->render(window);
+    if(time >= 30000){
+        g5->render(window);
+        g6->render(window);
+    }
 }
 
 void switchGhostMode(Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4) {
@@ -108,7 +113,8 @@ int main(int argc, char** argv) {
 
     window.setRenderTarget(NULL);
     
-    Pacman pac(&maze, &window);
+    Pacman p1(&maze, &window, 1);
+	Pacman p2(&maze, &window, 2);
     Manager manager(&maze);
     manager.generateEatables(&window);
     manager.generatePortals(&window);
@@ -122,7 +128,8 @@ int main(int argc, char** argv) {
     Ghost g2(&maze, TYPE_PINKY, 1, &window);
     Ghost g3(&maze, TYPE_INKY, 1, &window);
     Ghost g4(&maze, TYPE_CLYDE, 1, &window);
-
+	Ghost g5;
+	Ghost g6;
 
     window.clearWindow();
 
@@ -141,11 +148,16 @@ int main(int argc, char** argv) {
             if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
                 quit = true;
             }
-            pac.handleEvent(event, SDL_GetKeyboardState(NULL));
-            g1.handleEvent(event, &pac);
-            g2.handleEvent(event, &pac);
-            g3.handleEvent(event, &pac);
-            g4.handleEvent(event, &pac);
+            p1.handleEvent(event, SDL_GetKeyboardState(NULL));
+            p2.handleEvent(event, SDL_GetKeyboardState(NULL));
+            g1.handleEvent(event, &p1, &p2);
+            g2.handleEvent(event, &p1, &p2);
+            g3.handleEvent(event, &p1, &p2);
+            g4.handleEvent(event, &p1, &p2);
+            if(changedMode){
+                g5.handleEvent(event, &p1, &p2);
+                g6.handleEvent(event, &p1, &p2);
+            }
         }
         window.clearWindow();
         window.renderTexture(background, NULL, &bg);
@@ -155,7 +167,8 @@ int main(int argc, char** argv) {
             manager.eatables[i].render(&window);
         }
         pac.isBuffed = temp;
-        if(SDL_GetTicks() - startTime >= 30000 && !changedMode) {
+        Uint32 timeNow = SDL_GetTicks() - startTime;
+        if( timeNow >= 30000 && !changedMode) {
             switchGhostMode(&g1, &g2, &g3, &g4);
             changedMode = true;
         }
@@ -163,7 +176,7 @@ int main(int argc, char** argv) {
         manager.updatePortals();
         manager.checkIfTeleport(&pac);
         manager.renderPortals(&window);
-        RenderElements(&pac, &g1, &g2, &g3, &g4, &window);
+        RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, timeNow, &window);
         window.updateWindow();
         SDL_Delay(17);
     }
