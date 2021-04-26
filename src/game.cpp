@@ -174,7 +174,8 @@ int main(int argc, char** argv) {
         }
         GhostUpdate(&pac, &g1, &g2, &g3, &g4);
         manager.updatePortals();
-        manager.checkIfTeleport(&pac);
+        manager.checkIfTeleport(&p1);
+		manager.checkIfTeleport(&p2);
         manager.renderPortals(&window);
         RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, timeNow, &window);
         window.updateWindow();
