@@ -30,7 +30,7 @@ class Pacman {
     public:
 
     Pacman();
-    Pacman(Maze* maze, Window* window);
+    Pacman(Maze* maze, Window* window, int i);
     void loadTexture(Window* window);
     void handleEvent(SDL_Event &e, const Uint8* keyStates);		// handle dynamics
     void move();						
@@ -102,14 +102,20 @@ Pacman::Pacman() {
 	parry = false;
 }
 
-Pacman::Pacman(Maze* maze, Window* window) {
+Pacman::Pacman(Maze* maze, Window* window, int tp) {
 	
 	int blockSize = maze->blockSize,
 		dotSize = maze->dotSize,
 		padding = maze->padding;
 	
-	rowAligned = colAligned = true;
-	screenX = screenY = padding + dotSize;
+	rowAligned = colAligned = true;		
+	type = tp;
+	if(type == 1){
+		screenX = screenY = padding + dotSize;
+	}
+	if(type == 2){
+		screenX = screenY = maze->getBlockScreenCoordinate(maze->dimension-1, maze->dimension-1).x;
+	}
 	velX = velY = 0;
 	this->maze = maze;
 	boundingRect = maze->boundaryRectPacman;
@@ -215,7 +221,7 @@ void Pacman::loadTexture(Window* window) {
 
 void Pacman::handleEvent(SDL_Event &e, const Uint8* keyStates) {
 	if(!isDead) {
-		if(e.type == SDL_KEYDOWN && e.key.repeat == 0) {
+		if(type == 1 && e.type == SDL_KEYDOWN && e.key.repeat == 0) {
 			int num = 0;
 			if(keyStates[SDL_SCANCODE_UP] == 1) num ++;
 			if(keyStates[SDL_SCANCODE_RIGHT] == 1) num ++;
@@ -231,7 +237,7 @@ void Pacman::handleEvent(SDL_Event &e, const Uint8* keyStates) {
 				}
 			}
 		}
-		else if(e.type == SDL_KEYUP && e.key.repeat == 0) {
+		else if(type == 1 && e.type == SDL_KEYUP && e.key.repeat == 0) {
 			switch(e.key.keysym.sym) {
 				case SDLK_UP: if(velY < 0) { velY += PACMAN_VEL; state = STILL_UP; } frameCount = 0; break;
 				case SDLK_DOWN: if(velY > 0) { velY -= PACMAN_VEL; state = STILL_DOWN; } frameCount = 0; break;
@@ -240,6 +246,32 @@ void Pacman::handleEvent(SDL_Event &e, const Uint8* keyStates) {
 				default: break;
 			}
 		}
+		else if(type == 2 && e.type == SDL_KEYDOWN && e.key.repeat == 0) {
+			int num = 0;
+			if(keyStates[SDL_SCANCODE_W] == 1) num ++;
+			if(keyStates[SDL_SCANCODE_D] == 1) num ++;
+			if(keyStates[SDL_SCANCODE_S] == 1) num ++;
+			if(keyStates[SDL_SCANCODE_A] == 1) num ++;
+			if(num <= 1) {
+				switch(e.key.keysym.sym) {
+					case SDLK_w: velY -= PACMAN_VEL; state = MOVE_UP; frameCount = 0; break;
+					case SDLK_s: velY += PACMAN_VEL; state = MOVE_DOWN; frameCount = 0; break;
+					case SDLK_d: velX += PACMAN_VEL; state = MOVE_RIGHT; frameCount = 0; break;
+					case SDLK_a: velX -= PACMAN_VEL; state = MOVE_LEFT; frameCount = 0; break;
+					default: break;
+				}
+			}
+		}
+		else if(type == 2 && e.type == SDL_KEYUP && e.key.repeat == 0) {
+			switch(e.key.keysym.sym) {
+				case SDLK_w: if(velY < 0) { velY += PACMAN_VEL; state = STILL_UP; } frameCount = 0; break;
+				case SDLK_s: if(velY > 0) { velY -= PACMAN_VEL; state = STILL_DOWN; } frameCount = 0; break;
+				case SDLK_d: if(velX > 0) { velX -= PACMAN_VEL; state = STILL_RIGHT; } frameCount = 0; break;
+				case SDLK_a: if(velX < 0) { velX += PACMAN_VEL; state = STILL_LEFT; } frameCount = 0; break;
+				default: break;
+			}
+		}
+		
 	}
 }
 
