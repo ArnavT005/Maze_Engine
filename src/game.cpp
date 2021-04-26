@@ -155,6 +155,27 @@ void switchGhostMode(Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4) {
     }
 }
 
+void renderBlackScreen(Pacman* p1, Pacman* p2, Window* window) {
+    SDL_SetRenderDrawColor(window->getRenderer(), 0x00, 0x00, 0x00, 0xFF);
+    SDL_Point points[952576];
+    int n = 0;
+    for(int i = 25; i <= 1000; i ++) {
+        for(int j = 25; j <= 1000; j ++) {
+            SDL_Point center1 = p1->colliderSphere.center, center2 = p2->colliderSphere.center;
+            int distanceSq1 = (center1.x - j) * (center1.x - j) + (center1.y - i) * (center1.y - i);
+            int distanceSq2 = (center2.x - j) * (center2.x - j) + (center2.y - i) * (center2.y - i);
+            if(distanceSq1 >= 18225 && distanceSq2 >= 18225) {
+                SDL_Point sample;
+                sample.x = j;
+                sample.y = i;
+                points[n] = sample;  
+                n ++;
+            }
+        }
+    }
+    SDL_RenderDrawPoints(window->getRenderer(), points, n);
+}
+
 int main(int argc, char** argv) {
     if(!SDL_init()) {
         return 0;
@@ -311,8 +332,9 @@ int main(int argc, char** argv) {
         p1.pacpacCollision(&p2);
         manager.renderPortals(&window);
         RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, timeNow, &window);
+        renderBlackScreen(&p1, &p2, &window);
         window.updateWindow();
-        SDL_Delay(17);
+        //SDL_Delay(10);
     }
     
     window.free();

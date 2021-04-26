@@ -121,7 +121,7 @@ void Window::setRenderTarget(SDL_Texture *texture) {
 }
 
 void Window::clearWindow() {
-    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
     SDL_RenderClear(renderer);
 }
 
