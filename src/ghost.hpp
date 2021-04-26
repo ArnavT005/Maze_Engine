@@ -37,14 +37,15 @@ class Ghost {
     static const int ANIMATION_FRAMES = 2;
 
     Ghost();
+    Ghost(Ghost &g);
     Ghost(Maze* maze, int j, int k, Window* window);
     void loadTexture(Window* window);
     void checkAlignment();
-    void update(Pacman* pac1);		// handle dynamics
+    void update(Pacman* pac1, Pacman* pac2);		// handle dynamics
     void move();						
     void render(Window* window);        // render GHOST
     bool parryPossible(Pacman* pac1);
-    void handleEvent(SDL_Event event, Pacman* pac1);
+    void handleEvent(SDL_Event event, Pacman* pac1, Pacman* pac2);
     bool collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2);
     bool collisionDetectorCircle(Circle* circle1, Circle* circle2);
     int BFS(int i, int j, vector<vector<int>> &V);
@@ -91,7 +92,7 @@ class Ghost {
     bool randomOn;				
     bool isDead;
     bool isScared;
-
+	Window* window;
    // int random_seed;
 
 };
@@ -124,22 +125,55 @@ Ghost::Ghost() {
 	isScared = false;
 }
 
+Ghost::Ghost(Ghost &g){
+	rowAligned = g.rowAligned;
+	colAligned = g.colAligned;          // To check if ghost is row/column aligned
+    maze = g.maze;                      // Maze
+    boundingRect = g.boundingRect;      // bounding rectangles
+    screenX = g.screenX;
+    screenY = g.screenY;				// screen coordinates of ghost
+    velX = g.velX; velY = g.velY;						// horizontal and vertical velocities in pixels per frame
+    colliderBox = g.colliderBox;
+    type = g.type;
+    direction = g.direction;
+    destinationX = g.destinationX;
+    destinationY = g.destinationY;		
+    mode = g.mode;					// set value default
+    state = g.state;
+    GHOST_VEL = g.GHOST_VEL;     			// 1 pixel per frame
+    success = g.success;				// error reporting flag
+    frameCount = g.frameCount;
+    up = g.up;
+    right = g.right;
+    down = g.down;
+    left = g.left;			// rendering textures
+    rightAngry = g.rightAngry;
+    downAngry = g.downAngry;
+    leftAngry = g.leftAngry;		// rendering angry textures
+    randomOn = g.randomOn;
+	colliderSphere = g.colliderSphere;
+	isDead = g.isDead;
+	isScared = g.isScared;
+	window = g.window;
+	loadTexture(window);
+
+}
+
 Ghost::Ghost(Maze* maze, int ghostType, int mode, Window* window) {
 
     this->mode = mode;
+    this->window = window;
 	rowAligned = colAligned = true;
     int mid = maze->dimension/2 - 1;
     GHOST_VEL = 1;
     if(ghostType == TYPE_BLINKY) {
     	screenX = screenY = maze->getBlockScreenCoordinate(mid, mid).x;
     	destinationX = 0; destinationY = 0;
-    	GHOST_VEL = 1;
     }
     else if(ghostType == TYPE_PINKY) {
     	screenX = maze->getBlockScreenCoordinate(mid, mid + 1).x; 
     	screenY = maze->getBlockScreenCoordinate(mid, mid + 1).y;
     	destinationX = maze->dimension - 1; destinationY = 0;
-    	GHOST_VEL = 1;
     }
     else if(ghostType == TYPE_INKY) {
     	screenX = maze->getBlockScreenCoordinate(mid + 1, mid).x; 
@@ -472,16 +506,16 @@ int Ghost::moveTo(){
 		else if(type == TYPE_PINKY){
 	        if(!randomOn) {	
 		        int nextX = 0, nextY = 0;
-		        if(state == MOVE_UP || state == STILL_UP) {
+		        if(state == MOVE_UP) {
 		        	nextX = -2;
 		        }
-		        else if(state == MOVE_DOWN || state == STILL_DOWN) {
+		        else if(state == MOVE_DOWN) {
 		        	nextX = 2;
 		        }
-		        else if(state == MOVE_RIGHT || state == STILL_RIGHT) {
+		        else if(state == MOVE_RIGHT) {
 		        	nextY = 2;
 		        }
-		        else if(state == MOVE_LEFT || state == STILL_LEFT) {
+		        else if(state == MOVE_LEFT) {
 		        	nextY = -2;
 		        }
 		        destinationX = (dimension + pacLoc.x + nextX) % dimension; 
@@ -694,10 +728,10 @@ int Ghost::moveTo(){
 	}
 }
 
-void Ghost::update(Pacman* pac1) {
+void Ghost::update(Pacman* pac1, Pacman* pac2) {
 	this->pac1 = pac1;
     checkAlignment();
-    if(pac1->isBuffed && mode != 3 && mode != 4) {
+    if((pac1->isBuffed||pac2->isBuffed) && mode != 3 && mode != 4) {
     	prevMode = mode;
     	GHOST_VEL = 1;
     	mode = 3;
@@ -706,7 +740,7 @@ void Ghost::update(Pacman* pac1) {
     	scareStart = SDL_GetTicks();
     }
     else{
-    	if(pac1->isBuffed) {
+    	if(pac1->isBuffed || pac2->isBuffed) {
     		if(mode == 3) {
     			scareStart = SDL_GetTicks();
     		}
@@ -946,10 +980,10 @@ bool Ghost::parryPossible(Pacman* pac1) {
 	}
 }
 
-void Ghost::handleEvent(SDL_Event event, Pacman *pac1) {
-	if(pac1->isDead || pac1->parry)
+void Ghost::handleEvent(SDL_Event event, Pacman *pac1, Pacman *pac2) {
+	if((pac1->isDead || pac1->parry) && (pac2->isDead || pac2->parry))
 		return;
-	if(event.type == SDL_KEYDOWN && event.key.repeat == 0 && event.key.keysym.sym == SDLK_x) {
+	if(event.type == SDL_KEYDOWN && event.key.repeat == 0 && event.key.keysym.sym == SDLK_m) {
 		if(!collisionDetectorCircle(&colliderSphere, &pac1->colliderSphere)) {
 			if(collisionDetectorCircle(&colliderSphere, &pac1->parryCircle) && parryPossible(pac1)) {
 				if(mode != 3)
@@ -972,6 +1006,32 @@ void Ghost::handleEvent(SDL_Event event, Pacman *pac1) {
 				pac1->parry = true;   // parry successful
 				pac1->parryStart = SDL_GetTicks();
 				pac1->parryCount = 0;
+			}
+		}
+	}
+	if(event.type == SDL_KEYDOWN && event.key.repeat == 0 && event.key.keysym.sym == SDLK_g) {
+		if(!collisionDetectorCircle(&colliderSphere, &pac2->colliderSphere)) {
+			if(collisionDetectorCircle(&colliderSphere, &pac2->parryCircle) && parryPossible(pac2)) {
+				if(mode != 3)
+					prevMode = mode;
+				mode = 4;
+				prevVel = GHOST_VEL;
+				GHOST_VEL = 5;
+				isScared = false;
+				isDead = true;
+				SDL_Point point = maze->screenToBlockCoordinate(screenX, screenY);
+				SDL_Point screenPoint = maze->getBlockScreenCoordinate(point.x, point.y);
+				screenX = screenPoint.x;
+				screenY = screenPoint.y;
+				colliderBox.x = screenX;
+				colliderBox.y = screenY;
+				colliderSphere.center.x = screenX + BOX_WIDTH / 2;
+				colliderSphere.center.y = screenY + BOX_HEIGHT / 2;
+				destinationX = maze->dimension / 2;
+				destinationY = maze->dimension / 2;
+				pac2->parry = true;   // parry successful
+				pac2->parryStart = SDL_GetTicks();
+				pac2->parryCount = 0;
 			}
 		}
 	}
@@ -1006,9 +1066,9 @@ bool Ghost::collisionDetectorCircle(Circle* circle1, Circle* circle2) {
 
 
 void Ghost::checkPacmanCollision(Pacman* pac1) {
-	
-	bool checkCollision = collisionDetectorCircle(&colliderSphere, &(pac1->colliderSphere));
 
+	bool checkCollision = collisionDetectorCircle(&colliderSphere, &(pac1->colliderSphere));
+	
 	if(checkCollision && !isScared && !isDead) {
 		if(!(pac1->isDead)) {
 			pac1->isDead = true;

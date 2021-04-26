@@ -8,7 +8,8 @@
 #include "manager.hpp"
 #include "scoreboard.hpp"
 
-
+int timeToChangeMode = 10000;
+int timeToRandomize = 20000;
 bool SDL_init() {
     bool success = true;
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -35,6 +36,7 @@ void close() {
 }
 
 
+
 void ScoreUpdate(Scoreboard* board, Pacman* pac, Window* window) {
     int timeSeconds = (SDL_GetTicks() - board->start) / 1000;
     int timeMinutes = timeSeconds / 60;
@@ -53,27 +55,51 @@ void ScoreUpdate(Scoreboard* board, Pacman* pac, Window* window) {
     board->loadRenderedText(window);
 }
 
-void GhostUpdate(Pacman* pac, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* g4) {
-    g1->update(pac);
-    g2->update(pac);
-    g3->update(pac);
-    g4->update(pac);
+void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* g4, Ghost* g5, Ghost* g6, Ghost* g7, Uint32 time) {
+    g1->update(p1, p2);
+    g2->update(p1, p2);
+    g3->update(p1, p2);
+    g4->update(p1, p2);
     g1->move();
     g2->move();
     g3->move();
     g4->move();
-    g1->checkPacmanCollision(pac);
-    g2->checkPacmanCollision(pac);
-    g3->checkPacmanCollision(pac);
-    g4->checkPacmanCollision(pac);
+    g1->checkPacmanCollision(p1);
+    g2->checkPacmanCollision(p1);
+    g3->checkPacmanCollision(p1);
+    g4->checkPacmanCollision(p1);
+	g1->checkPacmanCollision(p2);
+    g2->checkPacmanCollision(p2);
+    g3->checkPacmanCollision(p2);
+    g4->checkPacmanCollision(p2);
+	if(time > timeToChangeMode){
+		g5->update(p2, p1);
+		g6->update(p2, p1);
+		g7->update(p2, p1);
+		g5->move();
+		g6->move();
+		g7->move();
+		g5->checkPacmanCollision(p1);
+		g6->checkPacmanCollision(p1);
+		g7->checkPacmanCollision(p1);
+		g5->checkPacmanCollision(p2);
+		g6->checkPacmanCollision(p2);
+		g7->checkPacmanCollision(p2);
+	}
 }   
 
-void RenderElements(Pacman* pac, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Window* window) {
-    pac->render(window);
+void RenderElements(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Ghost* g5, Ghost* g6, Ghost* g7, Uint32 time, Window* window) {
+    p1->render(window);
+    p2->render(window);
     g1->render(window);
     g2->render(window);
     g3->render(window);
     g4->render(window);
+    if(time >= timeToChangeMode){
+        g5->render(window);
+        g6->render(window);
+        g7->render(window);
+    }
 }
 
 void switchGhostMode(Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4) {
@@ -134,32 +160,38 @@ int main(int argc, char** argv) {
 
     window.setRenderTarget(NULL);
     
+
     Scoreboard scoreBoard(&scr, &window);
-    Pacman pac(&maze, &window);
+    Pacman p1(&maze, &window, 1);
+	Pacman p2(&maze, &window, 2);
+
     Manager manager(&maze);
     manager.generateEatables(&window);
     manager.generatePortals(&window);
     int numEat = manager.eatables.size();
 
     for(int k = 0; k < numEat; k ++) {
-        manager.eatables[k].setPacman(&pac);
+        manager.eatables[k].setPacman(&p1, &p2);
     }
 
     Ghost g1(&maze, TYPE_BLINKY, 1, &window);
     Ghost g2(&maze, TYPE_PINKY, 1, &window);
     Ghost g3(&maze, TYPE_INKY, 1, &window);
     Ghost g4(&maze, TYPE_CLYDE, 1, &window);
-
+	Ghost g5;
+	Ghost g6;
+	Ghost g7(&maze, TYPE_CLYDE, 2, &window);
 
     window.clearWindow();
 
     bool quit = false;
     SDL_Event event;
     bool temp;
-
     Uint32 startTime = SDL_GetTicks();
+
     scoreBoard.start = startTime;
-    bool changedMode = false;
+    bool changedMode = false, randomized = false;
+
     
     while(!quit) {
         int i = 0;
@@ -169,32 +201,61 @@ int main(int argc, char** argv) {
             if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
                 quit = true;
             }
-            pac.handleEvent(event, SDL_GetKeyboardState(NULL));
-            g1.handleEvent(event, &pac);
-            g2.handleEvent(event, &pac);
-            g3.handleEvent(event, &pac);
-            g4.handleEvent(event, &pac);
+            p1.handleEvent(event, SDL_GetKeyboardState(NULL));
+            p2.handleEvent(event, SDL_GetKeyboardState(NULL));
+            g1.handleEvent(event, &p1, &p2);
+            g2.handleEvent(event, &p1, &p2);
+            g3.handleEvent(event, &p1, &p2);
+            g4.handleEvent(event, &p1, &p2);
+            g7.handleEvent(event, &p1, &p2);
+            if(changedMode){
+                g5.handleEvent(event, &p1, &p2);
+                g6.handleEvent(event, &p1, &p2);
+            }
         }
         window.clearWindow();
         window.renderTexture(background, NULL, &bg);
-        pac.move();
+        p1.move();
+        p2.move();
         for(i = 0; i < numEat; i ++) {
             manager.eatables[i].checkIfEaten(temp);
             manager.eatables[i].render(&window);
         }
-        pac.isBuffed = temp;
-        if(SDL_GetTicks() - startTime >= 30000 && !changedMode) {
+        p1.isBuffed = temp;
+        p2.isBuffed = temp;
+        Uint32 timeNow = SDL_GetTicks() - startTime;
+        if( timeNow >= timeToChangeMode && !changedMode) {
             switchGhostMode(&g1, &g2, &g3, &g4);
+			g5 = g1;
+			g6 = g2;
             changedMode = true;
         }
-        GhostUpdate(&pac, &g1, &g2, &g3, &g4);
+        if(timeNow >= timeToRandomize && !randomized){
+        	g1.mode = 1;
+        	g2.mode = 1;
+        	g3.mode = 1;
+        	g4.mode = 1;
+        	g5.mode = 1;
+        	g6.mode = 1;
+        	g7.mode = 1;
+        	randomized = true;
+        }
+        GhostUpdate(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, timeNow);
         ScoreUpdate(&scoreBoard, &pac, &window);
         scoreBoard.render(&window);
 
         manager.updatePortals();
-        manager.checkIfTeleport(&pac);
+        int preference = rand()%2 + 1;
+        if(preference == 1){
+		    manager.checkIfTeleport(&p1);
+			manager.checkIfTeleport(&p2);
+		}
+		else if(preference == 2){
+			manager.checkIfTeleport(&p2);
+			manager.checkIfTeleport(&p1);
+		}
         manager.renderPortals(&window);
-        RenderElements(&pac, &g1, &g2, &g3, &g4, &window);
+        RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, timeNow, &window);
         window.updateWindow();
         SDL_Delay(17);
     }
