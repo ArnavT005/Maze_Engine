@@ -6,6 +6,8 @@
 #include "ghost.hpp"
 #include "manager.hpp"
 
+int timeToChangeMode = 10000;
+	
 bool SDL_init() {
     bool success = true;
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -44,7 +46,7 @@ void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* 
     g2->checkPacmanCollision(p2);
     g3->checkPacmanCollision(p2);
     g4->checkPacmanCollision(p2);
-	if(time > 30000){
+	if(time > timeToChangeMode){
 		g5->update(p1, p2);
 		g6->update(p1, p2);
 		g5->move();
@@ -63,7 +65,7 @@ void RenderElements(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost* g3, Gho
     g2->render(window);
     g3->render(window);
     g4->render(window);
-    if(time >= 30000){
+    if(time >= timeToChangeMode){
         g5->render(window);
         g6->render(window);
     }
@@ -149,7 +151,6 @@ int main(int argc, char** argv) {
     bool quit = false;
     SDL_Event event;
     bool temp;
-
     Uint32 startTime = SDL_GetTicks();
     bool changedMode = false;
     
@@ -183,7 +184,7 @@ int main(int argc, char** argv) {
         p1.isBuffed = temp;
         p2.isBuffed = temp;
         Uint32 timeNow = SDL_GetTicks() - startTime;
-        if( timeNow >= 30000 && !changedMode) {
+        if( timeNow >= timeToChangeMode && !changedMode) {
             switchGhostMode(&g1, &g2, &g3, &g4);
 			g5 = g1;
 			g6 = g2;
