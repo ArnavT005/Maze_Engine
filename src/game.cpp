@@ -72,19 +72,20 @@ void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* 
     g2->checkPacmanCollision(p2);
     g3->checkPacmanCollision(p2);
     g4->checkPacmanCollision(p2);
+    g7->update(p2, p1);
+    g7->move();
+    g7->checkPacmanCollision(p1);
+    g7->checkPacmanCollision(p2);
+
 	if(time > timeToChangeMode){
 		g5->update(p2, p1);
 		g6->update(p2, p1);
-		g7->update(p2, p1);
 		g5->move();
 		g6->move();
-		g7->move();
 		g5->checkPacmanCollision(p1);
 		g6->checkPacmanCollision(p1);
-		g7->checkPacmanCollision(p1);
 		g5->checkPacmanCollision(p2);
 		g6->checkPacmanCollision(p2);
-		g7->checkPacmanCollision(p2);
 	}
 }   
 
@@ -95,10 +96,10 @@ void RenderElements(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost* g3, Gho
     g2->render(window);
     g3->render(window);
     g4->render(window);
+    g7->render(window);
     if(time >= timeToChangeMode){
         g5->render(window);
         g6->render(window);
-        g7->render(window);
     }
 }
 
@@ -241,7 +242,7 @@ int main(int argc, char** argv) {
         	randomized = true;
         }
         GhostUpdate(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, timeNow);
-        ScoreUpdate(&scoreBoard, &pac, &window);
+        ScoreUpdate(&scoreBoard, &p1, &window);
         scoreBoard.render(&window);
 
         manager.updatePortals();

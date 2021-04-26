@@ -139,8 +139,10 @@ Ghost::Ghost(Ghost &g){
     destinationX = g.destinationX;
     destinationY = g.destinationY;		
     mode = g.mode;					// set value default
+    prevMode = g.prevMode;
     state = g.state;
     GHOST_VEL = g.GHOST_VEL;     			// 1 pixel per frame
+    prevVel = g.prevVel;
     success = g.success;				// error reporting flag
     frameCount = g.frameCount;
     up = g.up;
@@ -150,6 +152,14 @@ Ghost::Ghost(Ghost &g){
     rightAngry = g.rightAngry;
     downAngry = g.downAngry;
     leftAngry = g.leftAngry;		// rendering angry textures
+    upScared = g.upScared;
+    rightScared = g.rightScared;
+    downScared = g.downScared;
+    leftScared = g.leftScared;
+    rightDead = g.rightDead;
+    upDead = g.upDead;
+    leftDead = g.leftDead;
+    downDead = g.downDead;
     randomOn = g.randomOn;
 	colliderSphere = g.colliderSphere;
 	isDead = g.isDead;
