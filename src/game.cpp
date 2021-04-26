@@ -6,7 +6,6 @@
 #include "ghost.hpp"
 #include "manager.hpp"
 
-
 bool SDL_init() {
     bool success = true;
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -29,10 +28,10 @@ void close() {
 
 
 void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* g4, Ghost* g5, Ghost* g6, Uint32 time) {
-    g1->update(p1);
-    g2->update(p1);
-    g3->update(p1);
-    g4->update(p1);
+    g1->update(p1, p2);
+    g2->update(p1, p2);
+    g3->update(p1, p2);
+    g4->update(p1, p2);
     g1->move();
     g2->move();
     g3->move();
@@ -46,8 +45,8 @@ void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* 
     g3->checkPacmanCollision(p2);
     g4->checkPacmanCollision(p2);
 	if(time > 30000){
-		g5->update(p1);
-		g6->update(p1);
+		g5->update(p1, p2);
+		g6->update(p1, p2);
 		g5->move();
 		g6->move();
 		g5->checkPacmanCollision(p1);
@@ -135,7 +134,7 @@ int main(int argc, char** argv) {
     int numEat = manager.eatables.size();
 
     for(int k = 0; k < numEat; k ++) {
-        manager.eatables[k].setPacman(&pac);
+        manager.eatables[k].setPacman(&p1, &p2);
     }
 
     Ghost g1(&maze, TYPE_BLINKY, 1, &window);
@@ -175,12 +174,14 @@ int main(int argc, char** argv) {
         }
         window.clearWindow();
         window.renderTexture(background, NULL, &bg);
-        pac.move();
+        p1.move();
+        p2.move();
         for(i = 0; i < numEat; i ++) {
             manager.eatables[i].checkIfEaten(temp);
             manager.eatables[i].render(&window);
         }
-        pac.isBuffed = temp;
+        p1.isBuffed = temp;
+        p2.isBuffed = temp;
         Uint32 timeNow = SDL_GetTicks() - startTime;
         if( timeNow >= 30000 && !changedMode) {
             switchGhostMode(&g1, &g2, &g3, &g4);

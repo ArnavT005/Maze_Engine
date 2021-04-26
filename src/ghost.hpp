@@ -92,7 +92,7 @@ class Ghost {
     bool randomOn;				
     bool isDead;
     bool isScared;
-
+	Window* window;
    // int random_seed;
 
 };
@@ -154,6 +154,7 @@ Ghost::Ghost(Ghost &g){
 	colliderSphere = g.colliderSphere;
 	isDead = g.isDead;
 	isScared = g.isScared;
+	window = g.window;
 	loadTexture(window);
 
 }
@@ -161,6 +162,7 @@ Ghost::Ghost(Ghost &g){
 Ghost::Ghost(Maze* maze, int ghostType, int mode, Window* window) {
 
     this->mode = mode;
+    this->window = window;
 	rowAligned = colAligned = true;
     int mid = maze->dimension/2 - 1;
     GHOST_VEL = 1;

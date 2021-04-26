@@ -59,6 +59,8 @@ class Pacman {
     bool parry;
     
     int parryCount;
+    
+    int type;
 
     SDL_Texture* up;
     SDL_Texture* right;
