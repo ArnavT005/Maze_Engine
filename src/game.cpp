@@ -8,11 +8,12 @@
 #include "manager.hpp"
 #include "scoreboard.hpp"
 
-int timeToChangeMode = 10000;
-int timeToRandomize = 20000;
-int timeToFinale = 30000;
+int timeToChangeMode = 30000;
+int timeToRandomize = 60000;
+int timeToFinale = 70000;
 bool changeMode = false, changedMode1 = false, changedMode2 = false; 
 bool finalMode = false, createNew = false;
+SDL_Point points[952576];
 
 bool SDL_init() {
     bool success = true;
@@ -70,7 +71,6 @@ void ScoreUpdate(Scoreboard* board, Pacman* p1, Pacman* p2, Window* window) {
     board->livesP1Text << "Lives: " << p1->lives;
     board->livesP2Text.str("");
     board->livesP2Text << "Lives: " << p2->lives;
-
     board->loadRenderedText(window);
 }
 
@@ -213,11 +213,10 @@ void switchGhostMode(int mode, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Ghost
 
 void renderBlackScreen(Pacman* p1, Pacman* p2, Window* window, Uint32 timeNow) {
     if(timeNow >= timeToFinale)
-        SDL_SetRenderDrawColor(window->getRenderer(), 0x00, 0x00, 0x00, 0x00);
+        SDL_SetRenderDrawColor(window->getRenderer(), 0x00, 0x00, 0x00, 0xFF);
     else
         SDL_SetRenderDrawColor(window->getRenderer(), 0x00, 0x00, 0x00, 0x00);
     SDL_SetRenderDrawBlendMode(window->getRenderer(), SDL_BLENDMODE_BLEND);
-    SDL_Point points[952576];
     int n = 0;
     for(int i = 25; i <= 1000; i ++) {
         for(int j = 25; j <= 1000; j ++) {
@@ -300,7 +299,6 @@ int main(int argc, char** argv) {
     scoreBoard.start = startTime;
     bool randomized = false;
 
-    
     while(!quit) {
         int i = 0;
         temp = false;
@@ -327,6 +325,7 @@ int main(int argc, char** argv) {
         window.renderTexture(background, NULL, &bg);
         p1.move();
         p2.move();
+        p1.pacpacCollision(&p2);
         for(i = 0; i < numEat; i ++) {
             manager.eatables[i].checkIfEaten(temp);
             manager.eatables[i].render(&window);
@@ -365,7 +364,6 @@ int main(int argc, char** argv) {
         GhostUpdate(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow);
         ScoreUpdate(&scoreBoard, &p1, &p2, &window);
         scoreBoard.render(&window);
-
         manager.updatePortals();
         int preference = rand()%2 + 1;
         if(preference == 1){
@@ -376,14 +374,28 @@ int main(int argc, char** argv) {
 			manager.checkIfTeleport(&p2);
 			manager.checkIfTeleport(&p1);
 		}
-        p1.pacpacCollision(&p2);
         manager.renderPortals(&window);
         RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow, &window);
         renderBlackScreen(&p1, &p2, &window, timeNow);
         window.updateWindow();
         //SDL_Delay(10);
     }
-    
+    g1.free();
+    g2.free();
+    g3.free();
+    g4.free();
+    g5.free();
+    g6.free();
+    g7.free();
+    g8.free();
+    manager.freePortals();
+    p2.free(); p1.free();
+    scoreBoard.free1();
+    if(background != NULL) {
+        SDL_DestroyTexture(background);
+        background = NULL;
+    }
+    maze.free();
     window.free();
     close();
 }

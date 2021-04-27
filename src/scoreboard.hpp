@@ -12,8 +12,10 @@
 
 class Scoreboard {
 	public:
+	void free1();
 	Scoreboard();
 	Scoreboard(SDL_Rect* rect, Window* window);
+	void free();
 	void loadTexture(Window* window);
 	void loadRenderedText(Window* window);
 	void render(Window* window);
@@ -38,6 +40,30 @@ class Scoreboard {
 	int time;
 };
 
+void Scoreboard::free1() {
+	if(bgTexture != NULL) {
+		SDL_DestroyTexture(bgTexture);
+		bgTexture = NULL;
+	}
+	if(P1 != NULL) {
+		SDL_DestroyTexture(P1);
+		P1 = NULL;
+	}
+	if(P2 != NULL) {
+		SDL_DestroyTexture(P2);
+		P2 = NULL;
+	}
+	if(scoreFont != NULL) {
+		TTF_CloseFont(scoreFont);
+		scoreFont = NULL;
+	}
+	if(timerFont != NULL) {
+		TTF_CloseFont(timerFont);
+		timerFont = NULL;
+	}
+	free();
+}
+
 
 Scoreboard::Scoreboard() {
 	location.x = 1025;
@@ -47,6 +73,13 @@ Scoreboard::Scoreboard() {
 	bgTexture = NULL;
 	scoreFont = NULL;
 	timerFont = NULL;
+	P1 = NULL;
+	P2 = NULL;
+	scoreP1 = NULL;
+	scoreP2 = NULL;
+	livesP2 = NULL;
+	livesP1 = NULL;
+	timer = NULL;
 	time = 0;
 }
 
@@ -55,6 +88,13 @@ Scoreboard::Scoreboard(SDL_Rect* rect, Window* window) {
 	bgTexture = NULL;
 	scoreFont = NULL;
 	timerFont = NULL;
+	P1 = NULL;
+	P2 = NULL;
+	scoreP1 = NULL;
+	scoreP2 = NULL;
+	livesP2 = NULL;
+	livesP1 = NULL;
+	timer = NULL;
 	time = 0;
 	timeText.str("");
 	scoreP1Text.str("");
@@ -63,6 +103,29 @@ Scoreboard::Scoreboard(SDL_Rect* rect, Window* window) {
 	livesP2Text.str("");
 	loadTexture(window);
 } 
+
+void Scoreboard::free() {
+	if(scoreP1 != NULL) {
+		SDL_DestroyTexture(scoreP1);
+		scoreP1 = NULL;
+	}
+	if(scoreP2 != NULL) {
+		SDL_DestroyTexture(scoreP2);
+		scoreP2 = NULL;
+	}
+	if(livesP1 != NULL) {
+		SDL_DestroyTexture(livesP1);
+		livesP1 = NULL;
+	}
+	if(livesP2 != NULL) {
+		SDL_DestroyTexture(livesP2);
+		livesP2 = NULL;
+	}
+	if(timer != NULL) {
+		SDL_DestroyTexture(timer);
+		timer = NULL;
+	}
+}
 
 void Scoreboard::loadTexture(Window* window) {
 	SDL_Surface* background = IMG_Load("../img/background2.png");
@@ -98,7 +161,7 @@ void Scoreboard::loadTexture(Window* window) {
             SDL_FreeSurface(p1);
     	}
     	SDL_Surface* p2 = TTF_RenderText_Solid(scoreFont, "Player 2", textColor);
-        if(p1 == NULL)
+        if(p2 == NULL)
         {
             std::cout << "Unable to render text texture! SDL_ttf Error: " << TTF_GetError() << "\n";
         }
@@ -114,6 +177,7 @@ void Scoreboard::loadTexture(Window* window) {
 }
 
 void Scoreboard::loadRenderedText(Window* window) {
+    free();
     if(scoreFont == NULL )
     {
         std::cout << "Unable to load font! SDL_ttf Error: " << TTF_GetError() << "\n"; 

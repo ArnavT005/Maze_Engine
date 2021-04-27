@@ -10,6 +10,7 @@ class Portal {
 
 	public:
 
+	void free();
 	Portal();
 	Portal(int screenX, int screenY, Window* window);
 	void loadTexture(Window* window);
@@ -28,6 +29,22 @@ class Portal {
 	SDL_Texture* closing;
 };
 
+
+void Portal::free() {
+	if(opening != NULL) {
+		SDL_DestroyTexture(opening);
+		opening = NULL;
+	}
+	if(closing != NULL) {
+		SDL_DestroyTexture(closing);
+		closing = NULL;
+	}
+	if(active != NULL) {
+		SDL_DestroyTexture(active);
+		active = NULL;
+	}
+
+}
 
 Portal::Portal() {
 	screenX = screenY = 0;

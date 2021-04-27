@@ -29,6 +29,7 @@ class Pacman {
 
     public:
 
+   	void free();
     Pacman();
     Pacman(Maze* maze, Window* window, int i);
     void loadTexture(Window* window);
@@ -71,11 +72,31 @@ class Pacman {
     SDL_Texture* left;
 
     SDL_Texture* die;
-    SDL_Texture* respawn;
-
 };
 
 
+void Pacman::free() {
+	if(up != NULL) {
+		SDL_DestroyTexture(up);
+		up = NULL;
+	}
+	if(right != NULL) {
+		SDL_DestroyTexture(right);
+		right = NULL;
+	}
+	if(down != NULL) {
+		SDL_DestroyTexture(down);
+		down = NULL;
+	}
+	if(left != NULL) {
+		SDL_DestroyTexture(left);
+		left = NULL;
+	}
+	if(die != NULL) {
+		SDL_DestroyTexture(die);
+		die = NULL;
+	}
+}
 
 Pacman::Pacman() {
 	rowAligned = colAligned = false;
@@ -228,7 +249,7 @@ void Pacman::loadTexture(Window* window) {
 
 void Pacman::handleEvent(SDL_Event &e, const Uint8* keyStates) {
 	if(!isDead) {
-		if(type == 1 && e.type == SDL_KEYDOWN && e.key.repeat == 0) {
+		if(type == 2 && e.type == SDL_KEYDOWN && e.key.repeat == 0) {
 			int num = 0;
 			if(keyStates[SDL_SCANCODE_UP] == 1) num ++;
 			if(keyStates[SDL_SCANCODE_RIGHT] == 1) num ++;
@@ -244,7 +265,7 @@ void Pacman::handleEvent(SDL_Event &e, const Uint8* keyStates) {
 				}
 			}
 		}
-		else if(type == 1 && e.type == SDL_KEYUP && e.key.repeat == 0) {
+		else if(type == 2 && e.type == SDL_KEYUP && e.key.repeat == 0) {
 			switch(e.key.keysym.sym) {
 				case SDLK_UP: if(velY < 0) { velY += PACMAN_VEL; state = STILL_UP; } frameCount = 0; break;
 				case SDLK_DOWN: if(velY > 0) { velY -= PACMAN_VEL; state = STILL_DOWN; } frameCount = 0; break;
@@ -253,7 +274,7 @@ void Pacman::handleEvent(SDL_Event &e, const Uint8* keyStates) {
 				default: break;
 			}
 		}
-		else if(type == 2 && e.type == SDL_KEYDOWN && e.key.repeat == 0) {
+		else if(type == 1 && e.type == SDL_KEYDOWN && e.key.repeat == 0) {
 			int num = 0;
 			if(keyStates[SDL_SCANCODE_W] == 1) num ++;
 			if(keyStates[SDL_SCANCODE_D] == 1) num ++;
@@ -269,7 +290,7 @@ void Pacman::handleEvent(SDL_Event &e, const Uint8* keyStates) {
 				}
 			}
 		}
-		else if(type == 2 && e.type == SDL_KEYUP && e.key.repeat == 0) {
+		else if(type == 1 && e.type == SDL_KEYUP && e.key.repeat == 0) {
 			switch(e.key.keysym.sym) {
 				case SDLK_w: if(velY < 0) { velY += PACMAN_VEL; state = STILL_UP; } frameCount = 0; break;
 				case SDLK_s: if(velY > 0) { velY -= PACMAN_VEL; state = STILL_DOWN; } frameCount = 0; break;

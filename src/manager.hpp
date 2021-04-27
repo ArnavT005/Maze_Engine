@@ -18,6 +18,7 @@ class Manager {
     void updatePortals();
     void renderPortals(Window* window);
     void checkIfTeleport(Pacman* pac);
+    void freePortals();
 	
 	Maze* maze;
 	std::vector<Eatable> eatables;
@@ -128,10 +129,18 @@ void Manager::checkIfTeleport(Pacman* pac) {
                 pac->colliderSphere.center.x = pac->parryCircle.center.x = pac->screenX + BOX_WIDTH / 2;
                 pac->colliderSphere.center.y = pac->parryCircle.center.y = pac->screenY + BOX_HEIGHT / 2;
                 portals[portalNum].closePortal();
+                portals[i].closePortal();
             }    
         }
         else {
             continue;
         }
+    }
+}
+
+void Manager::freePortals() {
+    int size = portals.size();
+    for(int i = 0; i < size; i ++) {
+        portals[i].free();
     }
 }

@@ -13,6 +13,7 @@
 class Maze {
     
     public:
+    void free();
     Maze();
     Maze(int dimension, int blockSize, int dotSize, int padding = 25);
     void setMazeBlock(int i, int j, int degree);
@@ -34,6 +35,13 @@ class Maze {
     std::vector<SDL_Rect> boundaryRectGhost;
     SDL_Texture* texture;
 };
+
+void Maze::free() {
+    if(texture != NULL) {
+        SDL_DestroyTexture(texture);
+        texture = NULL;
+    }
+}
 
 Maze::Maze() {
     dimension = 16;

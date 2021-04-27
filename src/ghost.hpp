@@ -35,7 +35,7 @@ class Ghost {
     static const int GHOST_WIDTH = 35;
     static const int GHOST_HEIGHT = 45;
     static const int ANIMATION_FRAMES = 2;
-
+    void free();
     Ghost();
     Ghost(Ghost &g);
     Ghost(Maze* maze, int j, int k, Window* window);
@@ -93,12 +93,77 @@ class Ghost {
     bool randomOn;				
     bool isDead;
     bool isScared;
-	Window* window;
+    Window* window;
    // int random_seed;
 
 };
 
-
+void Ghost::free() {
+	if(up != NULL) {
+		SDL_DestroyTexture(up);
+		up = NULL;
+	}
+	if(right != NULL) {
+		SDL_DestroyTexture(right);
+		right = NULL;
+	}
+	if(down != NULL) {
+		SDL_DestroyTexture(down);
+		down = NULL;
+	}
+	if(left != NULL) {
+		SDL_DestroyTexture(left);
+		left = NULL;
+	}
+	if(rightAngry != NULL) {
+		SDL_DestroyTexture(rightAngry);
+		rightAngry = NULL;
+	}
+	if(downAngry != NULL) {
+		SDL_DestroyTexture(downAngry);
+		downAngry = NULL;
+	}
+	if(leftAngry != NULL) {
+		SDL_DestroyTexture(leftAngry);
+		leftAngry = NULL;
+	}
+	if(upScared != NULL) {
+		SDL_DestroyTexture(upScared);
+		upScared = NULL;
+	}
+	if(rightScared != NULL) {
+		SDL_DestroyTexture(rightScared);
+		rightScared = NULL;
+	}
+	if(downScared != NULL) {
+		SDL_DestroyTexture(downScared);
+		downScared = NULL;
+	}
+	if(leftScared != NULL) {
+		SDL_DestroyTexture(leftScared);
+		leftScared = NULL;
+	}
+	if(upDead != NULL) {
+		SDL_DestroyTexture(upDead);
+		upDead = NULL;
+	}
+	if(rightDead != NULL) {
+		SDL_DestroyTexture(rightDead);
+		rightDead = NULL;
+	}
+	if(downDead != NULL) {
+		SDL_DestroyTexture(downDead);
+		downDead = NULL;
+	}
+	if(leftDead != NULL) {
+		SDL_DestroyTexture(leftDead);
+		leftDead = NULL;
+	}
+	if(final != NULL) {
+		SDL_DestroyTexture(final);
+		final = NULL;
+	}
+}
 
 Ghost::Ghost() {
 	rowAligned = colAligned = false;
@@ -124,6 +189,22 @@ Ghost::Ghost() {
 	randomOn = false;
 	isDead = false;
 	isScared = false;
+	up = NULL;
+    right = NULL;
+    down = NULL;
+    left = NULL;			// rendering textures
+    rightAngry = NULL;
+    downAngry = NULL;
+    leftAngry = NULL;		// rendering angry textures
+    upScared = NULL;
+    rightScared = NULL;
+    downScared = NULL;
+    leftScared = NULL;    // rendering scared textures
+    rightDead = NULL;
+    upDead = NULL;
+    downDead = NULL;
+    leftDead = NULL;
+    final = NULL;
 }
 
 Ghost::Ghost(Ghost &g){
@@ -167,7 +248,6 @@ Ghost::Ghost(Ghost &g){
 	isDead = g.isDead;
 	isScared = g.isScared;
 	window = g.window;
-	loadTexture(window);
 
 }
 
