@@ -89,6 +89,7 @@ class Ghost {
     SDL_Texture* upDead;
     SDL_Texture* downDead;
     SDL_Texture* leftDead;
+    SDL_Texture* final;
     bool randomOn;				
     bool isDead;
     bool isScared;
@@ -160,6 +161,7 @@ Ghost::Ghost(Ghost &g){
     upDead = g.upDead;
     leftDead = g.leftDead;
     downDead = g.downDead;
+    final = g.final;
     randomOn = g.randomOn;
 	colliderSphere = g.colliderSphere;
 	isDead = g.isDead;
@@ -381,6 +383,19 @@ void Ghost::loadTexture(Window* window) {
 		SDL_FreeSurface(deadDown);
 	if(deadLeft != NULL)
 		SDL_FreeSurface(deadLeft);
+	SDL_Surface* finalSurf = IMG_Load("../img/final.png");
+	if(finalSurf == NULL) {
+		std::cout << "Unable to load dead images! SDL_Image Error: " << IMG_GetError() << "\n";
+		success = false;
+	}
+	else {
+		final = SDL_CreateTextureFromSurface(window->getRenderer(), finalSurf);
+		if(final == NULL) {
+			std::cout <<  "Unable to create texture from image! SDL_Image Error: " << IMG_GetError() << "\n";
+			success = false;
+		}
+		SDL_FreeSurface(finalSurf);
+	}
 }
 
 void Ghost::checkAlignment() {
@@ -474,8 +489,8 @@ int Ghost::moveTo(){
    			BFS(pacLoc.x, pacLoc.y, distance);
    			if(distance[blkX][blkY] > 3 && blkX == destinationX && blkY == destinationY) {
    				mode = 2;
-   				destinationX = pacLoc.x;
-   				destinationY = pacLoc.y;
+   				// destinationX = pacLoc.x;
+   				// destinationY = pacLoc.y;
    			}
    			else if(distance[blkX][blkY] > 3) {
    				if(destX != destinationX || destY != destinationY) {
@@ -499,7 +514,7 @@ int Ghost::moveTo(){
     	}
         return moveDir;
     }
-    else if(mode == 2){
+    else if(mode == 2 || mode == 5){
 		if(type == TYPE_BLINKY){
 	        destY = pacLoc.y; destX = pacLoc.x;
 	        moveDir = BFS(destX, destY, distance);
@@ -568,13 +583,24 @@ int Ghost::moveTo(){
 	        destX = pacLoc.x; destY = pacLoc.y;
 	        moveDir = BFS(destX, destY, distance);
 	        if(distance[blkX][blkY] < 3){
-	        	mode = 1; 
-	        	destinationX = rand() % dimension; 
-	        	destinationY = rand() % dimension;
+	        	if(mode != 5) mode = 1; 
+        		destinationX = rand() % dimension; 
+        		destinationY = rand() % dimension;
+        		randomOn = true;
 	        }
 	        else {
-	        	destinationX = destX;
-	        	destinationY = destY;
+	        	if(!randomOn) {
+	        		destinationX = destX;
+	        		destinationY = destY;
+	        	}
+	        	else {
+		        	moveDir = BFS(destinationX, destinationY, distance);
+		        	if(moveDir == 0) {
+		        		destinationX = destX;
+		        		destinationY = destY;
+		        		randomOn = false;
+		        	}	
+		        }	
 	        }
 	        return moveDir;
 	    }
@@ -835,8 +861,10 @@ void Ghost::render(Window* window) {
 				window->renderTexture(up, &stillPosition, &onScreenRect);
 			else if(mode == 3)
 				window->renderTexture(upScared, &stillPosition, &onScreenRect);	
-			else 
+			else if(mode == 4)
 				window->renderTexture(upDead, &stillPosition, &onScreenRect);
+			else 
+				window->renderTexture(final, &stillPosition, &onScreenRect);
 			break;
 		case STILL_RIGHT: 
 			if(mode == 1)
@@ -845,8 +873,10 @@ void Ghost::render(Window* window) {
 				window->renderTexture(rightAngry, &stillPosition, &onScreenRect);	
 			else if(mode == 3)
 				window->renderTexture(rightScared, &stillPosition, &onScreenRect);	
+			else if(mode == 4)
+				window->renderTexture(rightDead, &stillPosition, &onScreenRect);	
 			else 
-				window->renderTexture(rightDead, &stillPosition, &onScreenRect);				
+				window->renderTexture(final, &stillPosition, &onScreenRect);				
 			break;
 		case STILL_DOWN: 
 			if(mode == 1)
@@ -855,8 +885,10 @@ void Ghost::render(Window* window) {
 				window->renderTexture(downAngry, &stillPosition, &onScreenRect);
 			else if(mode == 3)
 				window->renderTexture(downScared, &stillPosition, &onScreenRect);
-			else 
+			else if(mode == 4)
 				window->renderTexture(downDead, &stillPosition, &onScreenRect);		
+			else 
+				window->renderTexture(final, &stillPosition, &onScreenRect);
 			break;
 		case STILL_LEFT: 
 			if(mode == 1)
@@ -865,8 +897,10 @@ void Ghost::render(Window* window) {
 				window->renderTexture(leftAngry, &stillPosition, &onScreenRect);
 			else if(mode == 3)
 				window->renderTexture(leftScared, &stillPosition, &onScreenRect);	
-			else 
+			else if(mode == 4)
 				window->renderTexture(leftDead, &stillPosition, &onScreenRect);
+			else 
+				window->renderTexture(final, &stillPosition, &onScreenRect);
 			break;			
 		case MOVE_UP:
 			if(mode == 1 || mode == 2) {
@@ -877,9 +911,13 @@ void Ghost::render(Window* window) {
 				window->renderTexture(upScared, &movingPosition, &onScreenRect);
 				frameCount++;
 			}
-			else {
+			else if(mode == 4){
 				window->renderTexture(upDead, &stillPosition, &onScreenRect);		
 				frameCount = 0;
+			}
+			else {
+				window->renderTexture(final, &movingPosition, &onScreenRect);
+				frameCount++;
 			}
 			break;
 		case MOVE_RIGHT:
@@ -895,9 +933,13 @@ void Ghost::render(Window* window) {
 				window->renderTexture(rightScared, &movingPosition, &onScreenRect);
 				frameCount++;
 			}
-			else  {
+			else if(mode == 4) {
 				window->renderTexture(rightDead, &stillPosition, &onScreenRect);
 				frameCount = 0;
+			}
+			else {
+				window->renderTexture(final, &movingPosition, &onScreenRect);
+				frameCount++;
 			}
 			break;
 		case MOVE_DOWN:
@@ -913,9 +955,13 @@ void Ghost::render(Window* window) {
 				window->renderTexture(downScared, &movingPosition, &onScreenRect);
 				frameCount++;
 			}
-			else {
+			else if(mode == 4){
 				window->renderTexture(downDead, &stillPosition, &onScreenRect);
 				frameCount = 0;
+			}
+			else {
+				window->renderTexture(final, &movingPosition, &onScreenRect);
+				frameCount++;
 			}
 			break;
 		case MOVE_LEFT:
@@ -933,9 +979,13 @@ void Ghost::render(Window* window) {
 				frameCount++;
 
 			}
-			else {
+			else if(mode == 4){
 				window->renderTexture(leftDead, &stillPosition, &onScreenRect);
 				frameCount = 0;
+			}
+			else {
+				window->renderTexture(final, &movingPosition, &onScreenRect);
+				frameCount++;
 			}
 			break;			
 	}

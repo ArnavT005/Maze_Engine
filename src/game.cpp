@@ -10,7 +10,9 @@
 
 int timeToChangeMode = 10000;
 int timeToRandomize = 20000;
-bool changedMode1 = false, changedMode2 = false; 
+int timeToFinale = 30000;
+bool changeMode = false, changedMode1 = false, changedMode2 = false; 
+bool finalMode = false, createNew = false;
 
 bool SDL_init() {
     bool success = true;
@@ -72,7 +74,7 @@ void ScoreUpdate(Scoreboard* board, Pacman* p1, Pacman* p2, Window* window) {
     board->loadRenderedText(window);
 }
 
-void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* g4, Ghost* g5, Ghost* g6, Ghost* g7, Uint32 time) {
+void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* g4, Ghost* g5, Ghost* g6, Ghost* g7, Ghost* g8, Uint32 time) {
     g1->update(p1, p2);
     g2->update(p1, p2);
     g3->update(p1, p2);
@@ -107,10 +109,18 @@ void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* 
 		  g6->checkPacmanCollision(p1);	
 		  g6->checkPacmanCollision(p2);
         }
+        if(time > timeToFinale) {
+            if(createNew) {
+                g8->update(p2, p1);
+                g8->move();
+                g8->checkPacmanCollision(p1); 
+                g8->checkPacmanCollision(p2);
+            }
+        }
 	}
 }   
 
-void RenderElements(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Ghost* g5, Ghost* g6, Ghost* g7, Uint32 time, Window* window) {
+void RenderElements(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Ghost* g5, Ghost* g6, Ghost* g7, Ghost* g8, Uint32 time, Window* window) {
     p1->render(window);
     p2->render(window);
     g1->render(window);
@@ -124,39 +134,89 @@ void RenderElements(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost* g3, Gho
         }
         if(changedMode2) {
             g6->render(window);
-        }    
+        }   
+        if(time >= timeToFinale) {
+            if(createNew) {
+                g8->render(window);
+            }
+        } 
     }
+
 }
 
-void switchGhostMode(Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4) {
-    if(g1->mode != 3 && g1->mode != 4) {
-        g1->mode = 2;
+void switchGhostMode(int mode, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Ghost* g5, Ghost* g6, Ghost* g7, Ghost* g8) {
+    if(g1 != NULL) {
+        if(g1->mode != 3 && g1->mode != 4) {
+            g1->mode = mode;
+        }
+        else {
+            g1->prevMode = mode;
+        }
+    }    
+    if(g2 != NULL) {
+        if(g2->mode != 3 && g2->mode != 4) {
+            g2->mode = mode;
+        }
+        else {
+            g2->prevMode = mode;
+        }
+    }  
+    if(g3 != NULL) {
+        if(g3->mode != 3 && g3->mode != 4) {
+            g3->mode = mode;
+        }
+        else {
+            g3->prevMode = mode;
+        }
+    }  
+    if(g4 != NULL) {
+        if(g4->mode != 3 && g4->mode != 4) {
+            g4->mode = mode;
+        }
+        else {
+            g4->prevMode = mode;
+        }
     }
-    else {
-        g1->prevMode = 2;
+    if(g5 != NULL) {
+        if(g5->mode != 3 && g5->mode != 4) {
+            g5->mode = mode;
+        }
+        else {
+            g5->prevMode = mode;
+        }
     }
-    if(g2->mode != 3 && g2->mode != 4) {
-        g2->mode = 2;
+    if(g6 != NULL) {
+        if(g6->mode != 3 && g6->mode != 4) {
+            g6->mode = mode;
+        }
+        else {
+            g6->prevMode = mode;
+        }
     }
-    else {
-        g2->prevMode = 2;
+    if(g7 != NULL) {
+        if(g7->mode != 3 && g7->mode != 4) {
+            g7->mode = mode;
+        }
+        else {
+            g7->prevMode = mode;
+        }
     }
-    if(g3->mode != 3 && g3->mode != 4) {
-        g3->mode = 2;
-    }
-    else {
-        g3->prevMode = 2;
-    }
-    if(g4->mode != 3 && g4->mode != 4) {
-        g4->mode = 2;
-    }
-    else {
-        g4->prevMode = 2;
-    }
+    if(g8 != NULL) {
+        if(g8->mode != 3 && g8->mode != 4) {
+            g8->mode = mode;
+        }
+        else {
+            g8->prevMode = mode;
+        }
+    }          
 }
 
-void renderBlackScreen(Pacman* p1, Pacman* p2, Window* window) {
-    SDL_SetRenderDrawColor(window->getRenderer(), 0x00, 0x00, 0x00, 0xFF);
+void renderBlackScreen(Pacman* p1, Pacman* p2, Window* window, Uint32 timeNow) {
+    if(timeNow >= timeToFinale)
+        SDL_SetRenderDrawColor(window->getRenderer(), 0x00, 0x00, 0x00, 0x00);
+    else
+        SDL_SetRenderDrawColor(window->getRenderer(), 0x00, 0x00, 0x00, 0x00);
+    SDL_SetRenderDrawBlendMode(window->getRenderer(), SDL_BLENDMODE_BLEND);
     SDL_Point points[952576];
     int n = 0;
     for(int i = 25; i <= 1000; i ++) {
@@ -174,6 +234,7 @@ void renderBlackScreen(Pacman* p1, Pacman* p2, Window* window) {
         }
     }
     SDL_RenderDrawPoints(window->getRenderer(), points, n);
+    SDL_SetRenderDrawBlendMode(window->getRenderer(), SDL_BLENDMODE_NONE);
 }
 
 int main(int argc, char** argv) {
@@ -228,7 +289,7 @@ int main(int argc, char** argv) {
 	Ghost g5;
 	Ghost g6;
 	Ghost g7(&maze, TYPE_CLYDE, 2, &window);
-
+    Ghost g8;
     window.clearWindow();
 
     bool quit = false;
@@ -273,8 +334,11 @@ int main(int argc, char** argv) {
         p1.isBuffed = temp;
         p2.isBuffed = temp;
         Uint32 timeNow = SDL_GetTicks() - startTime;
-        if( timeNow >= timeToChangeMode && (!changedMode1 || !changedMode2)) {
-            switchGhostMode(&g1, &g2, &g3, &g4);
+        if(timeNow >= timeToChangeMode && !changeMode) {
+            switchGhostMode(2, &g1, &g2, &g3, &g4, NULL, NULL, &g7, NULL);
+            changeMode = true;
+        }
+        if(timeNow >= timeToChangeMode && (!changedMode1 || !changedMode2)) {   
 			if(g1.mode != 3 && g1.mode != 4) {
                 g5 = g1;
                 changedMode1 = true;
@@ -285,37 +349,20 @@ int main(int argc, char** argv) {
             }    
         }
         if(timeNow >= timeToRandomize && !randomized){
-        	if(g1.mode != 3 && g1.mode != 4)
-                g1.mode = 1;
-            else 
-                g1.prevMode = 1;
-        	if(g2.mode != 3 && g2.mode != 4)
-                g2.mode = 1;
-            else 
-                g2.prevMode = 1;
-            if(g3.mode != 3 && g3.mode != 4)
-                g3.mode = 1;
-            else 
-                g3.prevMode = 1;
-            if(g4.mode != 3 && g4.mode != 4)
-                g4.mode = 1;
-            else 
-                g4.prevMode = 1;
-            if(g5.mode != 3 && g5.mode != 4)
-                g5.mode = 1;
-            else 
-                g5.prevMode = 1;
-            if(g6.mode != 3 && g6.mode != 4)
-                g6.mode = 1;
-            else 
-                g6.prevMode = 1;
-            if(g7.mode != 3 && g7.mode != 4)
-                g7.mode = 1;
-            else 
-                g7.prevMode = 1;
-        	randomized = true;
+        	switchGhostMode(1, &g1, &g2, &g3, &g4, &g5, &g6, &g7, NULL);
+            randomized = true;
         }
-        GhostUpdate(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, timeNow);
+        if(timeNow >= timeToFinale && !finalMode) {
+            switchGhostMode(5, &g1, &g2, &g3, &g4, &g5, &g6, &g7, NULL);
+            finalMode = true;
+        }
+        if(timeNow >= timeToFinale && !createNew) {
+            if(g3.mode != 3 && g3.mode != 4) {
+                g8 = g3;
+                createNew = true;
+            }
+        }
+        GhostUpdate(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow);
         ScoreUpdate(&scoreBoard, &p1, &p2, &window);
         scoreBoard.render(&window);
 
@@ -331,8 +378,8 @@ int main(int argc, char** argv) {
 		}
         p1.pacpacCollision(&p2);
         manager.renderPortals(&window);
-        RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, timeNow, &window);
-        renderBlackScreen(&p1, &p2, &window);
+        RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow, &window);
+        renderBlackScreen(&p1, &p2, &window, timeNow);
         window.updateWindow();
         //SDL_Delay(10);
     }
