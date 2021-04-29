@@ -406,6 +406,7 @@ void Pacman::render(Window* window) {
 		window->renderTexture(die, &movingPosition, &colliderBox);
 		frameCount ++;
 		if(frameCount == 66) {
+			Mix_PlayChannel( -1, respawn, 0 );
 			frameCount = 0;
 			isDead = false;
 			screenX = respawnPoint.x;
@@ -468,6 +469,7 @@ bool Pacman::collisionDetectorCircle(Circle* circle, SDL_Rect *rect) {
 
 void Pacman::pacpacCollision(Pacman* pac) {
 	if(collisionDetectorCirclesOnly(&(this->colliderSphere), &(pac->colliderSphere))) {
+		Mix_PlayChannel( -1, pacPacCollision, 0 );
 		int x1 = this->colliderSphere.center.x, x2 = pac->colliderSphere.center.x;
 		int y1 = this->colliderSphere.center.y, y2 = pac->colliderSphere.center.y;
 		int sepX = x1 >= x2 ? x1 - x2 : x2 - x1;

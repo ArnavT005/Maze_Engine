@@ -138,6 +138,7 @@ void Eatable::checkIfEaten(bool &isBuffed) {
 		if(!isEaten) {
 			isEaten = true;
 			if(type == FIFTY_POINT) {
+				Mix_PlayChannel( -1, powerupLarge, 0 );
 				isBuffed = true;
 				if(ifCollision1 && ifCollision2){
 					p1->score += 25;
@@ -147,6 +148,7 @@ void Eatable::checkIfEaten(bool &isBuffed) {
 				else if(ifCollision2){p2->score += 50;}
 			}
 			else if(type == TEN_POINT) {
+				Mix_PlayChannel( -1, powerupSmall, 0 );
 				if(ifCollision1 && ifCollision2){
 					p1->score += 5;	
 					p2->score += 5;

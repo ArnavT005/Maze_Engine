@@ -1,12 +1,14 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include "sound.hpp"
 #include "window.hpp"
 #include "maze.hpp"
 #include "pacman.hpp"
 #include "ghost.hpp"
 #include "manager.hpp"
 #include "scoreboard.hpp"
+
 
 int timeToChangeMode = 30000;
 int timeToRandomize = 60000;
@@ -298,7 +300,9 @@ int main(int argc, char** argv) {
 
     scoreBoard.start = startTime;
     bool randomized = false;
-
+    LoadMusic();
+	Mix_PlayMusic( bground, -1 );
+    Mix_PlayChannel( -1, start, 0 );
     while(!quit) {
         int i = 0;
         temp = false;
@@ -380,6 +384,7 @@ int main(int argc, char** argv) {
         window.updateWindow();
         //SDL_Delay(10);
     }
+    Mix_HaltMusic();
     g1.free();
     g2.free();
     g3.free();
@@ -397,6 +402,7 @@ int main(int argc, char** argv) {
     }
     maze.free();
     window.free();
+    ClearMusic();
     close();
 }
 

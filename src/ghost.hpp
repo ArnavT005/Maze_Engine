@@ -8,6 +8,7 @@
 #include "window.hpp"
 #include "pacman.hpp"
 
+
 using namespace std;
 
 
@@ -1217,6 +1218,7 @@ void Ghost::checkPacmanCollision(Pacman* pac1) {
 	if(checkCollision && !isScared && !isDead) {
 		if(!(pac1->isDead)) {
 			pac1->isDead = true;
+			Mix_PlayChannel( -1, pacDeath, 0 );
 			pac1->parry = false;
 			pac1->frameCount = 0;
 			pac1->parryCount = 0;
@@ -1230,6 +1232,7 @@ void Ghost::checkPacmanCollision(Pacman* pac1) {
 		GHOST_VEL = 5;
 		isScared = false;
 		isDead = true;
+		Mix_PlayChannel( -1, ghostDeath, 0 );
 		SDL_Point point = maze->screenToBlockCoordinate(screenX, screenY);
 		SDL_Point screenPoint = maze->getBlockScreenCoordinate(point.x, point.y);
 		screenX = screenPoint.x;
