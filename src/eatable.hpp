@@ -62,6 +62,7 @@ Eatable::Eatable(int x, int y, int w, int h, int type, Window* window) {
 	success = true;
 
 	loadTexture(window);
+	LoadMusic();
 }
 
 void Eatable::setValues(int x, int y, int w, int h, int type, Window* window) {
@@ -138,7 +139,7 @@ void Eatable::checkIfEaten(bool &isBuffed) {
 		if(!isEaten) {
 			isEaten = true;
 			if(type == FIFTY_POINT) {
-				Mix_PlayChannel( -1, powerupLarge, 0 );
+				Mix_PlayChannel(8, powerupLarge, 0);
 				isBuffed = true;
 				if(ifCollision1 && ifCollision2){
 					p1->score += 25;
@@ -148,7 +149,7 @@ void Eatable::checkIfEaten(bool &isBuffed) {
 				else if(ifCollision2){p2->score += 50;}
 			}
 			else if(type == TEN_POINT) {
-				Mix_PlayChannel( -1, powerupSmall, 0 );
+				Mix_PlayChannel(9, powerupSmall, 0);
 				if(ifCollision1 && ifCollision2){
 					p1->score += 5;	
 					p2->score += 5;

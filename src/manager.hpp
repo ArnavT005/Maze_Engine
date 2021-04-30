@@ -128,6 +128,7 @@ void Manager::checkIfTeleport(Pacman* pac) {
                 pac->colliderBox.y = pac->screenY;
                 pac->colliderSphere.center.x = pac->parryCircle.center.x = pac->screenX + BOX_WIDTH / 2;
                 pac->colliderSphere.center.y = pac->parryCircle.center.y = pac->screenY + BOX_HEIGHT / 2;
+                Mix_PlayChannel(16, teleport, 0);
                 portals[portalNum].closePortal();
                 portals[i].closePortal();
             }    

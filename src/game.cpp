@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
 #include "sound.hpp"
 #include "window.hpp"
@@ -10,16 +11,17 @@
 #include "scoreboard.hpp"
 
 
-int timeToChangeMode = 30000;
-int timeToRandomize = 60000;
-int timeToFinale = 70000;
+int timeToChangeMode = 34000;
+int timeToRandomize = 64000;
+int timeToFinale = 74000;
+int finishTime = 104000;
 bool changeMode = false, changedMode1 = false, changedMode2 = false; 
 bool finalMode = false, createNew = false;
 SDL_Point points[952576];
 
 bool SDL_init() {
     bool success = true;
-    if(SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         std::cout << "SDL unable to initialize! SDL Error: " << SDL_GetError() << "\n";
         success = false;
     }
@@ -32,11 +34,16 @@ bool SDL_init() {
             std::cout << "TTF unable to initialize! SDL_ttf Error: " << TTF_GetError() << "\n";
             success = false;
         }
+        if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+            std::cout << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << "\n";
+        }
+
     }
     return success;
 }
 
 void close() {
+    Mix_Quit();
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();
@@ -45,24 +52,42 @@ void close() {
 
 
 void ScoreUpdate(Scoreboard* board, Pacman* p1, Pacman* p2, Window* window) {
-    int timeSeconds = (SDL_GetTicks() - board->start) / 1000;
+    int time = SDL_GetTicks() - board->start;
+    int timeSeconds = (time - 4000) / 1000;
     int timeMinutes = timeSeconds / 60;
     timeSeconds -= 60 * timeMinutes;
     board->timeText.str("");
-    if(timeMinutes < 10) {
-        if(timeSeconds < 10) {
-            board->timeText << "Time- 0" << timeMinutes << ":0" << timeSeconds;
-        }
-        else {
-            board->timeText << "Time- 0" << timeMinutes << ":" << timeSeconds;
-        }
+    if(time < 1050) {
+        board->timeText << "3";
+    }
+    else if(time < 2100) {
+        board->timeText << "2";
+    }
+    else if(time < 3150) {
+        board->timeText << "1";
+    }
+    else if(time < 4000) {
+        board->timeText << "GO!!";
+    }
+    else if(time > finishTime) {
+        board->timeText << "GAME OVER!!";
     }
     else {
-        if(timeSeconds < 10) {
-            board->timeText << "Time- " << timeMinutes << ":0" << timeSeconds;
+        if(timeMinutes < 10) {
+            if(timeSeconds < 10) {
+                board->timeText << "Time- 0" << timeMinutes << ":0" << timeSeconds;
+            }
+            else {
+                board->timeText << "Time- 0" << timeMinutes << ":" << timeSeconds;
+            }
         }
         else {
-            board->timeText << "Time- " << timeMinutes << ":" << timeSeconds;
+            if(timeSeconds < 10) {
+                board->timeText << "Time- " << timeMinutes << ":0" << timeSeconds;
+            }
+            else {
+                board->timeText << "Time- " << timeMinutes << ":" << timeSeconds;
+            }
         }
     }
     board->scoreP1Text.str("");
@@ -283,13 +308,13 @@ int main(int argc, char** argv) {
         manager.eatables[k].setPacman(&p1, &p2);
     }
 
-    Ghost g1(&maze, TYPE_BLINKY, 1, &window);
-    Ghost g2(&maze, TYPE_PINKY, 1, &window);
-    Ghost g3(&maze, TYPE_INKY, 1, &window);
-    Ghost g4(&maze, TYPE_CLYDE, 1, &window);
+    Ghost g1(&maze, TYPE_BLINKY, 1, &window, 0);
+    Ghost g2(&maze, TYPE_PINKY, 1, &window, 1);
+    Ghost g3(&maze, TYPE_INKY, 1, &window, 2);
+    Ghost g4(&maze, TYPE_CLYDE, 1, &window, 3);
 	Ghost g5;
 	Ghost g6;
-	Ghost g7(&maze, TYPE_CLYDE, 2, &window);
+	Ghost g7(&maze, TYPE_CLYDE, 2, &window, 4);
     Ghost g8;
     window.clearWindow();
 
@@ -301,28 +326,35 @@ int main(int argc, char** argv) {
     scoreBoard.start = startTime;
     bool randomized = false;
     LoadMusic();
-	Mix_PlayMusic( bground, -1 );
-    Mix_PlayChannel( -1, start, 0 );
+    Mix_PlayMusic(bground, 0);
+    Mix_VolumeMusic(50);
+    bool startGame = true;
+    bool timer = false;
     while(!quit) {
+        if(!timer && SDL_GetTicks() - startTime > finishTime - 9000) {
+            Mix_PlayChannel(18, tenSecTimer, 0);
+            timer = true;
+        }
         int i = 0;
         temp = false;
-
-        while(SDL_PollEvent(& event)) {
-            if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
-                quit = true;
-            }
-            p1.handleEvent(event, SDL_GetKeyboardState(NULL));
-            p2.handleEvent(event, SDL_GetKeyboardState(NULL));
-            g1.handleEvent(event, &p1, &p2);
-            g2.handleEvent(event, &p1, &p2);
-            g3.handleEvent(event, &p1, &p2);
-            g4.handleEvent(event, &p1, &p2);
-            g7.handleEvent(event, &p1, &p2);
-            if(changedMode1){
-                g5.handleEvent(event, &p1, &p2);
-            }
-            if(changedMode2) {
-                g6.handleEvent(event, &p1, &p2);
+        if(SDL_GetTicks() - startTime >= 4000) {
+            while(SDL_PollEvent(& event)) {
+                if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
+                    quit = true;
+                }
+                p1.handleEvent(event, SDL_GetKeyboardState(NULL));
+                p2.handleEvent(event, SDL_GetKeyboardState(NULL));
+                g1.handleEvent(event, &p1, &p2);
+                g2.handleEvent(event, &p1, &p2);
+                g3.handleEvent(event, &p1, &p2);
+                g4.handleEvent(event, &p1, &p2);
+                g7.handleEvent(event, &p1, &p2);
+                if(changedMode1){
+                    g5.handleEvent(event, &p1, &p2);
+                }
+                if(changedMode2) {
+                    g6.handleEvent(event, &p1, &p2);
+                }
             }
         }
         window.clearWindow();
@@ -344,10 +376,12 @@ int main(int argc, char** argv) {
         if(timeNow >= timeToChangeMode && (!changedMode1 || !changedMode2)) {   
 			if(g1.mode != 3 && g1.mode != 4) {
                 g5 = g1;
+                g5.channel = 5;
                 changedMode1 = true;
             }
             if(g2.mode != 3 && g2.mode != 4) {
 			    g6 = g2;
+                g6.channel = 6;
                 changedMode2 = true;
             }    
         }
@@ -362,6 +396,7 @@ int main(int argc, char** argv) {
         if(timeNow >= timeToFinale && !createNew) {
             if(g3.mode != 3 && g3.mode != 4) {
                 g8 = g3;
+                g8.channel = 7;
                 createNew = true;
             }
         }
@@ -382,9 +417,17 @@ int main(int argc, char** argv) {
         RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow, &window);
         renderBlackScreen(&p1, &p2, &window, timeNow);
         window.updateWindow();
-        //SDL_Delay(10);
+        if(startGame) {
+            Mix_PlayChannel(12, start, 0);
+            startGame = false;
+        }
+        if(SDL_GetTicks() - startTime > finishTime + 1000) {
+            break;
+        }
     }
     Mix_HaltMusic();
+    Mix_HaltChannel(-1);
+    SDL_Delay(5000);
     g1.free();
     g2.free();
     g3.free();

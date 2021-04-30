@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <iostream>
+#include <SDL2/SDL_mixer.h>
 #include "maze.hpp"
 #include "window.hpp"
 #include "pacman.hpp"
@@ -21,8 +22,8 @@ enum {
 };
 
 enum GHOST {
-	TYPE_BLINKY, 
-	TYPE_PINKY, 
+	TYPE_BLINKY,
+	TYPE_PINKY,
 	TYPE_INKY, 
 	TYPE_CLYDE
 };
@@ -39,7 +40,7 @@ class Ghost {
     void free();
     Ghost();
     Ghost(Ghost &g);
-    Ghost(Maze* maze, int j, int k, Window* window);
+    Ghost(Maze* maze, int j, int k, Window* window, int channel);
     void loadTexture(Window* window);
     void checkAlignment();
     void update(Pacman* pac1, Pacman* pac2);		// handle dynamics
@@ -95,6 +96,8 @@ class Ghost {
     bool isDead;
     bool isScared;
     Window* window;
+
+    int channel;
    // int random_seed;
 
 };
@@ -206,6 +209,7 @@ Ghost::Ghost() {
     downDead = NULL;
     leftDead = NULL;
     final = NULL;
+    channel = 0;
 }
 
 Ghost::Ghost(Ghost &g){
@@ -252,7 +256,7 @@ Ghost::Ghost(Ghost &g){
 
 }
 
-Ghost::Ghost(Maze* maze, int ghostType, int mode, Window* window) {
+Ghost::Ghost(Maze* maze, int ghostType, int mode, Window* window, int channel) {
 
     this->mode = mode;
     this->window = window;
@@ -298,6 +302,7 @@ Ghost::Ghost(Maze* maze, int ghostType, int mode, Window* window) {
 	randomOn = false;
 	isDead = false;
 	isScared = false;
+	this->channel = channel;
 	loadTexture(window);
 }
 
@@ -464,7 +469,7 @@ void Ghost::loadTexture(Window* window) {
 		SDL_FreeSurface(deadDown);
 	if(deadLeft != NULL)
 		SDL_FreeSurface(deadLeft);
-	SDL_Surface* finalSurf = IMG_Load("../img/final.png");
+	SDL_Surface* finalSurf = IMG_Load("../img/dark/final.png");
 	if(finalSurf == NULL) {
 		std::cout << "Unable to load dead images! SDL_Image Error: " << IMG_GetError() << "\n";
 		success = false;
@@ -839,6 +844,7 @@ int Ghost::moveTo(){
 			isScared = false;
 			mode = prevMode;
 			GHOST_VEL = prevVel;
+			Mix_HaltChannel(channel);
 			return 0;
 		}
 		else {
@@ -1127,7 +1133,7 @@ bool Ghost::parryPossible(Pacman* pac1) {
 void Ghost::handleEvent(SDL_Event event, Pacman *pac1, Pacman *pac2) {
 	if((pac1->isDead || pac1->parry) && (pac2->isDead || pac2->parry))
 		return;
-	if(event.type == SDL_KEYDOWN && event.key.repeat == 0 && event.key.keysym.sym == SDLK_m) {
+	if(event.type == SDL_KEYDOWN && event.key.repeat == 0 && event.key.keysym.sym == SDLK_g) {
 		if(!collisionDetectorCircle(&colliderSphere, &pac1->colliderSphere)) {
 			if(collisionDetectorCircle(&colliderSphere, &pac1->parryCircle) && parryPossible(pac1)) {
 				if(mode != 3)
@@ -1151,10 +1157,11 @@ void Ghost::handleEvent(SDL_Event event, Pacman *pac1, Pacman *pac2) {
 				pac1->parryStart = SDL_GetTicks();
 				pac1->parryCount = 0;
 				pac1->score += 40;
+				Mix_PlayChannel(13, parry, 3);
 			}
 		}
 	}
-	if(event.type == SDL_KEYDOWN && event.key.repeat == 0 && event.key.keysym.sym == SDLK_g) {
+	if(event.type == SDL_KEYDOWN && event.key.repeat == 0 && event.key.keysym.sym == SDLK_m) {
 		if(!collisionDetectorCircle(&colliderSphere, &pac2->colliderSphere)) {
 			if(collisionDetectorCircle(&colliderSphere, &pac2->parryCircle) && parryPossible(pac2)) {
 				if(mode != 3)
@@ -1178,6 +1185,7 @@ void Ghost::handleEvent(SDL_Event event, Pacman *pac1, Pacman *pac2) {
 				pac2->parryStart = SDL_GetTicks();
 				pac2->parryCount = 0;
 				pac2->score += 40;
+				Mix_PlayChannel(14, parry, 3);
 			}
 		}
 	}
@@ -1218,7 +1226,13 @@ void Ghost::checkPacmanCollision(Pacman* pac1) {
 	if(checkCollision && !isScared && !isDead) {
 		if(!(pac1->isDead)) {
 			pac1->isDead = true;
-			Mix_PlayChannel( -1, pacDeath, 0 );
+			if(pac1->type == 1) {
+				Mix_HaltChannel(13);
+			}
+			else if(pac1->type == 2) {
+				Mix_HaltChannel(14);
+			}
+			Mix_PlayChannel(10, pacDeath, 0);
 			pac1->parry = false;
 			pac1->frameCount = 0;
 			pac1->parryCount = 0;
@@ -1232,7 +1246,7 @@ void Ghost::checkPacmanCollision(Pacman* pac1) {
 		GHOST_VEL = 5;
 		isScared = false;
 		isDead = true;
-		Mix_PlayChannel( -1, ghostDeath, 0 );
+		Mix_PlayChannel(11, ghostDeath, 0);
 		SDL_Point point = maze->screenToBlockCoordinate(screenX, screenY);
 		SDL_Point screenPoint = maze->getBlockScreenCoordinate(point.x, point.y);
 		screenX = screenPoint.x;
@@ -1244,5 +1258,7 @@ void Ghost::checkPacmanCollision(Pacman* pac1) {
 		destinationX = maze->dimension / 2;
 		destinationY = maze->dimension / 2;
 		pac1->score += 15;
+		Mix_PlayChannel(channel, retreat, -1);
+
 	}
 }

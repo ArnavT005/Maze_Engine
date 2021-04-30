@@ -237,6 +237,12 @@ void Scoreboard::loadRenderedText(Window* window) {
 	        }
             SDL_FreeSurface(lifep2);
     	}
+    	if(SDL_GetTicks() - start < 4000 || SDL_GetTicks() - start < 104000 && SDL_GetTicks() - start > 94000) {
+    		textColor.r = 0xFF;
+    		textColor.g = 0x00;
+    		textColor.b = 0x00;
+    		textColor.a = 0xFF;
+    	}
     	SDL_Surface* timeSurf = TTF_RenderText_Solid(scoreFont, timeText.str().c_str(), textColor);
         if(timeSurf == NULL)
         {
@@ -256,12 +262,22 @@ void Scoreboard::loadRenderedText(Window* window) {
 void Scoreboard::render(Window* window) {
 	window->renderTexture(bgTexture, &location, &location);
 	SDL_Rect rectP1 = {1040, 25, 180, 60};
-	SDL_Rect rectP2 = {1040, 930, 180, 60};
+	SDL_Rect rectP2 = {1040, 820, 200, 60};
 	SDL_Rect rectscoreP1 = {1040, 85, 200, 60};
 	SDL_Rect rectlivesP1 = {1040, 145, 200, 60};
 	SDL_Rect rectscoreP2 = {1040, 880, 200, 60};
-	SDL_Rect rectlivesP2 = {1040, 820, 200, 60};
+	SDL_Rect rectlivesP2 = {1040, 930, 180, 60};
 	SDL_Rect recttimer = {1040, 450, 200, 60};
+	if(SDL_GetTicks() - start < 3150) {
+		recttimer.x = 1080;
+		recttimer.w = 60;
+		recttimer.h = 80;
+	}
+	else if(SDL_GetTicks() - start < 4000) {
+		recttimer.x = 1080;
+		recttimer.w = 80;
+		recttimer.h = 80;
+	}
 	window->renderTexture(P1, NULL, &rectP1);
 	window->renderTexture(scoreP1, NULL, &rectscoreP1);
 	window->renderTexture(livesP1, NULL, &rectlivesP1);

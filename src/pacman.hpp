@@ -3,6 +3,7 @@
 #include <vector>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 #include "window.hpp"
 #include "maze.hpp"
 
@@ -352,7 +353,7 @@ void Pacman::move() {
 }
 
 void Pacman::render(Window* window) {
-	if(SDL_GetTicks() - parryStart >= 10000) {
+	if(SDL_GetTicks() - parryStart >= 9000) {
 		parry = false;
 		parryCount = 0;
 	}
@@ -406,7 +407,6 @@ void Pacman::render(Window* window) {
 		window->renderTexture(die, &movingPosition, &colliderBox);
 		frameCount ++;
 		if(frameCount == 66) {
-			Mix_PlayChannel( -1, respawn, 0 );
 			frameCount = 0;
 			isDead = false;
 			screenX = respawnPoint.x;
@@ -469,7 +469,7 @@ bool Pacman::collisionDetectorCircle(Circle* circle, SDL_Rect *rect) {
 
 void Pacman::pacpacCollision(Pacman* pac) {
 	if(collisionDetectorCirclesOnly(&(this->colliderSphere), &(pac->colliderSphere))) {
-		Mix_PlayChannel( -1, pacPacCollision, 0 );
+		Mix_PlayChannel(17, pacPacCollision, 0);
 		int x1 = this->colliderSphere.center.x, x2 = pac->colliderSphere.center.x;
 		int y1 = this->colliderSphere.center.y, y2 = pac->colliderSphere.center.y;
 		int sepX = x1 >= x2 ? x1 - x2 : x2 - x1;
