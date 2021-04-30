@@ -9,6 +9,7 @@
 #include "ghost.hpp"
 #include "manager.hpp"
 #include "scoreboard.hpp"
+#include "menu.hpp"
 
 
 int timeToChangeMode = 34000;
@@ -330,6 +331,9 @@ int main(int argc, char** argv) {
     Mix_VolumeMusic(50);
     bool startGame = true;
     bool timer = false;
+
+    //Menu menu(&window);
+
     while(!quit) {
         if(!timer && SDL_GetTicks() - startTime > finishTime - 9000) {
             Mix_PlayChannel(18, tenSecTimer, 0);
@@ -342,6 +346,7 @@ int main(int argc, char** argv) {
                 if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
                     quit = true;
                 }
+                //menu.handleEvent(event);
                 p1.handleEvent(event, SDL_GetKeyboardState(NULL));
                 p2.handleEvent(event, SDL_GetKeyboardState(NULL));
                 g1.handleEvent(event, &p1, &p2);
@@ -416,6 +421,7 @@ int main(int argc, char** argv) {
         manager.renderPortals(&window);
         RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow, &window);
         renderBlackScreen(&p1, &p2, &window, timeNow);
+        //menu.render(&window);
         window.updateWindow();
         if(startGame) {
             Mix_PlayChannel(12, start, 0);
@@ -424,6 +430,7 @@ int main(int argc, char** argv) {
         if(SDL_GetTicks() - startTime > finishTime + 1000) {
             break;
         }
+
     }
     Mix_HaltMusic();
     Mix_HaltChannel(-1);
