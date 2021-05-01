@@ -31,15 +31,23 @@ class Menu {
 	int button2State;
 	int button3State;
 	SDL_Texture* background;
+	SDL_Texture* gameOver;
+
+	SDL_Texture* rematchButton1;
+	SDL_Texture* rematchButton2;
+	SDL_Texture* backToMenuButton1;
+	SDL_Texture* backToMenuButton2;
 	SDL_Texture* newGameButton1;
 	SDL_Texture* newGameButton2;
 	SDL_Texture* localButton1;
 	SDL_Texture* localButton2;
 	SDL_Texture* onlineButton1;
 	SDL_Texture* onlineButton2;
-
 	SDL_Texture* backButton1;
 	SDL_Texture* backButton2;
+
+	SDL_Texture* P1;
+	SDL_Texture* P2;
 
 };
 
@@ -56,6 +64,11 @@ Menu::Menu() {
 	button3State = IDLE;
 
 	background = NULL;
+	gameOver = NULL;
+	rematchButton1 = NULL;
+	rematchButton2 = NULL;
+	backToMenuButton1 = NULL;
+	backToMenuButton2 = NULL;
 	newGameButton1 = NULL;
 	newGameButton2 = NULL;
 	localButton1 = NULL;
@@ -64,6 +77,8 @@ Menu::Menu() {
 	onlineButton2 = NULL;
 	backButton1 = NULL;
 	backButton2 = NULL;
+	P1 = NULL;
+	P2 = NULL;
 }
 
 Menu::Menu(Window* window) {
@@ -117,6 +132,34 @@ void Menu::free() {
 		SDL_DestroyTexture(backButton2);
 		backButton2 = NULL;
 	}
+	if(backToMenuButton1 != NULL) {
+		SDL_DestroyTexture(backToMenuButton1);
+		backToMenuButton1 = NULL;
+	}
+	if(backToMenuButton2 != NULL) {
+		SDL_DestroyTexture(backToMenuButton2);
+		backToMenuButton2 = NULL;
+	}
+	if(gameOver != NULL) {
+		SDL_DestroyTexture(gameOver);
+		gameOver = NULL;
+	}
+	if(rematchButton1 != NULL) {
+		SDL_DestroyTexture(rematchButton1);
+		rematchButton1 = NULL;
+	}
+	if(rematchButton2 != NULL) {
+		SDL_DestroyTexture(rematchButton2);
+		rematchButton2 = NULL;
+	}
+	if(P1 != NULL) {
+		SDL_DestroyTexture(P1);
+		P1 = NULL;
+	}
+	if(P2 != NULL) {
+		SDL_DestroyTexture(P2);
+		P2 = NULL;
+	}
 
 }
 
@@ -132,7 +175,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(bgSurf);
 	}
-	SDL_Surface* newGameSurf1 = IMG_Load("../img/newGameUnPressed.png");
+	SDL_Surface* newGameSurf1 = IMG_Load("../img/Button/newGameUnPressed.png");
 	if(newGameSurf1 == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -143,7 +186,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(newGameSurf1);
 	}
-	SDL_Surface* newGameSurf2 = IMG_Load("../img/newGameHover.png");
+	SDL_Surface* newGameSurf2 = IMG_Load("../img/Button/newGameHover.png");
 	if(newGameSurf2 == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -154,7 +197,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(newGameSurf2);
 	}
-	SDL_Surface* localSurf1 = IMG_Load("../img/localUnPressed.png");
+	SDL_Surface* localSurf1 = IMG_Load("../img/Button/localUnPressed.png");
 	if(localSurf1 == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -165,7 +208,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(localSurf1);
 	}
-	SDL_Surface* onlineSurf1 = IMG_Load("../img/onlineUnPressed.png");
+	SDL_Surface* onlineSurf1 = IMG_Load("../img/Button/onlineUnPressed.png");
 	if(onlineSurf1 == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -176,7 +219,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(onlineSurf1);
 	}
-	SDL_Surface* localSurf2 = IMG_Load("../img/localHover.png");
+	SDL_Surface* localSurf2 = IMG_Load("../img/Button/localHover.png");
 	if(localSurf2 == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -187,7 +230,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(localSurf2);
 	}
-	SDL_Surface* onlineSurf2 = IMG_Load("../img/onlineHover.png");
+	SDL_Surface* onlineSurf2 = IMG_Load("../img/Button/onlineHover.png");
 	if(onlineSurf2 == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -198,7 +241,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(onlineSurf2);
 	}
-	SDL_Surface* backSurf1 = IMG_Load("../img/backUnPressed.png");
+	SDL_Surface* backSurf1 = IMG_Load("../img/Button/backUnPressed.png");
 	if(backSurf1 == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -209,7 +252,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(backSurf1);
 	}
-	SDL_Surface* backSurf2 = IMG_Load("../img/backHover.png");
+	SDL_Surface* backSurf2 = IMG_Load("../img/Button/backHover.png");
 	if(backSurf2 == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -219,6 +262,83 @@ void Menu::loadTexture(Window* window) {
 			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
 		}
 		SDL_FreeSurface(backSurf2);
+	}
+	SDL_Surface* gameOverSurf = IMG_Load("../img/gameOver.png");
+	if(gameOverSurf == NULL) {
+		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+	}
+	else {
+		gameOver = SDL_CreateTextureFromSurface(window->getRenderer(), gameOverSurf);
+		if(gameOver == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+		}
+		SDL_FreeSurface(gameOverSurf);
+	}
+	SDL_Surface* backMenuSurf1 = IMG_Load("../img/Button/backMenuUnPressed.png");
+	if(backMenuSurf1 == NULL) {
+		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+	}
+	else {
+		backToMenuButton1 = SDL_CreateTextureFromSurface(window->getRenderer(), backMenuSurf1);
+		if(backToMenuButton1 == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+		}
+		SDL_FreeSurface(backMenuSurf1);
+	}
+	SDL_Surface* backMenuSurf2 = IMG_Load("../img/Button/backMenuHover.png");
+	if(backMenuSurf2 == NULL) {
+		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+	}
+	else {
+		backToMenuButton2 = SDL_CreateTextureFromSurface(window->getRenderer(), backMenuSurf2);
+		if(backToMenuButton2 == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+		}
+		SDL_FreeSurface(backMenuSurf2);
+	}
+	SDL_Surface* rematchSurf1 = IMG_Load("../img/Button/rematchUnPressed.png");
+	if(rematchSurf1 == NULL) {
+		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+	}
+	else {
+		rematchButton1 = SDL_CreateTextureFromSurface(window->getRenderer(), rematchSurf1);
+		if(rematchButton1 == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+		}
+		SDL_FreeSurface(rematchSurf1);
+	}
+	SDL_Surface* rematchSurf2 = IMG_Load("../img/Button/rematchHover.png");
+	if(rematchSurf2 == NULL) {
+		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+	}
+	else {
+		rematchButton2 = SDL_CreateTextureFromSurface(window->getRenderer(), rematchSurf2);
+		if(rematchButton2 == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+		}
+		SDL_FreeSurface(rematchSurf2);
+	}
+	SDL_Surface* P1Surf = IMG_Load("../img/P1.png");
+	if(P1Surf == NULL) {
+		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+	}
+	else {
+		P1 = SDL_CreateTextureFromSurface(window->getRenderer(), P1Surf);
+		if(P1 == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+		}
+		SDL_FreeSurface(P1Surf);
+	}
+	SDL_Surface* P2Surf = IMG_Load("../img/P2.png");
+	if(P2Surf == NULL) {
+		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+	}
+	else {
+		P2 = SDL_CreateTextureFromSurface(window->getRenderer(), P2Surf);
+		if(P2 == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+		}
+		SDL_FreeSurface(P2Surf);
 	}
 }
 
@@ -259,7 +379,23 @@ void Menu::render(Window* window) {
 		}
 	}
 	else if(isAtEnd) {
-
+		SDL_Rect rematchButton = {593, 780, 200, 65};
+		SDL_Rect backButton = {50, 940, 200, 65};
+		SDL_Rect playerWin = {543, 630, 300, 100};
+		window->renderTexture(gameOver, NULL, &bgRect);
+		if(button1State == HOVER || button1State == PRESSED) {
+			window->renderTexture(rematchButton2, NULL, &rematchButton);
+		}
+		else {
+			window->renderTexture(rematchButton1, NULL, &rematchButton);
+		}
+		if(button2State == HOVER || button2State == PRESSED) {
+			window->renderTexture(backToMenuButton2, NULL, &backButton);
+		}
+		else {
+			window->renderTexture(backToMenuButton1, NULL, &backButton);
+		}
+		window->renderTexture(P1, NULL, &playerWin);
 	}
 }
 
@@ -371,6 +507,61 @@ void Menu::handleEvent(SDL_Event &e) {
 		}
 	}
 	else if(isAtEnd) {
-
+		if(e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
+			int x, y;
+			SDL_GetMouseState(&x, &y);
+			if(x >= 593 && x <= 793 && y >= 780 && y <= 845) {
+				if(e.type == SDL_MOUSEMOTION) {
+					button1State = HOVER;
+				}
+				else if(e.type == SDL_MOUSEBUTTONDOWN) {
+					button1State = PRESSED;
+				}
+				else if(e.type == SDL_MOUSEBUTTONUP) {
+					if(button1State == PRESSED) {
+						button1State = IDLE;
+						isRunning = true;
+						isAtEnd = false;
+						isOver = false;
+						isAtMenuStart = false;
+						isAtMenuMode = false;
+					}
+					else {
+						button1State = HOVER;
+					}
+				}
+			}
+			else {
+				button1State = IDLE;
+			}
+			if(x >= 50 && x <= 250 && y >= 940 && y <= 1000) {
+				if(e.type == SDL_MOUSEMOTION) {
+					button2State = HOVER;
+				}
+				else if(e.type == SDL_MOUSEBUTTONDOWN) {
+					button2State = PRESSED;
+				}
+				else if(e.type == SDL_MOUSEBUTTONUP) {
+					if(button2State == PRESSED) {
+						button2State = IDLE;
+						isRunning = false;
+						isAtEnd = false;
+						isOver = false;
+						isAtMenuStart = true;
+						isAtMenuMode = false;
+					}
+					else {
+						button2State = HOVER;
+					}
+				}
+			}
+			else {
+				button2State = IDLE;
+			}
+		}
+		else {
+			button1State = IDLE;
+			button2State = IDLE;
+		}
 	}
 }

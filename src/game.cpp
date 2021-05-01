@@ -264,98 +264,68 @@ void renderBlackScreen(Pacman* p1, Pacman* p2, Window* window, Uint32 timeNow) {
     SDL_SetRenderDrawBlendMode(window->getRenderer(), SDL_BLENDMODE_NONE);
 }
 
-int main(int argc, char** argv) {
-    if(!SDL_init()) {
-        return 0;
-    }
-    // 1023
-    Window window("Maze", 1405, 1025);
-    if(!window.getSuccess()) {
-        return 0;
-    }
-    srand(time(0));
-    // 20, 35, 13, 25
+void game(Menu* menu, Window* window) {
+    // create maze
     Maze maze(16, 45, 15, 25);
+   
     SDL_Color boundaryColor = {0xFF, 0x00, 0x00, 0xFF};
-    SDL_Texture* background = SDL_CreateTexture(window.getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
+    SDL_Texture* background = SDL_CreateTexture(window->getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
+   
     SDL_Rect bg = {0, 0, 1025, 1025};
     SDL_Rect scr = {1025, 0, 380, 1025};
     SDL_SetTextureBlendMode(background, SDL_BLENDMODE_BLEND);
-    maze.loadTexture(&window);
+    maze.loadTexture(window);
 
-    window.setRenderTarget(background);
-    SDL_DisplayMode DM;
-    SDL_GetCurrentDisplayMode(0, &DM);
-    std::cout << DM.w << " " << DM.h << "\n";
+    window->setRenderTarget(background);
    
-    maze.createBase(&window, 0, 0, boundaryColor);
-    maze.createBasicStructure(&window);
-    maze.generateMazeRandom(&window);
+    maze.createBase(window, 0, 0, boundaryColor);
+    maze.createBasicStructure(window);
+    maze.generateMazeRandom(window);
 
 
-    window.setRenderTarget(NULL);
+    window->setRenderTarget(NULL);
     
+    // create scoreboard
+    Scoreboard scoreBoard(&scr, window);
 
-    Scoreboard scoreBoard(&scr, &window);
-    Pacman p1(&maze, &window, 1);
-	Pacman p2(&maze, &window, 2);
+    // create pacman
+    Pacman p1(&maze, window, 1);
+    Pacman p2(&maze, window, 2);
 
+    // create manager
     Manager manager(&maze);
-    manager.generateEatables(&window);
-    manager.generatePortals(&window);
+    manager.generateEatables(window);
+    manager.generatePortals(window);
     int numEat = manager.eatables.size();
 
     for(int k = 0; k < numEat; k ++) {
         manager.eatables[k].setPacman(&p1, &p2);
     }
 
-    Ghost g1(&maze, TYPE_BLINKY, 1, &window, 0);
-    Ghost g2(&maze, TYPE_PINKY, 1, &window, 1);
-    Ghost g3(&maze, TYPE_INKY, 1, &window, 2);
-    Ghost g4(&maze, TYPE_CLYDE, 1, &window, 3);
-	Ghost g5;
-	Ghost g6;
-	Ghost g7(&maze, TYPE_CLYDE, 2, &window, 4);
+    // create ghosts
+    Ghost g1(&maze, TYPE_BLINKY, 1, window, 0);
+    Ghost g2(&maze, TYPE_PINKY, 1, window, 1);
+    Ghost g3(&maze, TYPE_INKY, 1, window, 2);
+    Ghost g4(&maze, TYPE_CLYDE, 1, window, 3);
+    Ghost g5;
+    Ghost g6;
+    Ghost g7(&maze, TYPE_CLYDE, 2, window, 4);
     Ghost g8;
-    window.clearWindow();
+    
+    // clear window
+    window->clearWindow();
 
-    bool quit = false;
     SDL_Event event;
-    bool temp;
-    
-    LoadMusic();
-    
     bool startGame = true;
     bool timer = false;
-    
-    Menu menu(&window);
 
-    Mix_PlayMusic(bground, -1);
-    Mix_VolumeMusic(50);
-
-    while(!quit) {
-        while(SDL_PollEvent(&event)) {
-            if(event.type == SDL_QUIT) {
-                quit = true;
-            }
-            menu.handleEvent(event);
-            if(menu.isRunning == true) {
-                quit = true;
-            }
-        }
-        window.clearWindow();
-        menu.render(&window);
-        window.updateWindow();
-    }
-
-    quit = false;
-    
     Uint32 startTime = SDL_GetTicks();
     scoreBoard.start = startTime;
 
     bool randomized = false;
+    bool temp;
 
-    while(!quit) {
+    while(menu->isRunning) {
         if(!timer && SDL_GetTicks() - startTime > finishTime - 9000) {
             Mix_PlayChannel(18, tenSecTimer, 0);
             timer = true;
@@ -365,7 +335,7 @@ int main(int argc, char** argv) {
         if(SDL_GetTicks() - startTime >= 4000) {
             while(SDL_PollEvent(& event)) {
                 if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
-                    quit = true;
+                    menu->isRunning = false;
                 }
                 p1.handleEvent(event, SDL_GetKeyboardState(NULL));
                 p2.handleEvent(event, SDL_GetKeyboardState(NULL));
@@ -382,14 +352,14 @@ int main(int argc, char** argv) {
                 }
             }
         }
-        window.clearWindow();
-        window.renderTexture(background, NULL, &bg);
+        window->clearWindow();
+        window->renderTexture(background, NULL, &bg);
         p1.move();
         p2.move();
         p1.pacpacCollision(&p2);
         for(i = 0; i < numEat; i ++) {
             manager.eatables[i].checkIfEaten(temp);
-            manager.eatables[i].render(&window);
+            manager.eatables[i].render(window);
         }
         p1.isBuffed = temp;
         p2.isBuffed = temp;
@@ -399,19 +369,19 @@ int main(int argc, char** argv) {
             changeMode = true;
         }
         if(timeNow >= timeToChangeMode && (!changedMode1 || !changedMode2)) {   
-			if(g1.mode != 3 && g1.mode != 4) {
+            if(g1.mode != 3 && g1.mode != 4) {
                 g5 = g1;
                 g5.channel = 5;
                 changedMode1 = true;
             }
             if(g2.mode != 3 && g2.mode != 4) {
-			    g6 = g2;
+                g6 = g2;
                 g6.channel = 6;
                 changedMode2 = true;
             }    
         }
         if(timeNow >= timeToRandomize && !randomized){
-        	switchGhostMode(1, &g1, &g2, &g3, &g4, &g5, &g6, &g7, NULL);
+            switchGhostMode(1, &g1, &g2, &g3, &g4, &g5, &g6, &g7, NULL);
             randomized = true;
         }
         if(timeNow >= timeToFinale && !finalMode) {
@@ -426,34 +396,33 @@ int main(int argc, char** argv) {
             }
         }
         GhostUpdate(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow);
-        ScoreUpdate(&scoreBoard, &p1, &p2, &window);
-        scoreBoard.render(&window);
+        ScoreUpdate(&scoreBoard, &p1, &p2, window);
+        scoreBoard.render(window);
         manager.updatePortals();
         int preference = rand()%2 + 1;
         if(preference == 1){
-		    manager.checkIfTeleport(&p1);
-			manager.checkIfTeleport(&p2);
-		}
-		else if(preference == 2){
-			manager.checkIfTeleport(&p2);
-			manager.checkIfTeleport(&p1);
-		}
-        manager.renderPortals(&window);
-        RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow, &window);
-        renderBlackScreen(&p1, &p2, &window, timeNow);
-        window.updateWindow();
+            manager.checkIfTeleport(&p1);
+            manager.checkIfTeleport(&p2);
+        }
+        else if(preference == 2){
+            manager.checkIfTeleport(&p2);
+            manager.checkIfTeleport(&p1);
+        }
+        manager.renderPortals(window);
+        RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow, window);
+        renderBlackScreen(&p1, &p2, window, timeNow);
+        window->updateWindow();
         if(startGame) {
             Mix_PlayChannel(12, start, 0);
             startGame = false;
         }
         if(SDL_GetTicks() - startTime > finishTime + 1000) {
-            break;
+            menu->isRunning = false;
+            menu->isOver = true;
+            menu->isAtEnd = true;
+            SDL_Delay(1500);
         }
-
     }
-    Mix_HaltMusic();
-    Mix_HaltChannel(-1);
-    SDL_Delay(5000);
     g1.free();
     g2.free();
     g3.free();
@@ -470,6 +439,48 @@ int main(int argc, char** argv) {
         background = NULL;
     }
     maze.free();
+}
+
+int main(int argc, char** argv) {
+    if(!SDL_init()) {
+        return 0;
+    }
+    // 1023
+    Window window("Maze", 1405, 1025);
+    if(!window.getSuccess()) {
+        return 0;
+    }
+    srand(time(0));
+
+    bool quit = false;
+    SDL_Event event;
+    
+    LoadMusic();    
+    Menu menu(&window);
+
+    Mix_PlayMusic(bground, -1);
+    Mix_VolumeMusic(50);
+
+    while(!quit) {
+        while(SDL_PollEvent(&event)) {
+            if(event.type == SDL_QUIT) {
+                quit = true;
+            }
+            menu.handleEvent(event);
+        }
+        if(menu.isRunning == true) {
+             game(&menu, &window);   
+        }
+        else {
+            window.clearWindow();
+            menu.render(&window);
+            window.updateWindow();
+        }    
+    }
+
+    Mix_HaltMusic();
+    Mix_HaltChannel(-1);
+    SDL_Delay(5000);
     window.free();
     ClearMusic();
     close();
