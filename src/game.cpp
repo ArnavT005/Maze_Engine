@@ -9,7 +9,7 @@
 #include "ghost.hpp"
 #include "manager.hpp"
 #include "scoreboard.hpp"
-
+#include "client.cpp"
 
 int timeToChangeMode = 34000;
 int timeToRandomize = 64000;
@@ -330,6 +330,9 @@ int main(int argc, char** argv) {
     Mix_VolumeMusic(50);
     bool startGame = true;
     bool timer = false;
+    connectToServer();
+    string sendMsg;
+    char recvdMsg[1000];
     while(!quit) {
         if(!timer && SDL_GetTicks() - startTime > finishTime - 9000) {
             Mix_PlayChannel(18, tenSecTimer, 0);
@@ -357,6 +360,11 @@ int main(int argc, char** argv) {
                 }
             }
         }
+        SDLNet_TCP_Send(server, sendMsg, strlen(sendMsg) + 1);
+	    if(SDLNet_TCP_Recv(server, recvdMsg, 1000) > 0){
+        	//cout << msg << "\n";
+      	}
+        		
         window.clearWindow();
         window.renderTexture(background, NULL, &bg);
         p1.move();
@@ -443,6 +451,7 @@ int main(int argc, char** argv) {
         SDL_DestroyTexture(background);
         background = NULL;
     }
+    disconnectToServer();
     maze.free();
     window.free();
     ClearMusic();
