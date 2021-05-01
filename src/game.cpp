@@ -322,17 +322,38 @@ int main(int argc, char** argv) {
     bool quit = false;
     SDL_Event event;
     bool temp;
-    Uint32 startTime = SDL_GetTicks();
-
-    scoreBoard.start = startTime;
-    bool randomized = false;
+    
     LoadMusic();
-    Mix_PlayMusic(bground, 0);
-    Mix_VolumeMusic(50);
+    
     bool startGame = true;
     bool timer = false;
+    
+    Menu menu(&window);
 
-    //Menu menu(&window);
+    Mix_PlayMusic(bground, -1);
+    Mix_VolumeMusic(50);
+
+    while(!quit) {
+        while(SDL_PollEvent(&event)) {
+            if(event.type == SDL_QUIT) {
+                quit = true;
+            }
+            menu.handleEvent(event);
+            if(menu.isRunning == true) {
+                quit = true;
+            }
+        }
+        window.clearWindow();
+        menu.render(&window);
+        window.updateWindow();
+    }
+
+    quit = false;
+    
+    Uint32 startTime = SDL_GetTicks();
+    scoreBoard.start = startTime;
+
+    bool randomized = false;
 
     while(!quit) {
         if(!timer && SDL_GetTicks() - startTime > finishTime - 9000) {
@@ -346,7 +367,6 @@ int main(int argc, char** argv) {
                 if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
                     quit = true;
                 }
-                //menu.handleEvent(event);
                 p1.handleEvent(event, SDL_GetKeyboardState(NULL));
                 p2.handleEvent(event, SDL_GetKeyboardState(NULL));
                 g1.handleEvent(event, &p1, &p2);
@@ -421,7 +441,6 @@ int main(int argc, char** argv) {
         manager.renderPortals(&window);
         RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow, &window);
         renderBlackScreen(&p1, &p2, &window, timeNow);
-        //menu.render(&window);
         window.updateWindow();
         if(startGame) {
             Mix_PlayChannel(12, start, 0);
