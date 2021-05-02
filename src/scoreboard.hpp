@@ -6,7 +6,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-#include "window.hpp"
+#include "pacman.hpp"
 
 
 
@@ -14,7 +14,7 @@ class Scoreboard {
 	public:
 	void free1();
 	Scoreboard();
-	Scoreboard(SDL_Rect* rect, Window* window);
+	Scoreboard(SDL_Rect* rect, Window* window, Pacman* p1, Pacman* p2);
 	void free();
 	void loadTexture(Window* window);
 	void loadRenderedText(Window* window);
@@ -29,6 +29,9 @@ class Scoreboard {
 	SDL_Texture* scoreP2;
 	SDL_Texture* livesP2;
 	SDL_Texture* timer;
+	SDL_Texture* pacman;
+	SDL_Texture* pacDie;
+
 	TTF_Font*  scoreFont;
 	TTF_Font* timerFont;
 	std::stringstream timeText;
@@ -36,8 +39,16 @@ class Scoreboard {
 	std::stringstream livesP1Text;
 	std::stringstream scoreP2Text;
 	std::stringstream livesP2Text;
+
+	Pacman* p1; 
+	Pacman* p2;
+
 	Uint32 start;
 	int time;
+	int lifeCount1;
+	int lifeCount2;
+	int frameCount1;
+	int frameCount2;
 };
 
 void Scoreboard::free1() {
@@ -61,6 +72,14 @@ void Scoreboard::free1() {
 		TTF_CloseFont(timerFont);
 		timerFont = NULL;
 	}
+	if(pacman != NULL) {
+		SDL_DestroyTexture(pacman);
+		pacman = NULL;
+	}
+	if(pacDie != NULL) {
+		SDL_DestroyTexture(pacDie);
+		pacDie = NULL;
+	}
 	free();
 }
 
@@ -80,10 +99,18 @@ Scoreboard::Scoreboard() {
 	livesP2 = NULL;
 	livesP1 = NULL;
 	timer = NULL;
+	pacman = NULL;
+	pacDie = NULL;
 	time = 0;
+	lifeCount1 = 3;
+	lifeCount2 = 3;
+	frameCount1 = 0;
+	frameCount2 = 0;
+	p1 = NULL;
+	p2 = NULL;
 }
 
-Scoreboard::Scoreboard(SDL_Rect* rect, Window* window) {
+Scoreboard::Scoreboard(SDL_Rect* rect, Window* window, Pacman* p1, Pacman* p2) {
 	location = *rect;
 	bgTexture = NULL;
 	scoreFont = NULL;
@@ -95,12 +122,22 @@ Scoreboard::Scoreboard(SDL_Rect* rect, Window* window) {
 	livesP2 = NULL;
 	livesP1 = NULL;
 	timer = NULL;
+	pacman = NULL;
+	pacDie = NULL;
 	time = 0;
 	timeText.str("");
-	scoreP1Text.str("");
+	scoreP1Text.str("");SDL_Rect life1Rect1 = {1050, 145, 45, 45};
+	SDL_Rect life1Rect2 = {1095, 145, 45, 45};
+	SDL_Rect life1Rect3 = {1140, 145, 45, 45};
 	livesP1Text.str("");
 	scoreP2Text.str("");
 	livesP2Text.str("");
+	lifeCount1 = 3;
+	lifeCount2 = 3;
+	frameCount1 = 0;
+	frameCount2 = 0;
+	this->p1 = p1;
+	this->p2 = p2;
 	loadTexture(window);
 } 
 
@@ -173,6 +210,28 @@ void Scoreboard::loadTexture(Window* window) {
 	        }
             SDL_FreeSurface(p2);
     	}
+    }
+    SDL_Surface* pacSurf = IMG_Load("../img/pacman/IndividualSprites/right.png");
+    if(pacSurf == NULL) {
+    	std::cout << "Unable to load image! SDL_image Error: " << IMG_GetError() << "\n";
+    }
+    else {
+    	pacman = SDL_CreateTextureFromSurface(window->getRenderer(), pacSurf);
+    	if(pacman == NULL) {
+    		std::cout << "Unable to create texture from image! SDL_image Error: " << IMG_GetError() << "\n";
+    	}
+    	SDL_FreeSurface(pacSurf);
+    }
+    SDL_Surface* pacDieSurf = IMG_Load("../img/pacman/die.png");
+    if(pacDieSurf == NULL) {
+    	std::cout << "Unable to load image! SDL_image Error: " << IMG_GetError() << "\n";
+    }
+    else {
+    	pacDie = SDL_CreateTextureFromSurface(window->getRenderer(), pacDieSurf);
+    	if(pacDie == NULL) {
+    		std::cout << "Unable to create texture from image! SDL_image Error: " << IMG_GetError() << "\n";
+    	}
+    	SDL_FreeSurface(pacDieSurf);
     }
 }
 
@@ -263,27 +322,105 @@ void Scoreboard::render(Window* window) {
 	window->renderTexture(bgTexture, &location, &location);
 	SDL_Rect rectP1 = {1040, 25, 180, 60};
 	SDL_Rect rectP2 = {1040, 820, 200, 60};
-	SDL_Rect rectscoreP1 = {1040, 85, 200, 60};
-	SDL_Rect rectlivesP1 = {1040, 145, 200, 60};
-	SDL_Rect rectscoreP2 = {1040, 880, 200, 60};
-	SDL_Rect rectlivesP2 = {1040, 930, 180, 60};
-	SDL_Rect recttimer = {1040, 450, 200, 60};
+	SDL_Rect rectScoreP1 = {1040, 85, 200, 60};
+	SDL_Rect rectScoreP2 = {1040, 880, 200, 60};
+	SDL_Rect rectLivesP1 = {1040, 145, 100, 60};
+	SDL_Rect rectLivesP2 = {1040, 930, 100, 60};
+	SDL_Rect rectTimer = {1040, 450, 200, 60};
+
+	SDL_Rect life1Rect1 = {1150, 158, 45, 45};
+	SDL_Rect life1Rect2 = {1195, 158, 45, 45};
+	SDL_Rect life1Rect3 = {1240, 158, 45, 45};
+
+	SDL_Rect life2Rect1 = {1150, 943, 45, 45};
+	SDL_Rect life2Rect2 = {1195, 943, 45, 45};
+	SDL_Rect life2Rect3 = {1240, 943, 45, 45};
+
+	SDL_Rect srcRect1 = {(frameCount1) / 6 * 45, 0, 45, 45};
+	SDL_Rect srcRect2 = {(frameCount2) / 6 * 45, 0, 45, 45};
+
 	if(SDL_GetTicks() - start < 3150) {
-		recttimer.x = 1080;
-		recttimer.w = 60;
-		recttimer.h = 80;
+		rectTimer.x = 1080;
+		rectTimer.w = 60;
+		rectTimer.h = 80;
 	}
 	else if(SDL_GetTicks() - start < 4000) {
-		recttimer.x = 1080;
-		recttimer.w = 80;
-		recttimer.h = 80;
+		rectTimer.x = 1080;
+		rectTimer.w = 80;
+		rectTimer.h = 80;
 	}
 	window->renderTexture(P1, NULL, &rectP1);
-	window->renderTexture(scoreP1, NULL, &rectscoreP1);
-	window->renderTexture(livesP1, NULL, &rectlivesP1);
+	window->renderTexture(scoreP1, NULL, &rectScoreP1);
+	window->renderTexture(livesP1, NULL, &rectLivesP1);
 	window->renderTexture(P2, NULL, &rectP2);
-	window->renderTexture(scoreP2, NULL, &rectscoreP2);
-	window->renderTexture(livesP2, NULL, &rectlivesP2);
-	window->renderTexture(timer, NULL, &recttimer);
+	window->renderTexture(scoreP2, NULL, &rectScoreP2);
+	window->renderTexture(livesP2, NULL, &rectLivesP2);
+	window->renderTexture(timer, NULL, &rectTimer);
+
+	// render lives
+	if(p1->lives == lifeCount1) {
+		switch(lifeCount1) {
+			case 3:		
+				window->renderTexture(pacman, NULL, &life1Rect3);
+			case 2:
+				window->renderTexture(pacman, NULL, &life1Rect2);
+			case 1: 
+				window->renderTexture(pacman, NULL, &life1Rect1);
+		}
+		frameCount1 = 0;
+	}
+	else {
+		switch(lifeCount1) {
+			case 1:
+				window->renderTexture(pacDie, &srcRect1, &life1Rect1);
+				break;
+			case 2:
+				window->renderTexture(pacman, NULL, &life1Rect1);
+				window->renderTexture(pacDie, &srcRect1, &life1Rect2);
+				break;
+			case 3:
+				window->renderTexture(pacman, NULL, &life1Rect1);
+				window->renderTexture(pacman, NULL, &life1Rect2);
+				window->renderTexture(pacDie, &srcRect1, &life1Rect3);
+				break;	
+		}
+		frameCount1 ++;
+		if(frameCount1 == 66) {
+			frameCount1 = 0;
+			lifeCount1 = p1->lives;
+		}
+	}
+	if(p2->lives == lifeCount2) {
+		switch(lifeCount2) {
+			case 3:		
+				window->renderTexture(pacman, NULL, &life2Rect3);
+			case 2:
+				window->renderTexture(pacman, NULL, &life2Rect2);
+			case 1: 
+				window->renderTexture(pacman, NULL, &life2Rect1);
+		}
+		frameCount2 = 0;
+	}
+	else {
+		switch(lifeCount2) {
+			case 1:
+				window->renderTexture(pacDie, &srcRect2, &life2Rect1);
+				break;
+			case 2:
+				window->renderTexture(pacman, NULL, &life2Rect1);
+				window->renderTexture(pacDie, &srcRect2, &life2Rect2);
+				break;
+			case 3:
+				window->renderTexture(pacman, NULL, &life2Rect1);
+				window->renderTexture(pacman, NULL, &life2Rect2);
+				window->renderTexture(pacDie, &srcRect2, &life2Rect3);
+				break;	
+		}
+		frameCount2 ++;
+		if(frameCount2 == 66) {
+			frameCount2 = 0;
+			lifeCount2 = p2->lives;
+		}
+	}
 }
 

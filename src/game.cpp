@@ -70,7 +70,7 @@ void ScoreUpdate(Scoreboard* board, Pacman* p1, Pacman* p2, Window* window) {
     else if(time < 4000) {
         board->timeText << "GO!!";
     }
-    else if(time > finishTime) {
+    else if(time > finishTime || p1->lives == 0 || p2->lives == 0) {
         board->timeText << "GAME OVER!!";
     }
     else {
@@ -96,9 +96,9 @@ void ScoreUpdate(Scoreboard* board, Pacman* p1, Pacman* p2, Window* window) {
     board->scoreP2Text.str("");
     board->scoreP2Text << "Score: " << p2->score;
     board->livesP1Text.str("");
-    board->livesP1Text << "Lives: " << p1->lives;
+    board->livesP1Text << "Lives: ";
     board->livesP2Text.str("");
-    board->livesP2Text << "Lives: " << p2->lives;
+    board->livesP2Text << "Lives: ";
     board->loadRenderedText(window);
 }
 
@@ -264,7 +264,7 @@ void renderBlackScreen(Pacman* p1, Pacman* p2, Window* window, Uint32 timeNow) {
     SDL_SetRenderDrawBlendMode(window->getRenderer(), SDL_BLENDMODE_NONE);
 }
 
-void game(Menu* menu, Window* window) {
+bool game(Menu* menu, Window* window) {
     // create maze
     Maze maze(16, 45, 15, 25);
    
@@ -285,13 +285,14 @@ void game(Menu* menu, Window* window) {
 
     window->setRenderTarget(NULL);
     
-    // create scoreboard
-    Scoreboard scoreBoard(&scr, window);
 
     // create pacman
     Pacman p1(&maze, window, 1);
     Pacman p2(&maze, window, 2);
 
+    // create scoreboard
+    Scoreboard scoreBoard(&scr, window, &p1, &p2);
+    
     // create manager
     Manager manager(&maze);
     manager.generateEatables(window);
@@ -335,7 +336,7 @@ void game(Menu* menu, Window* window) {
         if(SDL_GetTicks() - startTime >= 4000) {
             while(SDL_PollEvent(& event)) {
                 if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
-                    menu->isRunning = false;
+                    return true;
                 }
                 p1.handleEvent(event, SDL_GetKeyboardState(NULL));
                 p2.handleEvent(event, SDL_GetKeyboardState(NULL));
@@ -422,6 +423,12 @@ void game(Menu* menu, Window* window) {
             menu->isAtEnd = true;
             SDL_Delay(1500);
         }
+        if(p1.lives == 0 || p2.lives == 0) {
+            menu->isRunning = false;
+            menu->isOver = true;
+            menu->isAtEnd = true;
+            SDL_Delay(1500);
+        }
     }
     g1.free();
     g2.free();
@@ -439,6 +446,7 @@ void game(Menu* menu, Window* window) {
         background = NULL;
     }
     maze.free();
+    return false;
 }
 
 int main(int argc, char** argv) {
@@ -469,7 +477,7 @@ int main(int argc, char** argv) {
             menu.handleEvent(event);
         }
         if(menu.isRunning == true) {
-             game(&menu, &window);   
+             quit = game(&menu, &window);   
         }
         else {
             window.clearWindow();
