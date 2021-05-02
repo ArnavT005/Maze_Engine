@@ -1236,7 +1236,7 @@ void Ghost::checkPacmanCollision(Pacman* pac1) {
 			pac1->parry = false;
 			pac1->frameCount = 0;
 			pac1->parryCount = 0;
-			pac1->lives --;
+			pac1->life --;
 		}
 	}
 	else if(checkCollision && !isDead){

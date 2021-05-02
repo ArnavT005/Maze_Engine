@@ -12,10 +12,10 @@
 #include "menu.hpp"
 
 
-int timeToChangeMode = 34000;
-int timeToRandomize = 64000;
-int timeToFinale = 74000;
-int finishTime = 104000;
+int timeToChangeMode = 14000;
+int timeToRandomize = 24000;
+int timeToFinale = 34000;
+int finishTime = 44000;
 bool changeMode = false, changedMode1 = false, changedMode2 = false; 
 bool finalMode = false, createNew = false;
 SDL_Point points[952576];
@@ -265,6 +265,12 @@ void renderBlackScreen(Pacman* p1, Pacman* p2, Window* window, Uint32 timeNow) {
 }
 
 bool game(Menu* menu, Window* window) {
+    changeMode = false;
+    changedMode1 = false;
+    changedMode2 = false; 
+    finalMode = false; 
+    createNew = false;
+
     // create maze
     Maze maze(16, 45, 15, 25);
    
@@ -417,17 +423,49 @@ bool game(Menu* menu, Window* window) {
             Mix_PlayChannel(12, start, 0);
             startGame = false;
         }
-        if(SDL_GetTicks() - startTime > finishTime + 1000) {
+        if(SDL_GetTicks() - startTime > finishTime + 500) {
             menu->isRunning = false;
             menu->isOver = true;
             menu->isAtEnd = true;
-            SDL_Delay(1500);
+            Mix_HaltChannel(-1);
+            Mix_PlayChannel(19, buzzer, 0);
+            SDL_Delay(1000);
         }
         if(p1.lives == 0 || p2.lives == 0) {
             menu->isRunning = false;
             menu->isOver = true;
             menu->isAtEnd = true;
-            SDL_Delay(1500);
+            SDL_Delay(500);
+            Mix_HaltChannel(-1);
+            Mix_PlayChannel(19, buzzer, 0);
+        }
+        if(p1.lives != 0 && p2.lives != 0) {
+            if(p1.score > p2.score)
+                menu->winner = 1;
+            else if(p1.score < p2.score)
+                menu->winner = 2;
+            else {
+                if(p1.lives > p2.lives)
+                    menu->winner = 1;
+                else if(p1.lives < p2.lives)
+                    menu->winner = 2;
+                else 
+                    menu->winner = 0;
+            }
+        }
+        else {
+            if(p1.lives != 0 && p2.lives == 0)
+                menu->winner = 1;
+            else if(p1.lives == 0 && p2.lives != 0)
+                menu->winner = 2;
+            else {
+                if(p1.score > p2.score)
+                    menu->winner = 1;
+                else if(p1.score < p2.score)
+                    menu->winner = 2;
+                else
+                    menu->winner = 0;
+            }
         }
     }
     g1.free();

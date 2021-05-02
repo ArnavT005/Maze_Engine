@@ -30,6 +30,7 @@ class Menu {
 	int button1State;
 	int button2State;
 	int button3State;
+	int winner;
 	SDL_Texture* background;
 	SDL_Texture* gameOver;
 
@@ -48,6 +49,7 @@ class Menu {
 
 	SDL_Texture* P1;
 	SDL_Texture* P2;
+	SDL_Texture* draw;
 
 };
 
@@ -62,6 +64,7 @@ Menu::Menu() {
 	button1State = IDLE;
 	button2State = IDLE;
 	button3State = IDLE;
+	winner = 0;
 
 	background = NULL;
 	gameOver = NULL;
@@ -79,6 +82,7 @@ Menu::Menu() {
 	backButton2 = NULL;
 	P1 = NULL;
 	P2 = NULL;
+	draw = NULL;
 }
 
 Menu::Menu(Window* window) {
@@ -91,6 +95,7 @@ Menu::Menu(Window* window) {
 	button1State = IDLE;
 	button2State = IDLE;
 	button3State = IDLE;
+	winner = 0;
 
 	loadTexture(window);
 }
@@ -159,6 +164,10 @@ void Menu::free() {
 	if(P2 != NULL) {
 		SDL_DestroyTexture(P2);
 		P2 = NULL;
+	}
+	if(draw != NULL) {
+		SDL_DestroyTexture(draw);
+		draw = NULL;
 	}
 
 }
@@ -340,6 +349,17 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(P2Surf);
 	}
+	SDL_Surface* drawSurf = IMG_Load("../img/draw.png");
+	if(drawSurf == NULL) {
+		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+	}
+	else {
+		draw = SDL_CreateTextureFromSurface(window->getRenderer(), drawSurf);
+		if(draw == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+		}
+		SDL_FreeSurface(drawSurf);
+	}
 }
 
 void Menu::render(Window* window) {
@@ -381,7 +401,7 @@ void Menu::render(Window* window) {
 	else if(isAtEnd) {
 		SDL_Rect rematchButton = {593, 780, 200, 65};
 		SDL_Rect backButton = {50, 940, 200, 65};
-		SDL_Rect playerWin = {543, 630, 300, 100};
+		SDL_Rect playerWin = {543, 580, 300, 150};
 		window->renderTexture(gameOver, NULL, &bgRect);
 		if(button1State == HOVER || button1State == PRESSED) {
 			window->renderTexture(rematchButton2, NULL, &rematchButton);
@@ -395,7 +415,12 @@ void Menu::render(Window* window) {
 		else {
 			window->renderTexture(backToMenuButton1, NULL, &backButton);
 		}
-		window->renderTexture(P1, NULL, &playerWin);
+		if(winner == 1)
+			window->renderTexture(P1, NULL, &playerWin);
+		else if(winner == 2)
+			window->renderTexture(P2, NULL, &playerWin);
+		else
+			window->renderTexture(draw, NULL, &playerWin);
 	}
 }
 
@@ -413,6 +438,7 @@ void Menu::handleEvent(SDL_Event &e) {
 				}
 				else if(e.type == SDL_MOUSEBUTTONUP) {
 					if(button1State == PRESSED) {
+						Mix_PlayChannel(20, click, 0);
 						button1State = IDLE;
 						isAtMenuStart = false;
 						isAtMenuMode = true;
@@ -443,6 +469,7 @@ void Menu::handleEvent(SDL_Event &e) {
 				}
 				else if(e.type == SDL_MOUSEBUTTONUP) {
 					if(button1State == PRESSED) {
+						Mix_PlayChannel(20, click, 0);
 						button1State = IDLE;
 						isRunning = true;
 						isAtMenuStart = false;
@@ -465,6 +492,7 @@ void Menu::handleEvent(SDL_Event &e) {
 				}
 				else if(e.type == SDL_MOUSEBUTTONUP) {
 					if(button2State == PRESSED) {
+						Mix_PlayChannel(20, click, 0);
 						button2State = IDLE;
 						isRunning = true;
 						isAtMenuStart = false;
@@ -487,6 +515,7 @@ void Menu::handleEvent(SDL_Event &e) {
 				}
 				else if(e.type == SDL_MOUSEBUTTONUP) {
 					if(button3State == PRESSED) {
+						Mix_PlayChannel(20, click, 0);
 						button3State = IDLE;
 						isAtMenuStart = true;
 						isAtMenuMode = false;
@@ -519,6 +548,7 @@ void Menu::handleEvent(SDL_Event &e) {
 				}
 				else if(e.type == SDL_MOUSEBUTTONUP) {
 					if(button1State == PRESSED) {
+						Mix_PlayChannel(20, click, 0);
 						button1State = IDLE;
 						isRunning = true;
 						isAtEnd = false;
@@ -543,6 +573,7 @@ void Menu::handleEvent(SDL_Event &e) {
 				}
 				else if(e.type == SDL_MOUSEBUTTONUP) {
 					if(button2State == PRESSED) {
+						Mix_PlayChannel(20, click, 0);
 						button2State = IDLE;
 						isRunning = false;
 						isAtEnd = false;

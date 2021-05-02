@@ -358,7 +358,7 @@ void Scoreboard::render(Window* window) {
 	window->renderTexture(timer, NULL, &rectTimer);
 
 	// render lives
-	if(p1->lives == lifeCount1) {
+	if(p1->life == lifeCount1) {
 		switch(lifeCount1) {
 			case 3:		
 				window->renderTexture(pacman, NULL, &life1Rect3);
@@ -387,10 +387,10 @@ void Scoreboard::render(Window* window) {
 		frameCount1 ++;
 		if(frameCount1 == 66) {
 			frameCount1 = 0;
-			lifeCount1 = p1->lives;
+			lifeCount1 = p1->life;
 		}
 	}
-	if(p2->lives == lifeCount2) {
+	if(p2->life == lifeCount2) {
 		switch(lifeCount2) {
 			case 3:		
 				window->renderTexture(pacman, NULL, &life2Rect3);
@@ -419,7 +419,7 @@ void Scoreboard::render(Window* window) {
 		frameCount2 ++;
 		if(frameCount2 == 66) {
 			frameCount2 = 0;
-			lifeCount2 = p2->lives;
+			lifeCount2 = p2->life;
 		}
 	}
 }

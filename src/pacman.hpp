@@ -66,6 +66,7 @@ class Pacman {
     
     int type;
     int lives;
+    int life;
 
     SDL_Texture* up;
     SDL_Texture* right;
@@ -119,6 +120,7 @@ Pacman::Pacman() {
 	frameCount = 0;
 	score = 0;
 	lives = 3;
+	life = 3;
 
 	respawnPoint.x = 0;
 	respawnPoint.y = 0;
@@ -161,6 +163,7 @@ Pacman::Pacman(Maze* maze, Window* window, int tp) {
 	frameCount = 0;
 	score = 0;
 	lives = 3;
+	life = 3;
 
 	respawnPoint.x = screenX;
 	respawnPoint.y = screenY;
@@ -407,6 +410,7 @@ void Pacman::render(Window* window) {
 		window->renderTexture(die, &movingPosition, &colliderBox);
 		frameCount ++;
 		if(frameCount == 66) {
+			lives --;
 			frameCount = 0;
 			isDead = false;
 			screenX = respawnPoint.x;

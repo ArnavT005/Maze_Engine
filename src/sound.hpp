@@ -12,6 +12,8 @@ Mix_Chunk *tenSecTimer = NULL;
 
 //Sound effects
 Mix_Chunk *start = NULL;
+Mix_Chunk *click = NULL;
+Mix_Chunk *buzzer = NULL;
 Mix_Chunk *retreat = NULL;
 Mix_Chunk *siren = NULL;
 Mix_Chunk *powerupSmall = NULL;
@@ -27,6 +29,10 @@ void LoadMusic(){
 	Mix_AllocateChannels(32);
 	tenSecTimer = Mix_LoadWAV( "../music/countdown.mp3");
 	if( tenSecTimer == NULL ){printf( "Failed to load music! SDL_mixer Error: %s\n", Mix_GetError() );}
+	buzzer = Mix_LoadWAV( "../music/buzzer.wav");
+	if(buzzer == NULL ){printf( "Failed to load music! SDL_mixer Error: %s\n", Mix_GetError() );}
+	click = Mix_LoadWAV( "../music/click.wav");
+	if(click == NULL ){printf( "Failed to load music! SDL_mixer Error: %s\n", Mix_GetError() );}
 	bground = Mix_LoadMUS("../music/background.mp3");
 	if(bground == NULL) std::cout << "Failed to load music! SDL_mixer Error: " << Mix_GetError() << "\n";
 	start = Mix_LoadWAV( "../music/intro.wav");
@@ -66,6 +72,8 @@ void ClearMusic(){
 	// Mix_FreeChunk(gameOver);
 	Mix_FreeChunk(siren);
 	Mix_FreeChunk(teleport);
+	Mix_FreeChunk(click);
+	Mix_FreeChunk(buzzer);
 
 	start = NULL; retreat = NULL; powerupSmall = NULL; powerupLarge = NULL; pacDeath = NULL; ghostDeath = NULL; gameOver = NULL; pacPacCollision = NULL;
 	parry = NULL;
