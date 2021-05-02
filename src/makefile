@@ -20,3 +20,9 @@ all : $(OBJS)
 
 clean:
 	rm $(OBJ_NAME)
+
+server: server.cpp
+	$(CC) server.cpp $(COMPILER_FLAGS) $(LINKER_FLAGS) -o server
+
+client: client.cpp
+	$(CC) client.cpp $(COMPILER_FLAGS) $(LINKER_FLAGS) -o client

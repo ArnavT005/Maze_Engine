@@ -7,7 +7,6 @@ using namespace std;
 TCPsocket server;
 
 void connectToServer(){
-    SDL_Init(SDL_INIT_EVERYTHING);
     SDLNet_Init();
     IPaddress ip;
     SDLNet_ResolveHost(&ip,"127.0.0.1",1235);
