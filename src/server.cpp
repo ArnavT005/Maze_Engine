@@ -15,15 +15,20 @@ int main(){
     SDLNet_ResolveHost(&ip,NULL,1235);
     server = SDLNet_TCP_Open(&ip);
     int client_cnt = 0;
+    char id1[1000] = "1", id2[1000] = "2";
     while(client_cnt < 2)
     {
         if (client_cnt == 0) {
             client1 = SDLNet_TCP_Accept(server);
-            if(client1) {cout<<"Client 1 Connected\n"; client_cnt++;}
+            if(client1) {
+            	SDLNet_TCP_Send(client1, id1, 1000);
+            	cout<<"Client 1 Connected\n"; client_cnt++;}
         }
         if (client_cnt == 1) {
             client2 = SDLNet_TCP_Accept(server);
-            if(client2) {cout<<"Client 2 Connected\n"; client_cnt++;}
+            if(client2) {
+            	SDLNet_TCP_Send(client2, id2, 1000);
+                cout<<"Client 2 Connected\n"; client_cnt++;}
         }
     }
     SDL_Event e;

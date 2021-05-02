@@ -333,6 +333,10 @@ int main(int argc, char** argv) {
     connectToServer();
     string sendMsg;
     char recvdMsg[1000];
+    int id;
+    SDLNet_TCP_Recv(server, recvdMsg, 1000);
+    if(strcmp(recvdMsg, "1") == 0){id = 1;}
+    else if(strcmp(recvdMsg, "2") == 0){id = 2;}
     while(!quit) {
         if(!timer && SDL_GetTicks() - startTime > finishTime - 9000) {
             Mix_PlayChannel(18, tenSecTimer, 0);
@@ -345,6 +349,51 @@ int main(int argc, char** argv) {
                 if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
                     quit = true;
                 }
+                if(id==1 && event.type == SDL_KEYDOWN && event.key.repeat == 0){
+                    switch(event.key.keysym.sym) {
+						case SDLK_UP: sendMsg = "up"; break;
+						case SDLK_DOWN: sendMsg = "down"; break;
+						case SDLK_RIGHT: sendMsg = "right"; break;
+						case SDLK_LEFT: sendMsg = "left"; break;
+						case SDLK_m: sendMsg = "parry"; break;
+						default: break;
+					}
+                	SDLNet_TCP_Send(server, sendMsg.c_str(), strlen(sendMsg.c_str()) + 1);
+                }
+                if(id == 2 && event.type == SDL_KEYDOWN && event.key.repeat == 0){
+                    switch(event.key.keysym.sym) {
+						case SDLK_w: sendMsg = "up"; break;
+						case SDLK_s: sendMsg = "down"; break;
+						case SDLK_d: sendMsg = "right"; break;
+						case SDLK_a: sendMsg = "left"; break;
+						case SDLK_g: sendMsg = "parry"; break;
+						default: break;
+					}
+                	SDLNet_TCP_Send(server, sendMsg.c_str(), strlen(sendMsg.c_str()) + 1);
+                }
+                SDL_Event E;
+                E.type = SDL_KEYDOWN;
+                E.key.repeat == 0;
+                if(SDLNet_TCP_Recv(server, recvdMsg, 1000) > 0){
+        			if(strcmp(recvdMsg, "up") == 0){if(id==1){E.key.keysym.sym = SDLK_w;} else { E.key.keysym.sym = SDLK_UP;}}
+        			if(strcmp(recvdMsg, "down") == 0){if(id==1){E.key.keysym.sym = SDLK_s;} else { E.key.keysym.sym = SDLK_DOWN;}}
+        			if(strcmp(recvdMsg, "left") == 0){if(id==1){E.key.keysym.sym = SDLK_a;} else { E.key.keysym.sym = SDLK_LEFT;}}
+        			if(strcmp(recvdMsg, "right") == 0){if(id==1){E.key.keysym.sym = SDLK_d;} else { E.key.keysym.sym = SDLK_RIGHT;}}
+        			if(strcmp(recvdMsg, "parry") == 0){if(id==1){E.key.keysym.sym = SDLK_g;} else { E.key.keysym.sym = SDLK_m;}}
+        			p1.handleEvent(E, SDL_GetKeyboardState(NULL));
+		            p2.handleEvent(E, SDL_GetKeyboardState(NULL));
+		            g1.handleEvent(E, &p1, &p2);
+		            g2.handleEvent(E, &p1, &p2);
+		            g3.handleEvent(E, &p1, &p2);
+		            g4.handleEvent(E, &p1, &p2);
+		            g7.handleEvent(E, &p1, &p2);
+		            if(changedMode1){
+		                g5.handleEvent(E, &p1, &p2);
+		            }
+		            if(changedMode2) {
+		                g6.handleEvent(E, &p1, &p2);
+		            }
+        		}
                 p1.handleEvent(event, SDL_GetKeyboardState(NULL));
                 p2.handleEvent(event, SDL_GetKeyboardState(NULL));
                 g1.handleEvent(event, &p1, &p2);
@@ -360,10 +409,6 @@ int main(int argc, char** argv) {
                 }
             }
         }
-        SDLNet_TCP_Send(server, sendMsg, strlen(sendMsg) + 1);
-	    if(SDLNet_TCP_Recv(server, recvdMsg, 1000) > 0){
-        	//cout << msg << "\n";
-      	}
         		
         window.clearWindow();
         window.renderTexture(background, NULL, &bg);
