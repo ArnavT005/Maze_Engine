@@ -9,7 +9,7 @@
 #include "ghost.hpp"
 #include "manager.hpp"
 #include "scoreboard.hpp"
-#include "client.cpp"
+#include "client.hpp"
 
 int timeToChangeMode = 34000;
 int timeToRandomize = 64000;
@@ -330,13 +330,17 @@ int main(int argc, char** argv) {
     Mix_VolumeMusic(50);
     bool startGame = true;
     bool timer = false;
+    cout<<"hi0";
     connectToServer();
     string sendMsg;
     char recvdMsg[1000];
     int id;
-    SDLNet_TCP_Recv(server, recvdMsg, 1000);
-    if(strcmp(recvdMsg, "1") == 0){id = 1;}
-    else if(strcmp(recvdMsg, "2") == 0){id = 2;}
+    cout<<"hi1";
+    if(SDLNet_TCP_Recv(server, recvdMsg, 1000) > 0){
+	    if(strcmp(recvdMsg, "1") == 0){id = 1;}
+	    else if(strcmp(recvdMsg, "2") == 0){id = 2;}
+	}
+    cout<<"hi";
     while(!quit) {
         if(!timer && SDL_GetTicks() - startTime > finishTime - 9000) {
             Mix_PlayChannel(18, tenSecTimer, 0);
@@ -373,7 +377,7 @@ int main(int argc, char** argv) {
                 }
                 SDL_Event E;
                 E.type = SDL_KEYDOWN;
-                E.key.repeat == 0;
+                E.key.repeat = 0;
                 if(SDLNet_TCP_Recv(server, recvdMsg, 1000) > 0){
         			if(strcmp(recvdMsg, "up") == 0){if(id==1){E.key.keysym.sym = SDLK_w;} else { E.key.keysym.sym = SDLK_UP;}}
         			if(strcmp(recvdMsg, "down") == 0){if(id==1){E.key.keysym.sym = SDLK_s;} else { E.key.keysym.sym = SDLK_DOWN;}}
