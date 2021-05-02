@@ -15,7 +15,7 @@ int main(){
     SDLNet_ResolveHost(&ip,NULL,1235);
     server = SDLNet_TCP_Open(&ip);
     int client_cnt = 0;
-    char id1[1000] = "1", id2[1000] = "2";
+    char id1[1000] = "1", id2[1000] = "2", connected[1000] = "CONNECTED";
     while(client_cnt < 2)
     {
         if (client_cnt == 0) {
@@ -31,6 +31,8 @@ int main(){
                 cout<<"Client 2 Connected\n"; client_cnt++;}
         }
     }
+    SDLNet_TCP_Send(client1, connected, 1000);
+    SDLNet_TCP_Send(client2, connected, 1000);
     while(1){
         char msg1[1000];
         char msg2[1000];
