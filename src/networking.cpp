@@ -2,6 +2,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
+#include <iostream>
 #include "sound.hpp"
 #include "window.hpp"
 #include "maze.hpp"
@@ -9,20 +10,19 @@
 #include "ghost.hpp"
 #include "manager.hpp"
 #include "scoreboard.hpp"
-#include "menu.hpp"
+#include "client.hpp"
 
-
-int timeToChangeMode = 14000;
-int timeToRandomize = 24000;
-int timeToFinale = 34000;
-int finishTime = 44000;
+int timeToChangeMode = 34000;
+int timeToRandomize = 64000;
+int timeToFinale = 74000;
+int finishTime = 104000;
 bool changeMode = false, changedMode1 = false, changedMode2 = false; 
 bool finalMode = false, createNew = false;
 SDL_Point points[952576];
 
 bool SDL_init() {
     bool success = true;
-    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
+    if(SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         std::cout << "SDL unable to initialize! SDL Error: " << SDL_GetError() << "\n";
         success = false;
     }
@@ -70,7 +70,7 @@ void ScoreUpdate(Scoreboard* board, Pacman* p1, Pacman* p2, Window* window) {
     else if(time < 4000) {
         board->timeText << "GO!!";
     }
-    else if(time > finishTime || p1->lives == 0 || p2->lives == 0) {
+    else if(time > finishTime) {
         board->timeText << "GAME OVER!!";
     }
     else {
@@ -96,9 +96,9 @@ void ScoreUpdate(Scoreboard* board, Pacman* p1, Pacman* p2, Window* window) {
     board->scoreP2Text.str("");
     board->scoreP2Text << "Score: " << p2->score;
     board->livesP1Text.str("");
-    board->livesP1Text << "Lives: ";
+    board->livesP1Text << "Lives: " << p1->lives;
     board->livesP2Text.str("");
-    board->livesP2Text << "Lives: ";
+    board->livesP2Text << "Lives: " << p2->lives;
     board->loadRenderedText(window);
 }
 
@@ -115,7 +115,7 @@ void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* 
     g2->checkPacmanCollision(p1);
     g3->checkPacmanCollision(p1);
     g4->checkPacmanCollision(p1);
-    g1->checkPacmanCollision(p2);
+	g1->checkPacmanCollision(p2);
     g2->checkPacmanCollision(p2);
     g3->checkPacmanCollision(p2);
     g4->checkPacmanCollision(p2);
@@ -124,18 +124,18 @@ void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* 
     g7->checkPacmanCollision(p1);
     g7->checkPacmanCollision(p2);
 
-    if(time > timeToChangeMode){
-        if(changedMode1) {
+	if(time > timeToChangeMode){
+		if(changedMode1) {
             g5->update(p2, p1);
-            g5->move();
+		    g5->move();
             g5->checkPacmanCollision(p1);
             g5->checkPacmanCollision(p2);
         }
         if(changedMode2) {    
           g6->update(p2, p1);
-          g6->move();
-          g6->checkPacmanCollision(p1); 
-          g6->checkPacmanCollision(p2);
+		  g6->move();
+		  g6->checkPacmanCollision(p1);	
+		  g6->checkPacmanCollision(p2);
         }
         if(time > timeToFinale) {
             if(createNew) {
@@ -145,7 +145,7 @@ void GhostUpdate(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost*g3, Ghost* 
                 g8->checkPacmanCollision(p2);
             }
         }
-    }
+	}
 }   
 
 void RenderElements(Pacman* p1, Pacman* p2, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Ghost* g5, Ghost* g6, Ghost* g7, Ghost* g8, Uint32 time, Window* window) {
@@ -264,75 +264,86 @@ void renderBlackScreen(Pacman* p1, Pacman* p2, Window* window, Uint32 timeNow) {
     SDL_SetRenderDrawBlendMode(window->getRenderer(), SDL_BLENDMODE_NONE);
 }
 
-bool game(Menu* menu, Window* window) {
-    changeMode = false;
-    changedMode1 = false;
-    changedMode2 = false; 
-    finalMode = false; 
-    createNew = false;
-
-    // create maze
+int main(int argc, char** argv) {
+    if(!SDL_init()) {
+        return 0;
+    }
+    // 1023
+    Window window("Maze", 1405, 1025);
+    if(!window.getSuccess()) {
+        return 0;
+    }
+    srand(time(0));
+    // 20, 35, 13, 25
     Maze maze(16, 45, 15, 25);
-   
     SDL_Color boundaryColor = {0xFF, 0x00, 0x00, 0xFF};
-    SDL_Texture* background = SDL_CreateTexture(window->getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
-   
+    SDL_Texture* background = SDL_CreateTexture(window.getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
     SDL_Rect bg = {0, 0, 1025, 1025};
     SDL_Rect scr = {1025, 0, 380, 1025};
     SDL_SetTextureBlendMode(background, SDL_BLENDMODE_BLEND);
-    maze.loadTexture(window);
+    maze.loadTexture(&window);
 
-    window->setRenderTarget(background);
+    window.setRenderTarget(background);
+    SDL_DisplayMode DM;
+    SDL_GetCurrentDisplayMode(0, &DM);
+    std::cout << DM.w << " " << DM.h << "\n";
    
-    maze.createBase(window, 0, 0, boundaryColor);
-    maze.createBasicStructure(window);
-    maze.generateMazeRandom(window);
+    maze.createBase(&window, 0, 0, boundaryColor);
+    maze.createBasicStructure(&window);
+    maze.generateMazeRandom(&window);
 
 
-    window->setRenderTarget(NULL);
+    window.setRenderTarget(NULL);
     
+    Scoreboard scoreBoard(&scr, &window);
+    Pacman p1(&maze, &window, 1);
+	Pacman p2(&maze, &window, 2);
 
-    // create pacman
-    Pacman p1(&maze, window, 1);
-    Pacman p2(&maze, window, 2);
-
-    // create scoreboard
-    Scoreboard scoreBoard(&scr, window, &p1, &p2);
-    
-    // create manager
     Manager manager(&maze);
-    manager.generateEatables(window);
-    manager.generatePortals(window);
+    manager.generateEatables(&window);
+    manager.generatePortals(&window);
     int numEat = manager.eatables.size();
 
     for(int k = 0; k < numEat; k ++) {
         manager.eatables[k].setPacman(&p1, &p2);
     }
 
-    // create ghosts
-    Ghost g1(&maze, TYPE_BLINKY, 1, window, 0);
-    Ghost g2(&maze, TYPE_PINKY, 1, window, 1);
-    Ghost g3(&maze, TYPE_INKY, 1, window, 2);
-    Ghost g4(&maze, TYPE_CLYDE, 1, window, 3);
-    Ghost g5;
-    Ghost g6;
-    Ghost g7(&maze, TYPE_CLYDE, 2, window, 4);
+    Ghost g1(&maze, TYPE_BLINKY, 1, &window, 0);
+    Ghost g2(&maze, TYPE_PINKY, 1, &window, 1);
+    Ghost g3(&maze, TYPE_INKY, 1, &window, 2);
+    Ghost g4(&maze, TYPE_CLYDE, 1, &window, 3);
+	Ghost g5;
+	Ghost g6;
+	Ghost g7(&maze, TYPE_CLYDE, 2, &window, 4);
     Ghost g8;
-    
-    // clear window
-    window->clearWindow();
+    window.clearWindow();
 
+    bool quit = false;
     SDL_Event event;
+    bool temp;
+    Uint32 startTime = SDL_GetTicks();
+
+    scoreBoard.start = startTime;
+    bool randomized = false;
+    LoadMusic();
+    Mix_PlayMusic(bground, 0);
+    Mix_VolumeMusic(50);
+
     bool startGame = true;
     bool timer = false;
-
-    Uint32 startTime = SDL_GetTicks();
-    scoreBoard.start = startTime;
-
-    bool randomized = false;
-    bool temp;
-
-    while(menu->isRunning) {
+    std::cout<<"hi0\n";
+    connectToServer();
+    string sendMsg;
+    char recvdMsg[1000];
+    int id;
+    std::cout<<"hi1\n";
+    if(SDLNet_TCP_Recv(server, recvdMsg, 1000) > 0){
+	    std::cout << recvdMsg << "\n";
+        if(strcmp(recvdMsg, "1") == 0){id = 1;}
+	    else if(strcmp(recvdMsg, "2") == 0){id = 2;}
+	}
+    std::cout<<"hi" << id << "\n";
+    while(!quit) {
         if(!timer && SDL_GetTicks() - startTime > finishTime - 9000) {
             Mix_PlayChannel(18, tenSecTimer, 0);
             timer = true;
@@ -340,10 +351,66 @@ bool game(Menu* menu, Window* window) {
         int i = 0;
         temp = false;
         if(SDL_GetTicks() - startTime >= 4000) {
+            std::cout << "hi9\n";
             while(SDL_PollEvent(& event)) {
                 if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
-                    return true;
+                    quit = true;
                 }
+                if(id==1 && event.type == SDL_KEYDOWN && event.key.repeat == 0){
+                    switch(event.key.keysym.sym) {
+						case SDLK_UP: sendMsg = "up"; break;
+						case SDLK_DOWN: sendMsg = "down"; break;
+						case SDLK_RIGHT: sendMsg = "right"; break;
+						case SDLK_LEFT: sendMsg = "left"; break;
+						case SDLK_m: sendMsg = "parry"; break;
+						default: break;
+					}
+                    std::cout << "hi8\n";
+                	SDLNet_TCP_Send(server, sendMsg.c_str(), strlen(sendMsg.c_str()) + 1);
+                    std::cout << "hi7\n";
+                }
+                if(id == 2 && event.type == SDL_KEYDOWN && event.key.repeat == 0){
+                    switch(event.key.keysym.sym) {
+						case SDLK_w: sendMsg = "up"; break;
+						case SDLK_s: sendMsg = "down"; break;
+						case SDLK_d: sendMsg = "right"; break;
+						case SDLK_a: sendMsg = "left"; break;
+						case SDLK_g: sendMsg = "parry"; break;
+						default: break;
+					}
+                    std::cout << "hi6\n";
+
+                	SDLNet_TCP_Send(server, sendMsg.c_str(), strlen(sendMsg.c_str()) + 1);
+                    std::cout << "hi5\n";
+
+                }
+                SDL_Event E;
+                E.type = SDL_KEYDOWN;
+                E.key.repeat = 0;
+                                    std::cout << "hi4\n";
+
+                if(SDLNet_TCP_Recv(server, recvdMsg, 1000) > 0){
+        			if(strcmp(recvdMsg, "up") == 0){if(id==1){E.key.keysym.sym = SDLK_w;} else { E.key.keysym.sym = SDLK_UP;}}
+        			if(strcmp(recvdMsg, "down") == 0){if(id==1){E.key.keysym.sym = SDLK_s;} else { E.key.keysym.sym = SDLK_DOWN;}}
+        			if(strcmp(recvdMsg, "left") == 0){if(id==1){E.key.keysym.sym = SDLK_a;} else { E.key.keysym.sym = SDLK_LEFT;}}
+        			if(strcmp(recvdMsg, "right") == 0){if(id==1){E.key.keysym.sym = SDLK_d;} else { E.key.keysym.sym = SDLK_RIGHT;}}
+        			if(strcmp(recvdMsg, "parry") == 0){if(id==1){E.key.keysym.sym = SDLK_g;} else { E.key.keysym.sym = SDLK_m;}}
+        			p1.handleEvent(E, SDL_GetKeyboardState(NULL));
+		            p2.handleEvent(E, SDL_GetKeyboardState(NULL));
+		            g1.handleEvent(E, &p1, &p2);
+		            g2.handleEvent(E, &p1, &p2);
+		            g3.handleEvent(E, &p1, &p2);
+		            g4.handleEvent(E, &p1, &p2);
+		            g7.handleEvent(E, &p1, &p2);
+		            if(changedMode1){
+		                g5.handleEvent(E, &p1, &p2);
+		            }
+		            if(changedMode2) {
+		                g6.handleEvent(E, &p1, &p2);
+		            }
+                    std::cout << "hi2\n";
+        		}
+                std::cout << "hi3\n";
                 p1.handleEvent(event, SDL_GetKeyboardState(NULL));
                 p2.handleEvent(event, SDL_GetKeyboardState(NULL));
                 g1.handleEvent(event, &p1, &p2);
@@ -357,16 +424,18 @@ bool game(Menu* menu, Window* window) {
                 if(changedMode2) {
                     g6.handleEvent(event, &p1, &p2);
                 }
+                std::cout << "end\n";
             }
         }
-        window->clearWindow();
-        window->renderTexture(background, NULL, &bg);
+        		
+        window.clearWindow();
+        window.renderTexture(background, NULL, &bg);
         p1.move();
         p2.move();
         p1.pacpacCollision(&p2);
         for(i = 0; i < numEat; i ++) {
             manager.eatables[i].checkIfEaten(temp);
-            manager.eatables[i].render(window);
+            manager.eatables[i].render(&window);
         }
         p1.isBuffed = temp;
         p2.isBuffed = temp;
@@ -376,19 +445,19 @@ bool game(Menu* menu, Window* window) {
             changeMode = true;
         }
         if(timeNow >= timeToChangeMode && (!changedMode1 || !changedMode2)) {   
-            if(g1.mode != 3 && g1.mode != 4) {
+			if(g1.mode != 3 && g1.mode != 4) {
                 g5 = g1;
                 g5.channel = 5;
                 changedMode1 = true;
             }
             if(g2.mode != 3 && g2.mode != 4) {
-                g6 = g2;
+			    g6 = g2;
                 g6.channel = 6;
                 changedMode2 = true;
             }    
         }
         if(timeNow >= timeToRandomize && !randomized){
-            switchGhostMode(1, &g1, &g2, &g3, &g4, &g5, &g6, &g7, NULL);
+        	switchGhostMode(1, &g1, &g2, &g3, &g4, &g5, &g6, &g7, NULL);
             randomized = true;
         }
         if(timeNow >= timeToFinale && !finalMode) {
@@ -403,71 +472,33 @@ bool game(Menu* menu, Window* window) {
             }
         }
         GhostUpdate(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow);
-        ScoreUpdate(&scoreBoard, &p1, &p2, window);
-        scoreBoard.render(window);
+        ScoreUpdate(&scoreBoard, &p1, &p2, &window);
+        scoreBoard.render(&window);
         manager.updatePortals();
         int preference = rand()%2 + 1;
         if(preference == 1){
-            manager.checkIfTeleport(&p1);
-            manager.checkIfTeleport(&p2);
-        }
-        else if(preference == 2){
-            manager.checkIfTeleport(&p2);
-            manager.checkIfTeleport(&p1);
-        }
-        manager.renderPortals(window);
-        RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow, window);
-        renderBlackScreen(&p1, &p2, window, timeNow);
-        window->updateWindow();
+		    manager.checkIfTeleport(&p1);
+			manager.checkIfTeleport(&p2);
+		}
+		else if(preference == 2){
+			manager.checkIfTeleport(&p2);
+			manager.checkIfTeleport(&p1);
+		}
+        manager.renderPortals(&window);
+        RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow, &window);
+        renderBlackScreen(&p1, &p2, &window, timeNow);
+        window.updateWindow();
         if(startGame) {
             Mix_PlayChannel(12, start, 0);
             startGame = false;
         }
-        if(SDL_GetTicks() - startTime > finishTime + 500) {
-            menu->isRunning = false;
-            menu->isOver = true;
-            menu->isAtEnd = true;
-            Mix_HaltChannel(-1);
-            Mix_PlayChannel(19, buzzer, 0);
-            SDL_Delay(1000);
-        }
-        if(p1.lives == 0 || p2.lives == 0) {
-            menu->isRunning = false;
-            menu->isOver = true;
-            menu->isAtEnd = true;
-            SDL_Delay(500);
-            Mix_HaltChannel(-1);
-            Mix_PlayChannel(19, buzzer, 0);
-        }
-        if(p1.lives != 0 && p2.lives != 0) {
-            if(p1.score > p2.score)
-                menu->winner = 1;
-            else if(p1.score < p2.score)
-                menu->winner = 2;
-            else {
-                if(p1.lives > p2.lives)
-                    menu->winner = 1;
-                else if(p1.lives < p2.lives)
-                    menu->winner = 2;
-                else 
-                    menu->winner = 0;
-            }
-        }
-        else {
-            if(p1.lives != 0 && p2.lives == 0)
-                menu->winner = 1;
-            else if(p1.lives == 0 && p2.lives != 0)
-                menu->winner = 2;
-            else {
-                if(p1.score > p2.score)
-                    menu->winner = 1;
-                else if(p1.score < p2.score)
-                    menu->winner = 2;
-                else
-                    menu->winner = 0;
-            }
+        if(SDL_GetTicks() - startTime > finishTime + 1000) {
+            break;
         }
     }
+    Mix_HaltMusic();
+    Mix_HaltChannel(-1);
+    SDL_Delay(5000);
     g1.free();
     g2.free();
     g3.free();
@@ -483,50 +514,8 @@ bool game(Menu* menu, Window* window) {
         SDL_DestroyTexture(background);
         background = NULL;
     }
+    disconnectToServer();
     maze.free();
-    return false;
-}
-
-int main(int argc, char** argv) {
-    if(!SDL_init()) {
-        return 0;
-    }
-    // 1023
-    Window window("Maze", 1405, 1025);
-    if(!window.getSuccess()) {
-        return 0;
-    }
-    srand(time(0));
-
-    bool quit = false;
-    SDL_Event event;
-    
-    LoadMusic();    
-    Menu menu(&window);
-
-    Mix_PlayMusic(bground, -1);
-    Mix_VolumeMusic(50);
-
-    while(!quit) {
-        while(SDL_PollEvent(&event)) {
-            if(event.type == SDL_QUIT) {
-                quit = true;
-            }
-            menu.handleEvent(event);
-        }
-        if(menu.isRunning == true) {
-             quit = game(&menu, &window);   
-        }
-        else {
-            window.clearWindow();
-            menu.render(&window);
-            window.updateWindow();
-        }    
-    }
-
-    Mix_HaltMusic();
-    Mix_HaltChannel(-1);
-    SDL_Delay(5000);
     window.free();
     ClearMusic();
     close();

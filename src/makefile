@@ -9,7 +9,7 @@ CC = g++
 COMPILER_FLAGS = -w
 
 #LINKER_FLAGS specifies the libraries we're linking against
-LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
+LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lSDL2_net
 
 #OBJ_NAME specifies the name of our exectuable
 OBJ_NAME = game
@@ -20,3 +20,9 @@ all : $(OBJS)
 
 clean:
 	rm $(OBJ_NAME)
+
+server: server.cpp
+	$(CC) server.cpp $(COMPILER_FLAGS) $(LINKER_FLAGS) -o server
+
+client: client.cpp
+	$(CC) client.cpp $(COMPILER_FLAGS) $(LINKER_FLAGS) -o client
