@@ -2,6 +2,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_net.h>
 #include "sound.hpp"
 #include "window.hpp"
 #include "maze.hpp"
@@ -10,7 +11,6 @@
 #include "manager.hpp"
 #include "scoreboard.hpp"
 #include "menu.hpp"
-
 
 int timeToChangeMode = 14000;
 int timeToRandomize = 24000;
@@ -22,7 +22,7 @@ SDL_Point points[952576];
 
 bool SDL_init() {
     bool success = true;
-    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
+    if(SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         std::cout << "SDL unable to initialize! SDL Error: " << SDL_GetError() << "\n";
         success = false;
     }
@@ -37,6 +37,11 @@ bool SDL_init() {
         }
         if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
             std::cout << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << "\n";
+            success = false;
+        }
+        if(SDLNet_Init() < 0) {
+            std::cout << "SDLNet could not initialize! SDLNet Error: " << SDLNet_GetError() << "\n";
+            success = false;
         }
 
     }
@@ -44,6 +49,7 @@ bool SDL_init() {
 }
 
 void close() {
+    SDLNet_Quit();
     Mix_Quit();
     TTF_Quit();
     IMG_Quit();
@@ -487,6 +493,320 @@ bool game(Menu* menu, Window* window) {
     return false;
 }
 
+bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSet* set) {
+    changeMode = false;
+    changedMode1 = false;
+    changedMode2 = false; 
+    finalMode = false; 
+    createNew = false;
+
+    // create maze
+    Maze maze(16, 45, 15, 25);
+   
+    SDL_Color boundaryColor = {0xFF, 0x00, 0x00, 0xFF};
+    SDL_Texture* background = SDL_CreateTexture(window->getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
+   
+    SDL_Rect bg = {0, 0, 1025, 1025};
+    SDL_Rect scr = {1025, 0, 380, 1025};
+    SDL_SetTextureBlendMode(background, SDL_BLENDMODE_BLEND);
+    maze.loadTexture(window);
+
+    window->setRenderTarget(background);
+   
+    maze.createBase(window, 0, 0, boundaryColor);
+    maze.createBasicStructure(window);
+    maze.generateMazeRandom(window);
+
+
+    window->setRenderTarget(NULL);
+    
+
+    // create pacman
+    Pacman p1(&maze, window, 1);
+    Pacman p2(&maze, window, 2);
+
+    // create scoreboard
+    Scoreboard scoreBoard(&scr, window, &p1, &p2);
+    
+    // create manager
+    Manager manager(&maze);
+    manager.generateEatables(window);
+    manager.generatePortals(window);
+    int numEat = manager.eatables.size();
+
+    for(int k = 0; k < numEat; k ++) {
+        manager.eatables[k].setPacman(&p1, &p2);
+    }
+
+    // create ghosts
+    Ghost g1(&maze, TYPE_BLINKY, 1, window, 0);
+    Ghost g2(&maze, TYPE_PINKY, 1, window, 1);
+    Ghost g3(&maze, TYPE_INKY, 1, window, 2);
+    Ghost g4(&maze, TYPE_CLYDE, 1, window, 3);
+    Ghost g5;
+    Ghost g6;
+    Ghost g7(&maze, TYPE_CLYDE, 2, window, 4);
+    Ghost g8;
+    
+    // clear window
+    window->clearWindow();
+
+    SDL_Event event;
+    bool startGame = true;
+    bool timer = false;
+
+    Uint32 startTime = SDL_GetTicks();
+    scoreBoard.start = startTime;
+
+    bool randomized = false;
+    bool temp;
+
+    string sendMsg = "default";
+    int len;
+    char recvdMsg[1000];
+
+    while(menu->isRunning) {
+        if(!timer && SDL_GetTicks() - startTime > finishTime - 9000) {
+            Mix_PlayChannel(18, tenSecTimer, 0);
+            timer = true;
+        }
+        int i = 0;
+        temp = false;
+        if(SDL_GetTicks() - startTime >= 4000) {
+
+                // receive message from server
+                // no waiting
+                //int num = SDLNet_CheckSockets(*set, 0);
+                // if(num < 0) {
+                //     if(id == 1)
+                //         std::cout << "Error while checking sockets (client 1)! SDLNet Error: " << SDLNet_GetError() << "\n";
+                //     else
+                //         std::cout << "Error while checking sockets (client 2)! SDLNet Error: " << SDLNet_GetError() << "\n";
+                // }
+                // else if(num > 0) {
+                // }
+                while(SDLNet_CheckSockets(*set, 0) > 0) {
+
+                    SDL_Event E;
+                    E.type = SDL_KEYDOWN;
+                    E.key.repeat = 0;
+                    // check server activity
+                    if(SDLNet_SocketReady(*server) != 0) {
+                        // receive message from server
+                        if(SDLNet_TCP_Recv(*server, recvdMsg, 1000) > 0){
+                            std::cout << recvdMsg << "\n";
+                            if(strcmp(recvdMsg, "default") != 0) {
+                                if(strcmp(recvdMsg, "up") == 0){if(id==1){E.key.keysym.sym = SDLK_UP;} else { E.key.keysym.sym = SDLK_w;}}
+                                if(strcmp(recvdMsg, "down") == 0){if(id==1){E.key.keysym.sym = SDLK_DOWN;} else { E.key.keysym.sym = SDLK_s;}}
+                                if(strcmp(recvdMsg, "left") == 0){if(id==1){E.key.keysym.sym = SDLK_LEFT;} else { E.key.keysym.sym = SDLK_a;}}
+                                if(strcmp(recvdMsg, "right") == 0){if(id==1){E.key.keysym.sym = SDLK_RIGHT;} else { E.key.keysym.sym = SDLK_d;}}
+                                if(strcmp(recvdMsg, "parry") == 0){if(id==1){E.key.keysym.sym = SDLK_m;} else { E.key.keysym.sym = SDLK_g;}}
+                                p1.handleEvent(E, SDL_GetKeyboardState(NULL));
+                                p2.handleEvent(E, SDL_GetKeyboardState(NULL));
+                                g1.handleEvent(E, &p1, &p2);
+                                g2.handleEvent(E, &p1, &p2);
+                                g3.handleEvent(E, &p1, &p2);
+                                g4.handleEvent(E, &p1, &p2);
+                                g7.handleEvent(E, &p1, &p2);
+                                if(changedMode1){
+                                    g5.handleEvent(E, &p1, &p2);
+                                }
+                                if(changedMode2) {
+                                    g6.handleEvent(E, &p1, &p2);
+                                }
+                            }
+                        }
+                    }    
+                }
+            while(SDL_PollEvent(& event)) {
+                if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
+                    return true;
+                }
+
+                // send message to server
+                if(id==1 && event.type == SDL_KEYDOWN && event.key.repeat == 0){
+                    switch(event.key.keysym.sym) {
+                        case SDLK_w: sendMsg = "up"; break;
+                        case SDLK_s: sendMsg = "down"; break;
+                        case SDLK_d: sendMsg = "right"; break;
+                        case SDLK_a: sendMsg = "left"; break;
+                        case SDLK_g: sendMsg = "parry"; break;
+                        default: sendMsg = "default"; break;
+                    }
+                    len = sendMsg.length();
+                    if(SDLNet_TCP_Send(*server, sendMsg.c_str(), len + 1) < len + 1) {
+                        std::cout << "Unable to send client 1 message! SDLNet Error: " << SDLNet_GetError() << "\n";
+                    }
+                }
+                else if(id == 2 && event.type == SDL_KEYDOWN && event.key.repeat == 0){
+                    switch(event.key.keysym.sym) {
+                        case SDLK_UP: sendMsg = "up"; break;
+                        case SDLK_DOWN: sendMsg = "down"; break;
+                        case SDLK_RIGHT: sendMsg = "right"; break;
+                        case SDLK_LEFT: sendMsg = "left"; break;
+                        case SDLK_m: sendMsg = "parry"; break;
+                        default: sendMsg = "default"; break;
+                    }
+                    len = sendMsg.length();
+                    if(SDLNet_TCP_Send(*server, sendMsg.c_str(), len + 1) < len + 1) {
+                        std::cout << "Unable to send client 2 message! SDLNet Error: " << SDLNet_GetError() << "\n";
+                    }
+                }
+                else {
+                    sendMsg = "default";
+                    len = sendMsg.length();
+                    if(SDLNet_TCP_Send(*server, sendMsg.c_str(), len + 1) < len + 1) {
+                        if(id == 1)
+                            std::cout << "Unable to send client 1 message! SDLNet Error: " << SDLNet_GetError() << "\n";
+                        else
+                            std::cout << "Unable to send client 2 message! SDLNet Error: " << SDLNet_GetError() << "\n";
+                    }                   
+                }
+
+
+                if(id == 1) p1.handleEvent(event, SDL_GetKeyboardState(NULL));
+                if(id == 2) p2.handleEvent(event, SDL_GetKeyboardState(NULL));
+                g1.handleEvent(event, &p1, &p2);
+                g2.handleEvent(event, &p1, &p2);
+                g3.handleEvent(event, &p1, &p2);
+                g4.handleEvent(event, &p1, &p2);
+                g7.handleEvent(event, &p1, &p2);
+                if(changedMode1){
+                    g5.handleEvent(event, &p1, &p2);
+                }
+                if(changedMode2) {
+                    g6.handleEvent(event, &p1, &p2);
+                }
+            }
+        }
+        window->clearWindow();
+        window->renderTexture(background, NULL, &bg);
+        p1.move();
+        p2.move();
+        p1.pacpacCollision(&p2);
+        for(i = 0; i < numEat; i ++) {
+            manager.eatables[i].checkIfEaten(temp);
+            manager.eatables[i].render(window);
+        }
+        p1.isBuffed = temp;
+        p2.isBuffed = temp;
+        Uint32 timeNow = SDL_GetTicks() - startTime;
+        if(timeNow >= timeToChangeMode && !changeMode) {
+            switchGhostMode(2, &g1, &g2, &g3, &g4, NULL, NULL, &g7, NULL);
+            changeMode = true;
+        }
+        if(timeNow >= timeToChangeMode && (!changedMode1 || !changedMode2)) {   
+            if(g1.mode != 3 && g1.mode != 4) {
+                g5 = g1;
+                g5.channel = 5;
+                changedMode1 = true;
+            }
+            if(g2.mode != 3 && g2.mode != 4) {
+                g6 = g2;
+                g6.channel = 6;
+                changedMode2 = true;
+            }    
+        }
+        if(timeNow >= timeToRandomize && !randomized){
+            switchGhostMode(1, &g1, &g2, &g3, &g4, &g5, &g6, &g7, NULL);
+            randomized = true;
+        }
+        if(timeNow >= timeToFinale && !finalMode) {
+            switchGhostMode(5, &g1, &g2, &g3, &g4, &g5, &g6, &g7, NULL);
+            finalMode = true;
+        }
+        if(timeNow >= timeToFinale && !createNew) {
+            if(g3.mode != 3 && g3.mode != 4) {
+                g8 = g3;
+                g8.channel = 7;
+                createNew = true;
+            }
+        }
+        GhostUpdate(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow);
+        ScoreUpdate(&scoreBoard, &p1, &p2, window);
+        scoreBoard.render(window);
+        manager.updatePortals();
+        int preference = rand()%2 + 1;
+        if(preference == 1){
+            manager.checkIfTeleport(&p1);
+            manager.checkIfTeleport(&p2);
+        }
+        else if(preference == 2){
+            manager.checkIfTeleport(&p2);
+            manager.checkIfTeleport(&p1);
+        }
+        manager.renderPortals(window);
+        RenderElements(&p1, &p2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8, timeNow, window);
+        renderBlackScreen(&p1, &p2, window, timeNow);
+        window->updateWindow();
+        if(startGame) {
+            Mix_PlayChannel(12, start, 0);
+            startGame = false;
+        }
+        if(SDL_GetTicks() - startTime > finishTime + 500) {
+            menu->isRunning = false;
+            menu->isOver = true;
+            menu->isAtEnd = true;
+            Mix_HaltChannel(-1);
+            Mix_PlayChannel(19, buzzer, 0);
+            SDL_Delay(1000);
+        }
+        if(p1.lives == 0 || p2.lives == 0) {
+            menu->isRunning = false;
+            menu->isOver = true;
+            menu->isAtEnd = true;
+            SDL_Delay(500);
+            Mix_HaltChannel(-1);
+            Mix_PlayChannel(19, buzzer, 0);
+        }
+        if(p1.lives != 0 && p2.lives != 0) {
+            if(p1.score > p2.score)
+                menu->winner = 1;
+            else if(p1.score < p2.score)
+                menu->winner = 2;
+            else {
+                if(p1.lives > p2.lives)
+                    menu->winner = 1;
+                else if(p1.lives < p2.lives)
+                    menu->winner = 2;
+                else 
+                    menu->winner = 0;
+            }
+        }
+        else {
+            if(p1.lives != 0 && p2.lives == 0)
+                menu->winner = 1;
+            else if(p1.lives == 0 && p2.lives != 0)
+                menu->winner = 2;
+            else {
+                if(p1.score > p2.score)
+                    menu->winner = 1;
+                else if(p1.score < p2.score)
+                    menu->winner = 2;
+                else
+                    menu->winner = 0;
+            }
+        }
+    }
+    g1.free();
+    g2.free();
+    g3.free();
+    g4.free();
+    g5.free();
+    g6.free();
+    g7.free();
+    g8.free();
+    manager.freePortals();
+    p2.free(); p1.free();
+    scoreBoard.free1();
+    if(background != NULL) {
+        SDL_DestroyTexture(background);
+        background = NULL;
+    }
+    maze.free();
+    return false;
+}
+
 int main(int argc, char** argv) {
     if(!SDL_init()) {
         return 0;
@@ -494,28 +814,85 @@ int main(int argc, char** argv) {
     // 1023
     Window window("Maze", 1405, 1025);
     if(!window.getSuccess()) {
+        close();
         return 0;
     }
     srand(time(0));
 
     bool quit = false;
     SDL_Event event;
-    
+    SDLNet_SocketSet set;
+    set = SDLNet_AllocSocketSet(2);
+    if(set == NULL) {
+        cout << "Could not create socket set! SDLNet Error: " << SDLNet_GetError() << "\n";
+        close();
+        return 0;
+    }
+    TCPsocket server;
+    IPaddress ip;
+
     LoadMusic();    
     Menu menu(&window);
 
     Mix_PlayMusic(bground, -1);
     Mix_VolumeMusic(50);
 
+    bool firstMatch = true;
+    int id;
+
     while(!quit) {
         while(SDL_PollEvent(&event)) {
             if(event.type == SDL_QUIT) {
                 quit = true;
+                if(server != NULL) {
+                    SDLNet_TCP_Close(server);
+                }
             }
             menu.handleEvent(event);
         }
         if(menu.isRunning == true) {
-             quit = game(&menu, &window);   
+            if(menu.mode == 1) 
+                quit = game(&menu, &window);
+            else if(menu.mode == 2) {
+                // transition screen, connecting to server
+                if(firstMatch) {
+                    if(SDLNet_ResolveHost(&ip, "127.0.0.1", 1234) < 0) {
+                        std::cout << "Could not resolve host! SDLNet Error: " << SDLNet_GetError() << "\n";
+                    }
+                    else {
+                        server = SDLNet_TCP_Open(&ip);
+                        if(server == NULL) {
+                            std::cout << "Could not open socket! SDLNet Error: " << SDLNet_GetError() << "\n";
+                        }
+                        else {
+                            if(SDLNet_TCP_AddSocket(set, server) < 0) {
+                                cout << "Could not add server to socket set! SDLNet Error: " << SDLNet_GetError() << "\n";
+                            }
+                            else {
+                                char msg[1000];
+                                bool isConnected = false;
+                                if(SDLNet_TCP_Recv(server, msg, 1000) > 0){
+                                    std::cout << msg << "\n";
+                                    if(strcmp(msg, "1") == 0){id = 1;}
+                                    else if(strcmp(msg, "2") == 0){id = 2;}
+                                }
+                                if(SDLNet_TCP_Recv(server, msg, 1000) > 0) {
+                                    if(strcmp(msg, "CONNECTED") == 0)
+                                        isConnected = true;
+                                }
+                                if(isConnected) {
+                                    std::cout << "Starting...\n";
+                                    quit = gameOnline(&menu, &window, id, &server, &set);              
+                                }
+                            }    
+                        }    
+                    }
+                    firstMatch = false; 
+                }
+                else {
+                    quit = gameOnline(&menu, &window, id, &server, &set);
+                }       
+            }
         }
         else {
             window.clearWindow();

@@ -31,6 +31,7 @@ class Menu {
 	int button2State;
 	int button3State;
 	int winner;
+	int mode;
 	SDL_Texture* background;
 	SDL_Texture* gameOver;
 
@@ -65,6 +66,7 @@ Menu::Menu() {
 	button2State = IDLE;
 	button3State = IDLE;
 	winner = 0;
+	mode = 1;
 
 	background = NULL;
 	gameOver = NULL;
@@ -96,6 +98,7 @@ Menu::Menu(Window* window) {
 	button2State = IDLE;
 	button3State = IDLE;
 	winner = 0;
+	mode = 1;
 
 	loadTexture(window);
 }
@@ -472,6 +475,7 @@ void Menu::handleEvent(SDL_Event &e) {
 						Mix_PlayChannel(20, click, 0);
 						button1State = IDLE;
 						isRunning = true;
+						mode = 1;
 						isAtMenuStart = false;
 						isAtMenuMode = false;
 					}
@@ -495,6 +499,7 @@ void Menu::handleEvent(SDL_Event &e) {
 						Mix_PlayChannel(20, click, 0);
 						button2State = IDLE;
 						isRunning = true;
+						mode = 2;
 						isAtMenuStart = false;
 						isAtMenuMode = false;
 					}
