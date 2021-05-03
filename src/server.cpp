@@ -45,6 +45,7 @@ int main(){
     if(!SDL_init()) {
         return 0;
     }
+    srand(time(0));
     SDLNet_SocketSet set;
     set = SDLNet_AllocSocketSet(3);
     if(set == NULL) {
@@ -150,8 +151,12 @@ int main(){
                 }
             }
             // connected to both clients
+            // send them random seed
+            int SEED = rand();  
+            string number = to_string(SEED);
+            int len = number.length();
 
-            if(SDLNet_TCP_Send(client[0], connected.c_str(), 10) < 10) {
+            if(SDLNet_TCP_Send(client[0], (connected + number).c_str(), 10 + len) < 10 + len) {
                 cout << "Unable to send message to client 1! SDLNet Error: " << SDLNet_GetError() << "\n";
                 SDLNet_TCP_DelSocket(set, client[1]);
                 SDLNet_TCP_Close(client[1]);
@@ -164,7 +169,7 @@ int main(){
                 close();
                 return 0;
             } 
-            if(SDLNet_TCP_Send(client[1], connected.c_str(), 10) < 10) {
+            if(SDLNet_TCP_Send(client[1], (connected + number).c_str(), 10 + len) < 10 + len) {
                 cout << "Unable to send message to client 2! SDLNet Error: " << SDLNet_GetError() << "\n";                
                 SDLNet_TCP_DelSocket(set, client[1]);
                 SDLNet_TCP_Close(client[1]);
@@ -176,7 +181,7 @@ int main(){
                 set = NULL;
                 close();
                 return 0;
-            }       
+            }      
 
             // communicate with clients
             // used to store messages

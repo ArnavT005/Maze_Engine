@@ -34,7 +34,7 @@ class Pacman {
     Pacman();
     Pacman(Maze* maze, Window* window, int i);
     void loadTexture(Window* window);
-    void handleEvent(SDL_Event &e, const Uint8* keyStates);		// handle dynamics
+    void handleEvent(SDL_Event &e, const Uint8* keyStates, int online);		// handle dynamics
     void move();						
     void render(Window* window);        // render PACMAN
     bool collisionDetectorRect(SDL_Rect* rect1, SDL_Rect* rect2);
@@ -251,14 +251,16 @@ void Pacman::loadTexture(Window* window) {
 
 
 
-void Pacman::handleEvent(SDL_Event &e, const Uint8* keyStates) {
+void Pacman::handleEvent(SDL_Event &e, const Uint8* keyStates, int online) {
 	if(!isDead) {
 		if(type == 2 && e.type == SDL_KEYDOWN && e.key.repeat == 0) {
 			int num = 0;
-			if(keyStates[SDL_SCANCODE_UP] == 1) num ++;
-			if(keyStates[SDL_SCANCODE_RIGHT] == 1) num ++;
-			if(keyStates[SDL_SCANCODE_DOWN] == 1) num ++;
-			if(keyStates[SDL_SCANCODE_LEFT] == 1) num ++;
+			if(online == 0) {
+				if(keyStates[SDL_SCANCODE_UP] == 1) num ++;
+				if(keyStates[SDL_SCANCODE_RIGHT] == 1) num ++;
+				if(keyStates[SDL_SCANCODE_DOWN] == 1) num ++;
+				if(keyStates[SDL_SCANCODE_LEFT] == 1) num ++;
+			}	
 			if(num <= 1) {
 				switch(e.key.keysym.sym) {
 					case SDLK_UP: velY -= PACMAN_VEL; state = MOVE_UP; frameCount = 0; break;
@@ -280,10 +282,12 @@ void Pacman::handleEvent(SDL_Event &e, const Uint8* keyStates) {
 		}
 		else if(type == 1 && e.type == SDL_KEYDOWN && e.key.repeat == 0) {
 			int num = 0;
-			if(keyStates[SDL_SCANCODE_W] == 1) num ++;
-			if(keyStates[SDL_SCANCODE_D] == 1) num ++;
-			if(keyStates[SDL_SCANCODE_S] == 1) num ++;
-			if(keyStates[SDL_SCANCODE_A] == 1) num ++;
+			if(online == 0) {
+				if(keyStates[SDL_SCANCODE_W] == 1) num ++;
+				if(keyStates[SDL_SCANCODE_D] == 1) num ++;
+				if(keyStates[SDL_SCANCODE_S] == 1) num ++;
+				if(keyStates[SDL_SCANCODE_A] == 1) num ++;
+			}
 			if(num <= 1) {
 				switch(e.key.keysym.sym) {
 					case SDLK_w: velY -= PACMAN_VEL; state = MOVE_UP; frameCount = 0; break;

@@ -12,10 +12,10 @@
 #include "scoreboard.hpp"
 #include "menu.hpp"
 
-int timeToChangeMode = 14000;
-int timeToRandomize = 24000;
-int timeToFinale = 34000;
-int finishTime = 44000;
+int timeToChangeMode = 24000;
+int timeToRandomize = 44000;
+int timeToFinale = 54000;
+int finishTime = 74000;
 bool changeMode = false, changedMode1 = false, changedMode2 = false; 
 bool finalMode = false, createNew = false;
 SDL_Point points[952576];
@@ -350,8 +350,8 @@ bool game(Menu* menu, Window* window) {
                 if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
                     return true;
                 }
-                p1.handleEvent(event, SDL_GetKeyboardState(NULL));
-                p2.handleEvent(event, SDL_GetKeyboardState(NULL));
+                p1.handleEvent(event, SDL_GetKeyboardState(NULL), 0);
+                p2.handleEvent(event, SDL_GetKeyboardState(NULL), 0);
                 g1.handleEvent(event, &p1, &p2);
                 g2.handleEvent(event, &p1, &p2);
                 g3.handleEvent(event, &p1, &p2);
@@ -574,78 +574,172 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
         temp = false;
         if(SDL_GetTicks() - startTime >= 4000) {
 
-                // receive message from server
-                // no waiting
-                //int num = SDLNet_CheckSockets(*set, 0);
-                // if(num < 0) {
-                //     if(id == 1)
-                //         std::cout << "Error while checking sockets (client 1)! SDLNet Error: " << SDLNet_GetError() << "\n";
-                //     else
-                //         std::cout << "Error while checking sockets (client 2)! SDLNet Error: " << SDLNet_GetError() << "\n";
-                // }
-                // else if(num > 0) {
-                // }
-                while(SDLNet_CheckSockets(*set, 0) > 0) {
+            while(SDLNet_CheckSockets(*set, 0) > 0) {
 
-                    SDL_Event E;
-                    E.type = SDL_KEYDOWN;
-                    E.key.repeat = 0;
-                    // check server activity
-                    if(SDLNet_SocketReady(*server) != 0) {
-                        // receive message from server
-                        if(SDLNet_TCP_Recv(*server, recvdMsg, 1000) > 0){
-                            std::cout << recvdMsg << "\n";
-                            if(strcmp(recvdMsg, "default") != 0) {
-                                if(strcmp(recvdMsg, "up") == 0){if(id==1){E.key.keysym.sym = SDLK_UP;} else { E.key.keysym.sym = SDLK_w;}}
-                                if(strcmp(recvdMsg, "down") == 0){if(id==1){E.key.keysym.sym = SDLK_DOWN;} else { E.key.keysym.sym = SDLK_s;}}
-                                if(strcmp(recvdMsg, "left") == 0){if(id==1){E.key.keysym.sym = SDLK_LEFT;} else { E.key.keysym.sym = SDLK_a;}}
-                                if(strcmp(recvdMsg, "right") == 0){if(id==1){E.key.keysym.sym = SDLK_RIGHT;} else { E.key.keysym.sym = SDLK_d;}}
-                                if(strcmp(recvdMsg, "parry") == 0){if(id==1){E.key.keysym.sym = SDLK_m;} else { E.key.keysym.sym = SDLK_g;}}
-                                p1.handleEvent(E, SDL_GetKeyboardState(NULL));
-                                p2.handleEvent(E, SDL_GetKeyboardState(NULL));
-                                g1.handleEvent(E, &p1, &p2);
-                                g2.handleEvent(E, &p1, &p2);
-                                g3.handleEvent(E, &p1, &p2);
-                                g4.handleEvent(E, &p1, &p2);
-                                g7.handleEvent(E, &p1, &p2);
-                                if(changedMode1){
-                                    g5.handleEvent(E, &p1, &p2);
-                                }
-                                if(changedMode2) {
-                                    g6.handleEvent(E, &p1, &p2);
+                SDL_Event E;
+                E.key.repeat = 0;
+                // check server activity
+                if(SDLNet_SocketReady(*server) != 0) {
+                    // receive message from server
+                    if(SDLNet_TCP_Recv(*server, recvdMsg, 1000) > 0){
+                        if(strcmp(recvdMsg, "default") != 0) {
+                            if(strcmp(recvdMsg, "upDown") == 0){
+                                if(id==1){
+                                    E.key.keysym.sym = SDLK_UP;
+                                    E.type = SDL_KEYDOWN;
+                                } 
+                                else { 
+                                    E.key.keysym.sym = SDLK_w;
+                                    E.type = SDL_KEYDOWN;
                                 }
                             }
+                            if(strcmp(recvdMsg, "downDown") == 0){
+                                if(id==1){
+                                    E.key.keysym.sym = SDLK_DOWN;
+                                    E.type = SDL_KEYDOWN;
+                                } 
+                                else { 
+                                    E.key.keysym.sym = SDLK_s;
+                                    E.type = SDL_KEYDOWN;
+                                }
+                            }
+                            if(strcmp(recvdMsg, "leftDown") == 0){
+                                if(id==1){
+                                    E.key.keysym.sym = SDLK_LEFT;
+                                    E.type = SDL_KEYDOWN;
+                                } 
+                                else { 
+                                    E.key.keysym.sym = SDLK_a;
+                                    E.type = SDL_KEYDOWN;
+                                }
+                            }
+                            if(strcmp(recvdMsg, "rightDown") == 0){
+                                if(id==1){
+                                    E.key.keysym.sym = SDLK_RIGHT;
+                                    E.type = SDL_KEYDOWN;
+                                } 
+                                else { 
+                                    E.key.keysym.sym = SDLK_d;
+                                    E.type = SDL_KEYDOWN;
+                                }
+                            }
+                            if(strcmp(recvdMsg, "parry") == 0){
+                                if(id==1){
+                                    E.key.keysym.sym = SDLK_m;
+                                    E.type = SDL_KEYDOWN;
+                                } 
+                                else { 
+                                    E.key.keysym.sym = SDLK_g;
+                                    E.type = SDL_KEYDOWN;
+                                }
+                            }
+                            if(strcmp(recvdMsg, "upUP") == 0){
+                                if(id==1){
+                                    E.key.keysym.sym = SDLK_UP;
+                                    E.type = SDL_KEYUP;
+                                } 
+                                else { 
+                                    E.key.keysym.sym = SDLK_w;
+                                    E.type = SDL_KEYUP;
+                                }
+                            }
+                            if(strcmp(recvdMsg, "downUP") == 0){
+                                if(id==1){
+                                    E.key.keysym.sym = SDLK_DOWN;
+                                    E.type = SDL_KEYUP;
+                                } 
+                                else { 
+                                    E.key.keysym.sym = SDLK_s;
+                                    E.type = SDL_KEYUP;
+                                }
+                            }
+                            if(strcmp(recvdMsg, "leftUP") == 0){
+                                if(id==1){
+                                    E.key.keysym.sym = SDLK_LEFT;
+                                    E.type = SDL_KEYUP;
+                                } 
+                                else { 
+                                    E.key.keysym.sym = SDLK_a;
+                                    E.type = SDL_KEYUP;
+                                }
+                            }
+                            if(strcmp(recvdMsg, "rightUP") == 0){
+                                if(id==1){
+                                    E.key.keysym.sym = SDLK_RIGHT;
+                                    E.type = SDL_KEYUP;
+                                } 
+                                else { 
+                                    E.key.keysym.sym = SDLK_d;
+                                    E.type = SDL_KEYUP;
+                                }
+                            }
+                            if(id == 2) p1.handleEvent(E, SDL_GetKeyboardState(NULL), 1);
+                            if(id == 1) p2.handleEvent(E, SDL_GetKeyboardState(NULL), 1);
+                            g1.handleEvent(E, &p1, &p2);
+                            g2.handleEvent(E, &p1, &p2);
+                            g3.handleEvent(E, &p1, &p2);
+                            g4.handleEvent(E, &p1, &p2);
+                            g7.handleEvent(E, &p1, &p2);
+                            if(changedMode1){
+                                g5.handleEvent(E, &p1, &p2);
+                            }
+                            if(changedMode2) {
+                                g6.handleEvent(E, &p1, &p2);
+                            }
                         }
-                    }    
-                }
+                    }
+                }    
+            }
             while(SDL_PollEvent(& event)) {
                 if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
                     return true;
                 }
 
                 // send message to server
-                if(id==1 && event.type == SDL_KEYDOWN && event.key.repeat == 0){
-                    switch(event.key.keysym.sym) {
-                        case SDLK_w: sendMsg = "up"; break;
-                        case SDLK_s: sendMsg = "down"; break;
-                        case SDLK_d: sendMsg = "right"; break;
-                        case SDLK_a: sendMsg = "left"; break;
-                        case SDLK_g: sendMsg = "parry"; break;
-                        default: sendMsg = "default"; break;
+                if(id==1 && event.key.repeat == 0){
+                    if(event.type == SDL_KEYDOWN) {
+                        switch(event.key.keysym.sym) {
+                            case SDLK_w: sendMsg = "upDown"; break;
+                            case SDLK_s: sendMsg = "downDown"; break;
+                            case SDLK_d: sendMsg = "rightDown"; break;
+                            case SDLK_a: sendMsg = "leftDown"; break;
+                            case SDLK_g: sendMsg = "parry"; break;
+                            default: sendMsg = "default"; break;
+                        }
+                    }
+                    else if(event.type == SDL_KEYUP) {
+                        switch(event.key.keysym.sym) {
+                            case SDLK_w: sendMsg = "upUP"; break;
+                            case SDLK_s: sendMsg = "downUP"; break;
+                            case SDLK_d: sendMsg = "rightUP"; break;
+                            case SDLK_a: sendMsg = "leftUP"; break;
+                            default: sendMsg = "default"; break;
+                        }
                     }
                     len = sendMsg.length();
                     if(SDLNet_TCP_Send(*server, sendMsg.c_str(), len + 1) < len + 1) {
                         std::cout << "Unable to send client 1 message! SDLNet Error: " << SDLNet_GetError() << "\n";
                     }
                 }
-                else if(id == 2 && event.type == SDL_KEYDOWN && event.key.repeat == 0){
-                    switch(event.key.keysym.sym) {
-                        case SDLK_UP: sendMsg = "up"; break;
-                        case SDLK_DOWN: sendMsg = "down"; break;
-                        case SDLK_RIGHT: sendMsg = "right"; break;
-                        case SDLK_LEFT: sendMsg = "left"; break;
-                        case SDLK_m: sendMsg = "parry"; break;
-                        default: sendMsg = "default"; break;
+                else if(id == 2 && event.key.repeat == 0){
+                    if(event.type == SDL_KEYDOWN) {
+                        switch(event.key.keysym.sym) {
+                            case SDLK_UP: sendMsg = "upDown"; break;
+                            case SDLK_DOWN: sendMsg = "downDown"; break;
+                            case SDLK_RIGHT: sendMsg = "rightDown"; break;
+                            case SDLK_LEFT: sendMsg = "leftDown"; break;
+                            case SDLK_m: sendMsg = "parry"; break;
+                            default: sendMsg = "default"; break;
+                        }
+                    }
+                    else if(event.type == SDL_KEYUP) {
+                        switch(event.key.keysym.sym) {
+                            case SDLK_UP: sendMsg = "upUP"; break;
+                            case SDLK_DOWN: sendMsg = "downUP"; break;
+                            case SDLK_RIGHT: sendMsg = "rightUP"; break;
+                            case SDLK_LEFT: sendMsg = "leftUP"; break;
+                            default: sendMsg = "default"; break;
+                        }
                     }
                     len = sendMsg.length();
                     if(SDLNet_TCP_Send(*server, sendMsg.c_str(), len + 1) < len + 1) {
@@ -664,8 +758,8 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
                 }
 
 
-                if(id == 1) p1.handleEvent(event, SDL_GetKeyboardState(NULL));
-                if(id == 2) p2.handleEvent(event, SDL_GetKeyboardState(NULL));
+                if(id == 1) p1.handleEvent(event, SDL_GetKeyboardState(NULL), 0);
+                if(id == 2) p2.handleEvent(event, SDL_GetKeyboardState(NULL), 0);
                 g1.handleEvent(event, &p1, &p2);
                 g2.handleEvent(event, &p1, &p2);
                 g3.handleEvent(event, &p1, &p2);
@@ -807,6 +901,23 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
     return false;
 }
 
+int getNumber(char ch[], int size) {
+    int num = 0;
+    for(int i = 0; i < size; i ++) {
+        
+        if(ch[i] != '\0') {
+            if(isalpha(ch[i]))
+                continue;
+            else
+                num = 10 * num + ch[i] - '0';
+        }
+        else {
+            break;
+        }
+    }
+    return num;
+}
+
 int main(int argc, char** argv) {
     if(!SDL_init()) {
         return 0;
@@ -817,7 +928,7 @@ int main(int argc, char** argv) {
         close();
         return 0;
     }
-    srand(time(0));
+    unsigned int SEED;
 
     bool quit = false;
     SDL_Event event;
@@ -851,8 +962,11 @@ int main(int argc, char** argv) {
             menu.handleEvent(event);
         }
         if(menu.isRunning == true) {
-            if(menu.mode == 1) 
+            if(menu.mode == 1) {
+                // random seed, asynchronised
+                srand(time(0));
                 quit = game(&menu, &window);
+            }
             else if(menu.mode == 2) {
                 // transition screen, connecting to server
                 if(firstMatch) {
@@ -877,11 +991,13 @@ int main(int argc, char** argv) {
                                     else if(strcmp(msg, "2") == 0){id = 2;}
                                 }
                                 if(SDLNet_TCP_Recv(server, msg, 1000) > 0) {
-                                    if(strcmp(msg, "CONNECTED") == 0)
-                                        isConnected = true;
+                                    // if(strcmp(msg, "CONNECTED") == 0)
+                                    SEED = getNumber(msg, 1000);
+                                    isConnected = true;
                                 }
                                 if(isConnected) {
                                     std::cout << "Starting...\n";
+                                    srand(SEED);
                                     quit = gameOnline(&menu, &window, id, &server, &set);              
                                 }
                             }    
