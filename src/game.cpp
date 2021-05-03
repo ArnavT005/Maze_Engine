@@ -270,7 +270,7 @@ void renderBlackScreen(Pacman* p1, Pacman* p2, Window* window, Uint32 timeNow) {
     SDL_SetRenderDrawBlendMode(window->getRenderer(), SDL_BLENDMODE_NONE);
 }
 
-bool game(Menu* menu, Window* window) {
+bool game(Menu* menu, Window* window, unsigned int SEED) {
     changeMode = false;
     changedMode1 = false;
     changedMode2 = false; 
@@ -307,7 +307,7 @@ bool game(Menu* menu, Window* window) {
     
     // create manager
     Manager manager(&maze);
-    manager.generateEatables(window);
+    manager.generateEatables(window, SEED);
     manager.generatePortals(window);
     int numEat = manager.eatables.size();
 
@@ -493,7 +493,7 @@ bool game(Menu* menu, Window* window) {
     return false;
 }
 
-bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSet* set) {
+bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSet* set, unsigned int SEED) {
     changeMode = false;
     changedMode1 = false;
     changedMode2 = false; 
@@ -530,7 +530,7 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
     
     // create manager
     Manager manager(&maze);
-    manager.generateEatables(window);
+    manager.generateEatables(window, SEED);
     manager.generatePortals(window);
     int numEat = manager.eatables.size();
 
@@ -561,7 +561,7 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
     bool randomized = false;
     bool temp;
 
-    string sendMsg = "default";
+    string sendMsg = "default", final = "GAME OVER";
     int len;
     char recvdMsg[1000];
 
@@ -841,6 +841,9 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
             menu->isRunning = false;
             menu->isOver = true;
             menu->isAtEnd = true;
+            if(SDLNet_TCP_Send(*server, final.c_str(), 10) < 10) {
+                std::cout << "Unable to send message to server! SDLNet Error: " << SDLNet_GetError() << "\n";
+            }
             Mix_HaltChannel(-1);
             Mix_PlayChannel(19, buzzer, 0);
             SDL_Delay(1000);
@@ -850,6 +853,9 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
             menu->isOver = true;
             menu->isAtEnd = true;
             SDL_Delay(500);
+            if(SDLNet_TCP_Send(*server, final.c_str(), 10) < 10) {
+                std::cout << "Unable to send message to server! SDLNet Error: " << SDLNet_GetError() << "\n";
+            }
             Mix_HaltChannel(-1);
             Mix_PlayChannel(19, buzzer, 0);
         }
@@ -931,25 +937,77 @@ int main(int argc, char** argv) {
     unsigned int SEED;
 
     bool quit = false;
+    bool onlinePossible = true;
     SDL_Event event;
+    
+
+    // set connection with server if available
     SDLNet_SocketSet set;
     set = SDLNet_AllocSocketSet(2);
     if(set == NULL) {
-        cout << "Could not create socket set! SDLNet Error: " << SDLNet_GetError() << "\n";
-        close();
-        return 0;
+        std::cout << "Could not create socket set! SDLNet Error: " << SDLNet_GetError() << "\n";
+        std::cout << "Only local play available!\n";
+        onlinePossible = false;
     }
     TCPsocket server;
     IPaddress ip;
+    // player id
+    int id;    
+    char msg[1000];
+
+
+    if(SDLNet_ResolveHost(&ip, "127.0.0.1", 1234) < 0) {
+        std::cout << "Could not resolve host! SDLNet Error: " << SDLNet_GetError() << "\n";
+        std::cout << "Only local play available!\n";
+        onlinePossible = false;
+    }
+    else {
+        server = SDLNet_TCP_Open(&ip);
+        if(server == NULL) {
+            std::cout << "Could not open socket! SDLNet Error: " << SDLNet_GetError() << "\n";
+            std::cout << "Only local play available!\n";
+            onlinePossible = false;
+        }
+        else {
+            if(SDLNet_TCP_AddSocket(set, server) < 0) {
+                std::cout << "Could not add server to socket set! SDLNet Error: " << SDLNet_GetError() << "\n";
+                std::cout << "Only local play available!\n";
+                onlinePossible = false;
+            }
+            else {
+                if(SDLNet_CheckSockets(set, 500) < 0) {
+                    std::cout << "No response from server! SDLNet Error: " << SDLNet_GetError() << "\n";
+                    std::cout << "Only local play available!\n";
+                    onlinePossible = false;
+                }
+                else {
+                    if(SDLNet_SocketReady(server) != 0) {
+                        if(SDLNet_TCP_Recv(server, msg, 1000) > 0){
+                            if(strcmp(msg, "1") == 0)
+                                id = 1;
+                            else if(strcmp(msg, "2") == 0)
+                                id = 2;
+                        }
+                    }
+                    else {
+                        std::cout << "No response from server! SDLNet Error: " << SDLNet_GetError() << "\n";
+                        std::cout << "Only local play available!\n";
+                        onlinePossible = false;
+                    }
+                }
+            }   
+        }    
+    }
+    // connection set
+
 
     LoadMusic();    
     Menu menu(&window);
 
     Mix_PlayMusic(bground, -1);
     Mix_VolumeMusic(50);
-
+    string start = "START";
     bool firstMatch = true;
-    int id;
 
     while(!quit) {
         while(SDL_PollEvent(&event)) {
@@ -964,50 +1022,48 @@ int main(int argc, char** argv) {
         if(menu.isRunning == true) {
             if(menu.mode == 1) {
                 // random seed, asynchronised
-                srand(time(0));
-                quit = game(&menu, &window);
+                SEED = time(0);
+                srand(SEED);
+                quit = game(&menu, &window, SEED);
             }
             else if(menu.mode == 2) {
-                // transition screen, connecting to server
-                if(firstMatch) {
-                    if(SDLNet_ResolveHost(&ip, "127.0.0.1", 1234) < 0) {
-                        std::cout << "Could not resolve host! SDLNet Error: " << SDLNet_GetError() << "\n";
+                if(!onlinePossible) {
+                    // display some error screen
+                }
+                else {
+                    // online play is available
+                    bool isConnected = false;
+                    // send start message to server
+                    if(SDLNet_TCP_Send(server, start.c_str(), 6) < 6) {
+                        std::cout << "Unable to send message to server! SDLNet Error: " << SDLNet_GetError() << "\n";
+                        std::cout << "Only local play available!\n";
+                        onlinePossible = false;
                     }
                     else {
-                        server = SDLNet_TCP_Open(&ip);
-                        if(server == NULL) {
-                            std::cout << "Could not open socket! SDLNet Error: " << SDLNet_GetError() << "\n";
+                        if(SDLNet_CheckSockets(set, -1) < 0) {
+                            std::cout << "No response from server! SDLNet Error: " << SDLNet_GetError() << "\n";
+                            std::cout << "Only local play available!\n";
+                            onlinePossible = false;
                         }
                         else {
-                            if(SDLNet_TCP_AddSocket(set, server) < 0) {
-                                cout << "Could not add server to socket set! SDLNet Error: " << SDLNet_GetError() << "\n";
-                            }
-                            else {
-                                char msg[1000];
-                                bool isConnected = false;
-                                if(SDLNet_TCP_Recv(server, msg, 1000) > 0){
-                                    std::cout << msg << "\n";
-                                    if(strcmp(msg, "1") == 0){id = 1;}
-                                    else if(strcmp(msg, "2") == 0){id = 2;}
-                                }
+                            if(SDLNet_SocketReady(server) != 0) {
                                 if(SDLNet_TCP_Recv(server, msg, 1000) > 0) {
-                                    // if(strcmp(msg, "CONNECTED") == 0)
                                     SEED = getNumber(msg, 1000);
                                     isConnected = true;
                                 }
                                 if(isConnected) {
-                                    std::cout << "Starting...\n";
                                     srand(SEED);
-                                    quit = gameOnline(&menu, &window, id, &server, &set);              
+                                    quit = gameOnline(&menu, &window, id, &server, &set, SEED);              
                                 }
-                            }    
-                        }    
-                    }
-                    firstMatch = false; 
-                }
-                else {
-                    quit = gameOnline(&menu, &window, id, &server, &set);
-                }       
+                            }
+                            else {
+                                std::cout << "No response from server! SDLNet Error: " << SDLNet_GetError() << "\n";
+                                std::cout << "Only local play available!\n";
+                                onlinePossible = false;
+                            }
+                        }
+                    }    
+                }      
             }
         }
         else {
@@ -1022,6 +1078,18 @@ int main(int argc, char** argv) {
     SDL_Delay(5000);
     window.free();
     ClearMusic();
+    if(set != NULL) {
+        SDLNet_TCP_DelSocket(set, server);
+        if(server != NULL) {
+            SDLNet_TCP_Close(server);
+        }
+        SDLNet_FreeSocketSet(set);
+    }
+    else {
+        if(server != NULL) {
+            SDLNet_TCP_Close(server);
+        }
+    }
     close();
 }
 

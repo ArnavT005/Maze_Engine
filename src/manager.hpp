@@ -13,7 +13,7 @@ class Manager {
 
 	public:
 	Manager(Maze* maze);
-	void generateEatables(Window* window);
+	void generateEatables(Window* window, unsigned int SEED);
     void generatePortals(Window* window);
     void updatePortals();
     void renderPortals(Window* window);
@@ -35,10 +35,9 @@ Manager::Manager(Maze* maze) {
 
 
 
-void Manager::generateEatables(Window* window) {
+void Manager::generateEatables(Window* window, unsigned int SEED) {
 
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::mt19937 generator(seed);
+    std::mt19937 generator(SEED);
     Eatable item;
     int num = 0;
     for(int i = 0; i < maze->dimension; i ++) {

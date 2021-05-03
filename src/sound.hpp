@@ -53,8 +53,6 @@ void LoadMusic(){
 	if(teleport == NULL) std::cout << "Failed to load music! SDL_mixer Error: " << Mix_GetError() << "\n"; 
 	pacPacCollision = Mix_LoadWAV("../music/collision.wav");
 	if(parry == NULL) std::cout << "Failed to load music! SDL_mixer Error: " << Mix_GetError() << "\n"; 
-	// gameOver = Mix_LoadWAV( "../music/gameOver.wav");
-	// if( gameOver == NULL ){printf( "Failed to load music! SDL_mixer Error: %s\n", Mix_GetError() );}
 	siren = Mix_LoadWAV( "../music/pacMove.wav");
 	if(siren == NULL ){printf( "Failed to load music! SDL_mixer Error: %s\n", Mix_GetError() );}
 }
