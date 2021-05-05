@@ -263,20 +263,20 @@ void Pacman::handleEvent(SDL_Event &e, const Uint8* keyStates, int online) {
 			}	
 			if(num <= 1) {
 				switch(e.key.keysym.sym) {
-					case SDLK_UP: velY -= PACMAN_VEL; state = MOVE_UP; frameCount = 0; break;
-					case SDLK_DOWN: velY += PACMAN_VEL; state = MOVE_DOWN; frameCount = 0; break;
-					case SDLK_RIGHT: velX += PACMAN_VEL; state = MOVE_RIGHT; frameCount = 0; break;
-					case SDLK_LEFT: velX -= PACMAN_VEL; state = MOVE_LEFT; frameCount = 0; break;
+					case SDLK_UP: velY = -PACMAN_VEL; state = MOVE_UP; frameCount = 0; break;
+					case SDLK_DOWN: velY = PACMAN_VEL; state = MOVE_DOWN; frameCount = 0; break;
+					case SDLK_RIGHT: velX = PACMAN_VEL; state = MOVE_RIGHT; frameCount = 0; break;
+					case SDLK_LEFT: velX = -PACMAN_VEL; state = MOVE_LEFT; frameCount = 0; break;
 					default: break;
 				}
 			}
 		}
 		else if(type == 2 && e.type == SDL_KEYUP && e.key.repeat == 0) {
 			switch(e.key.keysym.sym) {
-				case SDLK_UP: if(velY < 0) { velY += PACMAN_VEL; state = STILL_UP; } frameCount = 0; break;
-				case SDLK_DOWN: if(velY > 0) { velY -= PACMAN_VEL; state = STILL_DOWN; } frameCount = 0; break;
-				case SDLK_RIGHT: if(velX > 0) { velX -= PACMAN_VEL; state = STILL_RIGHT; } frameCount = 0; break;
-				case SDLK_LEFT: if(velX < 0) { velX += PACMAN_VEL; state = STILL_LEFT; } frameCount = 0; break;
+				case SDLK_UP: if(velY < 0) { velY = 0; state = STILL_UP; } frameCount = 0; break;
+				case SDLK_DOWN: if(velY > 0) { velY = 0; state = STILL_DOWN; } frameCount = 0; break;
+				case SDLK_RIGHT: if(velX > 0) { velX = 0; state = STILL_RIGHT; } frameCount = 0; break;
+				case SDLK_LEFT: if(velX < 0) { velX = 0; state = STILL_LEFT; } frameCount = 0; break;
 				default: break;
 			}
 		}
@@ -290,20 +290,20 @@ void Pacman::handleEvent(SDL_Event &e, const Uint8* keyStates, int online) {
 			}
 			if(num <= 1) {
 				switch(e.key.keysym.sym) {
-					case SDLK_w: velY -= PACMAN_VEL; state = MOVE_UP; frameCount = 0; break;
-					case SDLK_s: velY += PACMAN_VEL; state = MOVE_DOWN; frameCount = 0; break;
-					case SDLK_d: velX += PACMAN_VEL; state = MOVE_RIGHT; frameCount = 0; break;
-					case SDLK_a: velX -= PACMAN_VEL; state = MOVE_LEFT; frameCount = 0; break;
+					case SDLK_w: velY = -PACMAN_VEL; state = MOVE_UP; frameCount = 0; break;
+					case SDLK_s: velY = PACMAN_VEL; state = MOVE_DOWN; frameCount = 0; break;
+					case SDLK_d: velX = PACMAN_VEL; state = MOVE_RIGHT; frameCount = 0; break;
+					case SDLK_a: velX = -PACMAN_VEL; state = MOVE_LEFT; frameCount = 0; break;
 					default: break;
 				}
 			}
 		}
 		else if(type == 1 && e.type == SDL_KEYUP && e.key.repeat == 0) {
 			switch(e.key.keysym.sym) {
-				case SDLK_w: if(velY < 0) { velY += PACMAN_VEL; state = STILL_UP; } frameCount = 0; break;
-				case SDLK_s: if(velY > 0) { velY -= PACMAN_VEL; state = STILL_DOWN; } frameCount = 0; break;
-				case SDLK_d: if(velX > 0) { velX -= PACMAN_VEL; state = STILL_RIGHT; } frameCount = 0; break;
-				case SDLK_a: if(velX < 0) { velX += PACMAN_VEL; state = STILL_LEFT; } frameCount = 0; break;
+				case SDLK_w: if(velY < 0) { velY = 0; state = STILL_UP; } frameCount = 0; break;
+				case SDLK_s: if(velY > 0) { velY = 0; state = STILL_DOWN; } frameCount = 0; break;
+				case SDLK_d: if(velX > 0) { velX = 0; state = STILL_RIGHT; } frameCount = 0; break;
+				case SDLK_a: if(velX < 0) { velX = 0; state = STILL_LEFT; } frameCount = 0; break;
 				default: break;
 			}
 		}
