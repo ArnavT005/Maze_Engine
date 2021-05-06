@@ -565,6 +565,7 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
     int len;
     char recvdMsg[10];
 
+    string Quit = "QUIT";
     bool upFlag = false, downFlag = false, rightFlag = false, leftFlag = false;
 
     while(menu->isRunning) {
@@ -578,6 +579,11 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
 
             while(SDL_PollEvent(& event)) {
                 if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) ) {
+                    // send message to server
+                    if(SDLNet_TCP_Send(*server, Quit.c_str(), 5) < 5) {
+                        std::cout << "Unable to send client 1 message! SDLNet Error: " << SDLNet_GetError() << "\n";
+                    }
+                    menu->isRunning = false;
                     return true;
                 }
                 sendMsg = "default";
@@ -656,132 +662,145 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
             if(id == 2) p2.move();
             while(SDLNet_CheckSockets(*set, 0) > 0) {
 
-                    SDL_Event E;
-                    E.key.repeat = 0;
-                    E.type = SDL_KEYUP;
-                    E.key.keysym.sym = SDLK_t;
-                    // check server activity
-                    if(SDLNet_SocketReady(*server) != 0) {
-                        // receive message from server
-                        if(SDLNet_TCP_Recv(*server, recvdMsg, 1000) > 0){
-                            std::cout << recvdMsg << "\n";
-                            if(strcmp(recvdMsg, "default") != 0) {
-                                if(!(upFlag || rightFlag || downFlag || leftFlag)) {
-                                    if(strcmp(recvdMsg, "upDown") == 0){
-                                        if(id==1){
-                                            E.key.keysym.sym = SDLK_UP;
-                                            E.type = SDL_KEYDOWN;
-                                        } 
-                                        else { 
-                                            E.key.keysym.sym = SDLK_w;
-                                            E.type = SDL_KEYDOWN;
-                                        }
-                                    }
-                                    if(strcmp(recvdMsg, "downDown") == 0){
-                                        if(id==1){
-                                            E.key.keysym.sym = SDLK_DOWN;
-                                            E.type = SDL_KEYDOWN;
-                                        } 
-                                        else { 
-                                            E.key.keysym.sym = SDLK_s;
-                                            E.type = SDL_KEYDOWN;
-                                        }
-                                    }
-                                    if(strcmp(recvdMsg, "leftDown") == 0){
-                                        if(id==1){
-                                            E.key.keysym.sym = SDLK_LEFT;
-                                            E.type = SDL_KEYDOWN;
-                                        } 
-                                        else { 
-                                            E.key.keysym.sym = SDLK_a;
-                                            E.type = SDL_KEYDOWN;
-                                        }
-                                    }
-                                    if(strcmp(recvdMsg, "rightDown") == 0){
-                                        if(id==1){
-                                            E.key.keysym.sym = SDLK_RIGHT;
-                                            E.type = SDL_KEYDOWN;
-                                        } 
-                                        else { 
-                                            E.key.keysym.sym = SDLK_d;
-                                            E.type = SDL_KEYDOWN;
-                                        }
-                                    }
-                                }
-                                if(strcmp(recvdMsg, "parry") == 0){
-                                    if(id==1){
-                                        E.key.keysym.sym = SDLK_m;
-                                        E.type = SDL_KEYDOWN;
-                                    } 
-                                    else { 
-                                        E.key.keysym.sym = SDLK_g;
-                                        E.type = SDL_KEYDOWN;
-                                    }
-                                }
-                                if(strcmp(recvdMsg, "upUP") == 0){
-                                    upFlag = false;
+                SDL_Event E;
+                E.key.repeat = 0;
+                E.type = SDL_KEYUP;
+                E.key.keysym.sym = SDLK_t;
+                // check server activity
+                if(SDLNet_SocketReady(*server) != 0) {
+                    // receive message from server
+                    if(SDLNet_TCP_Recv(*server, recvdMsg, 1000) > 0){
+                        std::cout << recvdMsg << "\n";
+                        if(strcmp(recvdMsg, "default") != 0) {
+                            if(!(upFlag || rightFlag || downFlag || leftFlag)) {
+                                if(strcmp(recvdMsg, "upDown") == 0){
                                     if(id==1){
                                         E.key.keysym.sym = SDLK_UP;
-                                        E.type = SDL_KEYUP;
+                                        E.type = SDL_KEYDOWN;
                                     } 
                                     else { 
                                         E.key.keysym.sym = SDLK_w;
-                                        E.type = SDL_KEYUP;
+                                        E.type = SDL_KEYDOWN;
                                     }
                                 }
-                                if(strcmp(recvdMsg, "downUP") == 0){
-                                    downFlag = false;
+                                if(strcmp(recvdMsg, "downDown") == 0){
                                     if(id==1){
                                         E.key.keysym.sym = SDLK_DOWN;
-                                        E.type = SDL_KEYUP;
+                                        E.type = SDL_KEYDOWN;
                                     } 
                                     else { 
                                         E.key.keysym.sym = SDLK_s;
-                                        E.type = SDL_KEYUP;
+                                        E.type = SDL_KEYDOWN;
                                     }
                                 }
-                                if(strcmp(recvdMsg, "leftUP") == 0){
-                                    leftFlag = false;
+                                if(strcmp(recvdMsg, "leftDown") == 0){
                                     if(id==1){
                                         E.key.keysym.sym = SDLK_LEFT;
-                                        E.type = SDL_KEYUP;
+                                        E.type = SDL_KEYDOWN;
                                     } 
                                     else { 
                                         E.key.keysym.sym = SDLK_a;
-                                        E.type = SDL_KEYUP;
+                                        E.type = SDL_KEYDOWN;
                                     }
                                 }
-                                if(strcmp(recvdMsg, "rightUP") == 0){
-                                    rightFlag = false;
+                                if(strcmp(recvdMsg, "rightDown") == 0){
                                     if(id==1){
                                         E.key.keysym.sym = SDLK_RIGHT;
-                                        E.type = SDL_KEYUP;
+                                        E.type = SDL_KEYDOWN;
                                     } 
                                     else { 
                                         E.key.keysym.sym = SDLK_d;
-                                        E.type = SDL_KEYUP;
+                                        E.type = SDL_KEYDOWN;
                                     }
                                 }
-                                if(id == 2) p1.handleEvent(E, SDL_GetKeyboardState(NULL), 1);
-                                if(id == 1) p2.handleEvent(E, SDL_GetKeyboardState(NULL), 1);
-                                g1.handleEvent(E, &p1, &p2);
-                                g2.handleEvent(E, &p1, &p2);
-                                g3.handleEvent(E, &p1, &p2);
-                                g4.handleEvent(E, &p1, &p2);
-                                g7.handleEvent(E, &p1, &p2);
-                                if(changedMode1){
-                                    g5.handleEvent(E, &p1, &p2);
-                                }
-                                if(changedMode2) {
-                                    g6.handleEvent(E, &p1, &p2);
+                            }
+                            if(strcmp(recvdMsg, "parry") == 0){
+                                if(id==1){
+                                    E.key.keysym.sym = SDLK_m;
+                                    E.type = SDL_KEYDOWN;
+                                } 
+                                else { 
+                                    E.key.keysym.sym = SDLK_g;
+                                    E.type = SDL_KEYDOWN;
                                 }
                             }
+                            if(strcmp(recvdMsg, "upUP") == 0){
+                                upFlag = false;
+                                if(id==1){
+                                    E.key.keysym.sym = SDLK_UP;
+                                    E.type = SDL_KEYUP;
+                                } 
+                                else { 
+                                    E.key.keysym.sym = SDLK_w;
+                                    E.type = SDL_KEYUP;
+                                }
+                            }
+                            if(strcmp(recvdMsg, "downUP") == 0){
+                                downFlag = false;
+                                if(id==1){
+                                    E.key.keysym.sym = SDLK_DOWN;
+                                    E.type = SDL_KEYUP;
+                                } 
+                                else { 
+                                    E.key.keysym.sym = SDLK_s;
+                                    E.type = SDL_KEYUP;
+                                }
+                            }
+                            if(strcmp(recvdMsg, "leftUP") == 0){
+                                leftFlag = false;
+                                if(id==1){
+                                    E.key.keysym.sym = SDLK_LEFT;
+                                    E.type = SDL_KEYUP;
+                                } 
+                                else { 
+                                    E.key.keysym.sym = SDLK_a;
+                                    E.type = SDL_KEYUP;
+                                }
+                            }
+                            if(strcmp(recvdMsg, "rightUP") == 0){
+                                rightFlag = false;
+                                if(id==1){
+                                    E.key.keysym.sym = SDLK_RIGHT;
+                                    E.type = SDL_KEYUP;
+                                } 
+                                else { 
+                                    E.key.keysym.sym = SDLK_d;
+                                    E.type = SDL_KEYUP;
+                                }
+                            }
+                            if(strcmp(recvdMsg, "QUIT") == 0) {
+                                menu->isRunning = false;
+                                menu->isAtEnd = true;
+                                menu->isOver = true;
+                                menu->winner = 3;
+                                menu->onlinePossible = false;
+                                Mix_HaltChannel(-1);
+                                Mix_PlayChannel(19, buzzer, 0);
+                                SDL_Delay(500);
+                                break;
+                            }
+                            if(id == 2) p1.handleEvent(E, SDL_GetKeyboardState(NULL), 1);
+                            if(id == 1) p2.handleEvent(E, SDL_GetKeyboardState(NULL), 1);
+                            g1.handleEvent(E, &p1, &p2);
+                            g2.handleEvent(E, &p1, &p2);
+                            g3.handleEvent(E, &p1, &p2);
+                            g4.handleEvent(E, &p1, &p2);
+                            g7.handleEvent(E, &p1, &p2);
+                            if(changedMode1){
+                                g5.handleEvent(E, &p1, &p2);
+                            }
+                            if(changedMode2) {
+                                g6.handleEvent(E, &p1, &p2);
+                            }
                         }
-                    }    
+                    }
+                }    
             }
             if(id == 2) p1.move();
             if(id == 1) p2.move();
         }
+        if(!menu->isRunning)
+            break;
         window->clearWindow();
         window->renderTexture(background, NULL, &bg);
         p1.pacpacCollision(&p2);
@@ -1015,10 +1034,11 @@ int main(int argc, char** argv) {
 
     LoadMusic();    
     Menu menu(&window);
+    menu.onlinePossible = onlinePossible;
 
     Mix_PlayMusic(bground, -1);
     Mix_VolumeMusic(50);
-    string start = "START";
+    string start = "START", Quit = "QUIT";
     bool firstMatch = true;
 
     while(!quit) {
@@ -1026,8 +1046,14 @@ int main(int argc, char** argv) {
             if(event.type == SDL_QUIT) {
                 quit = true;
                 if(server != NULL) {
-                    SDLNet_TCP_Close(server);
+                    // send quit message to server
+                    if(SDLNet_TCP_Send(server, Quit.c_str(), 5) < 5) {
+                        std::cout << "Unable to send message to server! SDLNet Error: " << SDLNet_GetError() << "\n";
+                        std::cout << "Only local play available!\n";
+                        menu.onlinePossible = false;
+                    }
                 }
+                break;
             }
             menu.handleEvent(event);
         }
@@ -1041,39 +1067,68 @@ int main(int argc, char** argv) {
             else if(menu.mode == 2) {
                 if(!onlinePossible) {
                     // display some error screen
+                    window.clearWindow();
+                    menu.render(&window);
+                    window.updateWindow();
                 }
                 else {
                     // online play is available
+                    // display connecting screen
+                    window.clearWindow();
+                    menu.render(&window);
+                    window.updateWindow();
+
                     bool isConnected = false;
                     // send start message to server
                     if(SDLNet_TCP_Send(server, start.c_str(), 6) < 6) {
                         std::cout << "Unable to send message to server! SDLNet Error: " << SDLNet_GetError() << "\n";
                         std::cout << "Only local play available!\n";
-                        onlinePossible = false;
+                        menu.onlinePossible = false;
                     }
                     else {
-                        if(SDLNet_CheckSockets(set, -1) < 0) {
-                            std::cout << "No response from server! SDLNet Error: " << SDLNet_GetError() << "\n";
-                            std::cout << "Only local play available!\n";
-                            onlinePossible = false;
-                        }
-                        else {
-                            if(SDLNet_SocketReady(server) != 0) {
-                                if(SDLNet_TCP_Recv(server, msg, 1000) > 0) {
-                                    SEED = getNumber(msg, 1000);
-                                    isConnected = true;
+                        while(menu.isRunning) {
+                            if(SDL_PollEvent(&event)) {
+                                if(event.type == SDL_QUIT) {
+                                    quit = true;
+                                    menu.isRunning = false;
+                                    if(server != NULL) {
+                                        // send quit message to server
+                                        if(SDLNet_TCP_Send(server, Quit.c_str(), 5) < 5) {
+                                            std::cout << "Unable to send message to server! SDLNet Error: " << SDLNet_GetError() << "\n";
+                                            std::cout << "Only local play available!\n";
+                                            menu.onlinePossible = false;
+                                        }
+                                    }
+                                    break;
                                 }
-                                if(isConnected) {
-                                    srand(SEED);
-                                    quit = gameOnline(&menu, &window, id, &server, &set, SEED);              
-                                }
+                                menu.handleEvent(event);
                             }
-                            else {
+                            if(!menu.isRunning)
+                                break;
+                            if(SDLNet_CheckSockets(set, 0) < 0) {
                                 std::cout << "No response from server! SDLNet Error: " << SDLNet_GetError() << "\n";
                                 std::cout << "Only local play available!\n";
-                                onlinePossible = false;
+                                menu.onlinePossible = false;
                             }
-                        }
+                            else {
+                                if(SDLNet_SocketReady(server) != 0) {
+                                    if(SDLNet_TCP_Recv(server, msg, 1000) > 0) {
+                                        SEED = getNumber(msg, 1000);
+                                        isConnected = true;
+                                    }
+                                    if(isConnected) {
+                                        srand(SEED);
+                                        quit = gameOnline(&menu, &window, id, &server, &set, SEED);              
+                                    } 
+                                }
+                                // else {
+                                //     std::cout << "No response from server! SDLNet Error: " << SDLNet_GetError() << "\n";
+                                //     std::cout << "Only local play available!\n";
+                                //     menu.onlinePossible = false;
+                                // }
+                            }
+                        }    
+                                  
                     }    
                 }      
             }

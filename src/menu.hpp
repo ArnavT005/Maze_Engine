@@ -27,6 +27,7 @@ class Menu {
 	bool isAtEnd;
 	bool isRunning;
 	bool isOver;
+	bool onlinePossible;
 	int button1State;
 	int button2State;
 	int button3State;
@@ -34,6 +35,7 @@ class Menu {
 	int mode;
 	SDL_Texture* background;
 	SDL_Texture* gameOver;
+	SDL_Texture* connecting;
 
 	SDL_Texture* rematchButton1;
 	SDL_Texture* rematchButton2;
@@ -47,6 +49,7 @@ class Menu {
 	SDL_Texture* onlineButton2;
 	SDL_Texture* backButton1;
 	SDL_Texture* backButton2;
+
 
 	SDL_Texture* P1;
 	SDL_Texture* P2;
@@ -62,6 +65,7 @@ Menu::Menu() {
 	isAtEnd = false;
 	isRunning = false;
 	isOver = false;
+	onlinePossible = true;
 	button1State = IDLE;
 	button2State = IDLE;
 	button3State = IDLE;
@@ -70,6 +74,7 @@ Menu::Menu() {
 
 	background = NULL;
 	gameOver = NULL;
+	connecting = NULL;
 	rematchButton1 = NULL;
 	rematchButton2 = NULL;
 	backToMenuButton1 = NULL;
@@ -94,6 +99,7 @@ Menu::Menu(Window* window) {
 	isAtEnd = false;
 	isRunning = false;
 	isOver = false;
+	onlinePossible = true;
 	button1State = IDLE;
 	button2State = IDLE;
 	button3State = IDLE;
@@ -152,6 +158,10 @@ void Menu::free() {
 		SDL_DestroyTexture(gameOver);
 		gameOver = NULL;
 	}
+	if(connecting != NULL) {
+		SDL_DestroyTexture(connecting);
+		connecting = NULL;
+	}
 	if(rematchButton1 != NULL) {
 		SDL_DestroyTexture(rematchButton1);
 		rematchButton1 = NULL;
@@ -186,6 +196,17 @@ void Menu::loadTexture(Window* window) {
 			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
 		}
 		SDL_FreeSurface(bgSurf);
+	}
+	SDL_Surface* connectSurf = IMG_Load("../img/connecting.png");
+	if(connectSurf == NULL) {
+		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+	}
+	else {
+		connecting = SDL_CreateTextureFromSurface(window->getRenderer(), connectSurf);
+		if(connecting == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+		}
+		SDL_FreeSurface(connectSurf);
 	}
 	SDL_Surface* newGameSurf1 = IMG_Load("../img/Button/newGameUnPressed.png");
 	if(newGameSurf1 == NULL) {
@@ -401,6 +422,20 @@ void Menu::render(Window* window) {
 			window->renderTexture(backButton1, NULL, &backButton);
 		}
 	}
+	else if(isRunning && mode == 2 && onlinePossible) {
+		SDL_Rect backButton = {50, 940, 105, 60};
+		window->renderTexture(connecting, NULL, &bgRect);
+	}
+	else if(isRunning && mode == 2 && !onlinePossible) {
+		SDL_Rect backButton = {50, 940, 105, 60};
+		window->renderTexture(connecting, NULL, &bgRect);
+		if(button1State == HOVER || button1State == PRESSED) {
+			window->renderTexture(backButton2, NULL, &backButton);
+		}
+		else {
+			window->renderTexture(backButton1, NULL, &backButton);
+		}
+	}
 	else if(isAtEnd) {
 		SDL_Rect rematchButton = {593, 780, 200, 65};
 		SDL_Rect backButton = {50, 940, 200, 65};
@@ -539,6 +574,40 @@ void Menu::handleEvent(SDL_Event &e) {
 			button2State = IDLE;
 			button3State = IDLE;
 		}
+	}
+	else if(isRunning && mode == 2 && !onlinePossible) {
+		if(e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
+			int x, y;
+			SDL_GetMouseState(&x, &y);
+			if(x >= 50 && x <= 155 && y >= 940 && y <= 1000) {
+				if(e.type == SDL_MOUSEMOTION) {
+					button1State = HOVER;
+				}
+				else if(e.type == SDL_MOUSEBUTTONDOWN) {
+					button1State = PRESSED;
+				}
+				else if(e.type == SDL_MOUSEBUTTONUP) {
+					if(button1State == PRESSED) {
+						Mix_PlayChannel(20, click, 0);
+						button1State = IDLE;
+						isRunning = false;
+						isAtEnd = false;
+						isOver = false;
+						isAtMenuStart = false;
+						isAtMenuMode = true;
+					}
+					else {
+						button1State = HOVER;
+					}
+				}
+			}
+			else {
+				button1State = IDLE;
+			}
+		}
+		else {
+			button1State = IDLE;
+		}	
 	}
 	else if(isAtEnd) {
 		if(e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {

@@ -148,8 +148,12 @@ int main(){
     }
     // connected to both clients
 
+    // flag that becomes true when either of the client disconnects (closes their window)
+
+    bool quit = false;
+
     // server activities
-    while(true) {
+    while(!quit) {
 
         // wait for clients to send initial message
         char msg1[1000], msg2[1000];
@@ -174,17 +178,29 @@ int main(){
                     if(SDLNet_TCP_Recv(client[0], msg1, 1000) > 0) {
                         if(strcmp(msg1, "START") == 0)
                             response++;
+                        if(strcmp(msg1, "QUIT") == 0) {
+                            client_cnt --;
+                            quit = true;
+                            break;
+                        }
                     }
                 }
                 if(SDLNet_SocketReady(client[1]) != 0) {
                     if(SDLNet_TCP_Recv(client[1], msg2, 1000) > 0) {
                         if(strcmp(msg2, "START") == 0)
                             response++;
+                        if(strcmp(msg2, "QUIT") == 0) {
+                            client_cnt --;
+                            quit = true;
+                            break;
+                        }
                     }
                 }
             }
         }
 
+        if(quit)
+            break;
 
         // send them random seed
         int SEED = rand();  
@@ -265,13 +281,17 @@ int main(){
                             close();
                             return 0;
                         }
+                        if(strcmp(msg1, "QUIT") == 0) {
+                            client_cnt --;
+                            break;
+                        }
                     }
                 }
                 if(activity2 != 0) {
                     len2 = SDLNet_TCP_Recv(client[1], msg2, 1000);
                     if(len2 > 0) {
                         // check if the game is over or not
-                        if(strcmp(msg1, "GAME OVER") == 0) {
+                        if(strcmp(msg2, "GAME OVER") == 0) {
                             break;
                         }
                         // send message to client 1
@@ -292,10 +312,44 @@ int main(){
                             close();
                             return 0;
                         }
+                        if(strcmp(msg2, "QUIT") == 0) {
+                            client_cnt --;
+                            break;
+                        }
                     } 
                 }
             } 
-        }    
+        } 
+        if(client_cnt < 2) {
+            // someone disconnected
+            quit = true;
+        }   
+    }
+    if(set != NULL) {
+        SDLNet_TCP_DelSocket(set, client[1]);
+        SDLNet_TCP_DelSocket(set, client[0]);
+        SDLNet_TCP_DelSocket(set, server);
+        if(server != NULL) {
+            SDLNet_TCP_Close(server);    
+        }
+        if(client[0] != NULL) {
+            SDLNet_TCP_Close(client[0]);            
+        }
+        if(client[1] != NULL) {
+            SDLNet_TCP_Close(client[1]);
+        } 
+        SDLNet_FreeSocketSet(set);
+    }
+    else {
+        if(server != NULL) {
+            SDLNet_TCP_Close(server);    
+        }
+        if(client[0] != NULL) {
+            SDLNet_TCP_Close(client[0]);            
+        }
+        if(client[1] != NULL) {
+            SDLNet_TCP_Close(client[1]);
+        } 
     }
           
     return 0;
