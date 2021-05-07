@@ -49,6 +49,9 @@ class Menu {
 	SDL_Texture* onlineButton2;
 	SDL_Texture* backButton1;
 	SDL_Texture* backButton2;
+	SDL_Texture* disco;
+	SDL_Texture* youWin;
+	SDL_Texture* offline;
 
 
 	SDL_Texture* P1;
@@ -87,6 +90,9 @@ Menu::Menu() {
 	onlineButton2 = NULL;
 	backButton1 = NULL;
 	backButton2 = NULL;
+	disco = NULL;
+	youWin = NULL;
+	offline = NULL;
 	P1 = NULL;
 	P2 = NULL;
 	draw = NULL;
@@ -181,6 +187,18 @@ void Menu::free() {
 	if(draw != NULL) {
 		SDL_DestroyTexture(draw);
 		draw = NULL;
+	}
+	if(disco != NULL) {
+		SDL_DestroyTexture(disco);
+		disco = NULL;
+	}
+	if(youWin != NULL) {
+		SDL_DestroyTexture(youWin);
+		youWin = NULL;
+	}
+	if(offline != NULL) {
+		SDL_DestroyTexture(offline);
+		offline = NULL;
 	}
 
 }
@@ -384,6 +402,39 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(drawSurf);
 	}
+	SDL_Surface* discoSurf = IMG_Load("../img/disco.png");
+	if(discoSurf == NULL) {
+		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+	}
+	else {
+		disco = SDL_CreateTextureFromSurface(window->getRenderer(), discoSurf);
+		if(disco == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+		}
+		SDL_FreeSurface(discoSurf);
+	}
+	SDL_Surface* youSurf = IMG_Load("../img/youWin.png");
+	if(youSurf == NULL) {
+		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+	}
+	else {
+		youWin = SDL_CreateTextureFromSurface(window->getRenderer(), youSurf);
+		if(youWin == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+		}
+		SDL_FreeSurface(youSurf);
+	}
+	SDL_Surface* offlineSurf = IMG_Load("../img/offline.png");
+	if(offlineSurf == NULL) {
+		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
+	}
+	else {
+		offline = SDL_CreateTextureFromSurface(window->getRenderer(), offlineSurf);
+		if(offline == NULL) {
+			std::cout << "Unable to create texture from sprite! SDL Error: " << SDL_GetError() << "\n";
+		}
+		SDL_FreeSurface(offlineSurf);
+	}
 }
 
 void Menu::render(Window* window) {
@@ -425,10 +476,18 @@ void Menu::render(Window* window) {
 	else if(isRunning && mode == 2 && onlinePossible) {
 		SDL_Rect backButton = {50, 940, 105, 60};
 		window->renderTexture(connecting, NULL, &bgRect);
+		if(button1State == HOVER || button1State == PRESSED) {
+			window->renderTexture(backButton2, NULL, &backButton);
+		}
+		else {
+			window->renderTexture(backButton1, NULL, &backButton);
+		}
 	}
 	else if(isRunning && mode == 2 && !onlinePossible) {
 		SDL_Rect backButton = {50, 940, 105, 60};
-		window->renderTexture(connecting, NULL, &bgRect);
+		SDL_Rect message = {360, 830, 700, 100};
+		window->renderTexture(background, NULL, &bgRect);
+		window->renderTexture(offline, NULL, &message);
 		if(button1State == HOVER || button1State == PRESSED) {
 			window->renderTexture(backButton2, NULL, &backButton);
 		}
@@ -441,11 +500,13 @@ void Menu::render(Window* window) {
 		SDL_Rect backButton = {50, 940, 200, 65};
 		SDL_Rect playerWin = {543, 580, 300, 150};
 		window->renderTexture(gameOver, NULL, &bgRect);
-		if(button1State == HOVER || button1State == PRESSED) {
-			window->renderTexture(rematchButton2, NULL, &rematchButton);
-		}
-		else {
-			window->renderTexture(rematchButton1, NULL, &rematchButton);
+		if(winner != 3) {
+			if(button1State == HOVER || button1State == PRESSED) {
+				window->renderTexture(rematchButton2, NULL, &rematchButton);
+			}
+			else {
+				window->renderTexture(rematchButton1, NULL, &rematchButton);
+			}
 		}
 		if(button2State == HOVER || button2State == PRESSED) {
 			window->renderTexture(backToMenuButton2, NULL, &backButton);
@@ -457,8 +518,18 @@ void Menu::render(Window* window) {
 			window->renderTexture(P1, NULL, &playerWin);
 		else if(winner == 2)
 			window->renderTexture(P2, NULL, &playerWin);
-		else
+		else if(winner == 0)
 			window->renderTexture(draw, NULL, &playerWin);
+		else if(winner == 3) {
+			playerWin.w = 650;
+			playerWin.x -= 170;
+			playerWin.h = 70;
+			window->renderTexture(disco, NULL, &playerWin);
+			playerWin.y += 70;
+			playerWin.x = 543;
+			playerWin.w = 300;
+			window->renderTexture(youWin, NULL, &playerWin);
+		}
 	}
 }
 
@@ -575,7 +646,7 @@ void Menu::handleEvent(SDL_Event &e) {
 			button3State = IDLE;
 		}
 	}
-	else if(isRunning && mode == 2 && !onlinePossible) {
+	else if(isRunning && mode == 2) {
 		if(e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
 			int x, y;
 			SDL_GetMouseState(&x, &y);
@@ -613,30 +684,32 @@ void Menu::handleEvent(SDL_Event &e) {
 		if(e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
 			int x, y;
 			SDL_GetMouseState(&x, &y);
-			if(x >= 593 && x <= 793 && y >= 780 && y <= 845) {
-				if(e.type == SDL_MOUSEMOTION) {
-					button1State = HOVER;
-				}
-				else if(e.type == SDL_MOUSEBUTTONDOWN) {
-					button1State = PRESSED;
-				}
-				else if(e.type == SDL_MOUSEBUTTONUP) {
-					if(button1State == PRESSED) {
-						Mix_PlayChannel(20, click, 0);
-						button1State = IDLE;
-						isRunning = true;
-						isAtEnd = false;
-						isOver = false;
-						isAtMenuStart = false;
-						isAtMenuMode = false;
-					}
-					else {
+			if(winner != 3) {
+				if(x >= 593 && x <= 793 && y >= 780 && y <= 845) {
+					if(e.type == SDL_MOUSEMOTION) {
 						button1State = HOVER;
 					}
+					else if(e.type == SDL_MOUSEBUTTONDOWN) {
+						button1State = PRESSED;
+					}
+					else if(e.type == SDL_MOUSEBUTTONUP) {
+						if(button1State == PRESSED) {
+							Mix_PlayChannel(20, click, 0);
+							button1State = IDLE;
+							isRunning = true;
+							isAtEnd = false;
+							isOver = false;
+							isAtMenuStart = false;
+							isAtMenuMode = false;
+						}
+						else {
+							button1State = HOVER;
+						}
+					}
 				}
-			}
-			else {
-				button1State = IDLE;
+				else {
+					button1State = IDLE;
+				}
 			}
 			if(x >= 50 && x <= 250 && y >= 940 && y <= 1000) {
 				if(e.type == SDL_MOUSEMOTION) {

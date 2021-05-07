@@ -81,6 +81,8 @@ int main(){
     // client ids
     string id1 = "1", id2 = "2";
     string connected = "CONNECTED", def = "default";
+    char msg1[1000], msg2[1000];
+
     
     // connect to two clients
     while(client_cnt < 2)
@@ -145,6 +147,26 @@ int main(){
                 client_cnt++;
             }
         }
+
+        if(SDLNet_CheckSockets(set, 0) > 0) {
+            if(client[0] != NULL) {
+                if(SDLNet_SocketReady(client[0]) != 0) {
+                    if(SDLNet_TCP_Recv(client[0], msg1, 1000) > 0) {
+                        if(strcmp(msg1, "QUIT") == 0) {
+                            // close connection
+                            SDLNet_TCP_DelSocket(set, client[0]);
+                            SDLNet_TCP_Close(client[0]);
+                            SDLNet_TCP_DelSocket(set, server);
+                            SDLNet_TCP_Close(server);
+                            SDLNet_FreeSocketSet(set);
+                            set = NULL;
+                            close();
+                            return 0;
+                        }
+                    }
+                }
+            }
+        }
     }
     // connected to both clients
 
@@ -156,7 +178,6 @@ int main(){
     while(!quit) {
 
         // wait for clients to send initial message
-        char msg1[1000], msg2[1000];
         int len1, len2, activity1, activity2;
         int response = 0;
         while(response < 2) {
@@ -176,22 +197,58 @@ int main(){
             else {
                 if(SDLNet_SocketReady(client[0]) != 0) {
                     if(SDLNet_TCP_Recv(client[0], msg1, 1000) > 0) {
-                        if(strcmp(msg1, "START") == 0)
+                        if(strcmp(msg1, "START") == 0) {
                             response++;
-                        if(strcmp(msg1, "QUIT") == 0) {
+                        }
+                        else if(strcmp(msg1, "RETREAT") == 0) {
+                            response --;
+                        }
+                        else if(strcmp(msg1, "QUIT") == 0) {
                             client_cnt --;
                             quit = true;
+                            // send to client 2
+                            if(SDLNet_TCP_Send(client[1], "QUIT", 5) < 5) {
+                                cout << "Unable to send client 1 message to client 2! SDLNet Error: " << SDLNet_GetError() << "\n";                
+                                SDLNet_TCP_DelSocket(set, client[1]);
+                                SDLNet_TCP_Close(client[1]);
+                                SDLNet_TCP_DelSocket(set, client[0]);
+                                SDLNet_TCP_Close(client[0]);
+                                SDLNet_TCP_DelSocket(set, server);
+                                SDLNet_TCP_Close(server);
+                                SDLNet_FreeSocketSet(set);
+                                set = NULL;
+                                close();
+                                return 0;
+                            }
                             break;
                         }
                     }
                 }
                 if(SDLNet_SocketReady(client[1]) != 0) {
                     if(SDLNet_TCP_Recv(client[1], msg2, 1000) > 0) {
-                        if(strcmp(msg2, "START") == 0)
+                        if(strcmp(msg2, "START") == 0) {
                             response++;
-                        if(strcmp(msg2, "QUIT") == 0) {
+                        }
+                        else if(strcmp(msg2, "RETREAT") == 0) {
+                            response --;
+                        }
+                        else if(strcmp(msg2, "QUIT") == 0) {
                             client_cnt --;
                             quit = true;
+                            // send to client 1
+                            if(SDLNet_TCP_Send(client[0], "QUIT", 5) < 5) {
+                                cout << "Unable to send client 2 message to client 2! SDLNet Error: " << SDLNet_GetError() << "\n";                
+                                SDLNet_TCP_DelSocket(set, client[1]);
+                                SDLNet_TCP_Close(client[1]);
+                                SDLNet_TCP_DelSocket(set, client[0]);
+                                SDLNet_TCP_Close(client[0]);
+                                SDLNet_TCP_DelSocket(set, server);
+                                SDLNet_TCP_Close(server);
+                                SDLNet_FreeSocketSet(set);
+                                set = NULL;
+                                close();
+                                return 0;
+                            }
                             break;
                         }
                     }
@@ -233,7 +290,6 @@ int main(){
             close();
             return 0;
         }      
-
 
         // initiate communication between clients
         while(true){
