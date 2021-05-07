@@ -204,7 +204,7 @@ void Menu::free() {
 }
 
 void Menu::loadTexture(Window* window) {
-	SDL_Surface* bgSurf = IMG_Load("../img/Menu.png");
+	SDL_Surface* bgSurf = IMG_Load("../img/menu/Menu.png");
 	if(bgSurf == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -215,7 +215,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(bgSurf);
 	}
-	SDL_Surface* connectSurf = IMG_Load("../img/connecting.png");
+	SDL_Surface* connectSurf = IMG_Load("../img/menu/connecting.png");
 	if(connectSurf == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -314,7 +314,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(backSurf2);
 	}
-	SDL_Surface* gameOverSurf = IMG_Load("../img/gameOver.png");
+	SDL_Surface* gameOverSurf = IMG_Load("../img/menu/gameOver.png");
 	if(gameOverSurf == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -369,7 +369,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(rematchSurf2);
 	}
-	SDL_Surface* P1Surf = IMG_Load("../img/P1.png");
+	SDL_Surface* P1Surf = IMG_Load("../img/menu/P1.png");
 	if(P1Surf == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -380,7 +380,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(P1Surf);
 	}
-	SDL_Surface* P2Surf = IMG_Load("../img/P2.png");
+	SDL_Surface* P2Surf = IMG_Load("../img/menu/P2.png");
 	if(P2Surf == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -391,7 +391,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(P2Surf);
 	}
-	SDL_Surface* drawSurf = IMG_Load("../img/draw.png");
+	SDL_Surface* drawSurf = IMG_Load("../img/menu/draw.png");
 	if(drawSurf == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -402,7 +402,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(drawSurf);
 	}
-	SDL_Surface* discoSurf = IMG_Load("../img/disco.png");
+	SDL_Surface* discoSurf = IMG_Load("../img/menu/disco.png");
 	if(discoSurf == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -413,7 +413,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(discoSurf);
 	}
-	SDL_Surface* youSurf = IMG_Load("../img/youWin.png");
+	SDL_Surface* youSurf = IMG_Load("../img/menu/youWin.png");
 	if(youSurf == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -424,7 +424,7 @@ void Menu::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(youSurf);
 	}
-	SDL_Surface* offlineSurf = IMG_Load("../img/offline.png");
+	SDL_Surface* offlineSurf = IMG_Load("../img/menu/offline.png");
 	if(offlineSurf == NULL) {
 		std::cout << "Unable to load Up motion sprite! SDL_Image Error: " << IMG_GetError() << "\n";
 	}

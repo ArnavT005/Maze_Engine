@@ -4,7 +4,9 @@
 #include <SDL2/SDL_image.h>
 #include <vector>
 #include <time.h>
+#include <iostream>
 #include <stdlib.h>
+#include <string.h>
 #include <random>
 #include <chrono>
 #include "block.hpp"
@@ -29,17 +31,26 @@ class Maze {
     void createEdge(Window* window, int i, int j, int side);
     void generateMazeRandom(Window* window);
 
+    std::string bgType;
     int dimension, blockSize, dotSize, padding;
     std::vector<std::vector<Block>> maze;
     std::vector<SDL_Rect> boundaryRectPacman;
     std::vector<SDL_Rect> boundaryRectGhost;
     SDL_Texture* texture;
+    SDL_Texture* pacWallHoriz;
+    SDL_Texture* ghostWallHoriz;
+    SDL_Texture* pacWallVert;
+    SDL_Texture* ghostWallVert;
 };
 
 void Maze::free() {
     if(texture != NULL) {
         SDL_DestroyTexture(texture);
         texture = NULL;
+        pacWallHoriz = NULL;
+        ghostWallHoriz = NULL;
+        pacWallVert = NULL;
+        ghostWallVert = NULL;
     }
 }
 
@@ -168,7 +179,7 @@ void Maze::updateBlock(int i, int j, int degree, int up, int right, int down, in
 
 
 void Maze::loadTexture(Window* window) {
-    SDL_Surface* surf = IMG_Load("../img/background2.png");
+    SDL_Surface* surf = IMG_Load(("../img/background/background" + bgType + ".png").c_str());
     if(surf == NULL) {
         std::cout << "Unable to load background image! SDL_Image Error: " << IMG_GetError() << "\n";
     }
@@ -178,6 +189,50 @@ void Maze::loadTexture(Window* window) {
             std::cout << "Unable to create texture from surface! SDL Error: " << SDL_GetError() << "\n";
         }
         SDL_FreeSurface(surf);
+    }
+    SDL_Surface* pacWallsurf = IMG_Load("../img/wall/pacWallHoriz.png");
+    if(pacWallsurf == NULL) {
+        std::cout << "Unable to load background image! SDL_Image Error: " << IMG_GetError() << "\n";
+    }
+    else {
+        pacWallHoriz = SDL_CreateTextureFromSurface(window->getRenderer(), pacWallsurf);
+        if(pacWallHoriz == NULL) {
+            std::cout << "Unable to create texture from surface! SDL Error: " << SDL_GetError() << "\n";
+        }
+        SDL_FreeSurface(pacWallsurf);
+    }
+    SDL_Surface* ghostWallsurf = IMG_Load("../img/wall/ghostWallHoriz.png");
+    if(ghostWallsurf == NULL) {
+        std::cout << "Unable to load background image! SDL_Image Error: " << IMG_GetError() << "\n";
+    }
+    else {
+        ghostWallHoriz = SDL_CreateTextureFromSurface(window->getRenderer(), ghostWallsurf);
+        if(ghostWallHoriz == NULL) {
+            std::cout << "Unable to create texture from surface! SDL Error: " << SDL_GetError() << "\n";
+        }
+        SDL_FreeSurface(ghostWallsurf);
+    }
+    SDL_Surface* ghostWallVertsurf = IMG_Load("../img/wall/ghostWallVert.png");
+    if(ghostWallVertsurf == NULL) {
+        std::cout << "Unable to load background image! SDL_Image Error: " << IMG_GetError() << "\n";
+    }
+    else {
+        ghostWallVert = SDL_CreateTextureFromSurface(window->getRenderer(), ghostWallVertsurf);
+        if(ghostWallHoriz == NULL) {
+            std::cout << "Unable to create texture from surface! SDL Error: " << SDL_GetError() << "\n";
+        }
+        SDL_FreeSurface(ghostWallVertsurf);
+    }
+    SDL_Surface* pacWallVertsurf = IMG_Load("../img/wall/pacWallVert.png");
+    if(pacWallVertsurf == NULL) {
+        std::cout << "Unable to load background image! SDL_Image Error: " << IMG_GetError() << "\n";
+    }
+    else {
+        pacWallVert = SDL_CreateTextureFromSurface(window->getRenderer(), pacWallVertsurf);
+        if(pacWallVert == NULL) {
+            std::cout << "Unable to create texture from surface! SDL Error: " << SDL_GetError() << "\n";
+        }
+        SDL_FreeSurface(pacWallVertsurf);
     }
 }
 
@@ -327,7 +382,7 @@ void Maze::createBasicStructure(Window* window) {
              block = {startPoint.x + dotSize, startPoint.y + dotSize, blockSize, blockSize};
     SDL_Color dotColor = {0xFF, 0x00, 0x00, 0xFF},   // red 
               edgeColor = {0x00, 0x70, 0x00, 0xFF},  // dark green
-              blockColor = {0x30, 0x70, 0x00, 0xFF},  // mix
+              blockColor = {0x00, 0x00, 0x00, 0xFF},  // mix
               doorColor = {0xFF, 0x80, 0xFF, 0xFF};  // light magenta
     // create top left square
     // window->renderRect(&dot, dotColor);
@@ -372,12 +427,16 @@ void Maze::createBasicStructure(Window* window) {
     // create top door
     hEdge.x += offset;
     hEdge.y -= offset;
-    window->renderRect(&hEdge, doorColor);
+    window->renderTexture(ghostWallHoriz, NULL, &hEdge);
+    // window->renderRect(&hEdge, doorColor);
     boundaryRectPacman.push_back(hEdge);
     dot.x += offset;
     hEdge.x += offset;
-    window->renderRect(&dot, doorColor);
-    window->renderRect(&hEdge, doorColor);
+    window->renderTexture(ghostWallHoriz, NULL, &hEdge);
+    window->renderTexture(ghostWallHoriz, NULL, &dot);
+
+    // window->renderRect(&dot, doorColor);
+    // window->renderRect(&hEdge, doorColor);
     boundaryRectPacman.push_back(dot);
     boundaryRectPacman.push_back(hEdge);
 
@@ -427,12 +486,16 @@ void Maze::createBasicStructure(Window* window) {
 
     // create right door
     vEdge.y += offset;
-    window->renderRect(&vEdge, doorColor);
+    window->renderTexture(ghostWallVert, NULL, &vEdge);
+
+    // window->renderRect(&vEdge, doorColor);
     boundaryRectPacman.push_back(vEdge);
     dot.y += 2 * offset;
     vEdge.y += offset;
-    window->renderRect(&dot, doorColor);
-    window->renderRect(&vEdge, doorColor);
+    window->renderTexture(ghostWallVert, NULL, &vEdge);
+    window->renderTexture(ghostWallVert, NULL, &dot);
+    // window->renderRect(&dot, doorColor);
+    // window->renderRect(&vEdge, doorColor);
     boundaryRectPacman.push_back(dot);
     boundaryRectPacman.push_back(vEdge);
 
@@ -484,13 +547,16 @@ void Maze::createBasicStructure(Window* window) {
 
     // create bottom door
     hEdge.x -= offset;
-    window->renderRect(&hEdge, doorColor);
+    // window->renderRect(&hEdge, doorColor);
+    window->renderTexture(ghostWallHoriz, NULL, &hEdge);
     boundaryRectPacman.push_back(hEdge);
     dot.y += offset;
     dot.x -= 2 * offset;
     hEdge.x -= offset;
-    window->renderRect(&dot, doorColor);
-    window->renderRect(&hEdge, doorColor);
+    window->renderTexture(ghostWallHoriz, NULL, &hEdge);
+    window->renderTexture(ghostWallHoriz, NULL, &dot);
+    // window->renderRect(&dot, doorColor);
+    // window->renderRect(&hEdge, doorColor);
     boundaryRectPacman.push_back(dot);
     boundaryRectPacman.push_back(hEdge);
 
@@ -543,13 +609,16 @@ void Maze::createBasicStructure(Window* window) {
     // create left door
     vEdge.x -= offset;
     vEdge.y -= offset;
-    window->renderRect(&vEdge, doorColor);
+    // window->renderRect(&vEdge, doorColor);
+    window->renderTexture(ghostWallVert, NULL, &vEdge);
     boundaryRectPacman.push_back(vEdge);
     dot.y -= offset;
     dot.x -= offset;
     vEdge.y -= offset;
-    window->renderRect(&dot, doorColor);
-    window->renderRect(&vEdge, doorColor);
+    window->renderTexture(ghostWallVert, NULL, &vEdge);
+    window->renderTexture(ghostWallVert, NULL, &dot);
+    // window->renderRect(&dot, doorColor);
+    // window->renderRect(&vEdge, doorColor);
     boundaryRectPacman.push_back(dot);
     boundaryRectPacman.push_back(vEdge);
 
@@ -690,6 +759,9 @@ void Maze::createBasicStructure(Window* window) {
     }
 
     // create pacman house
+    // SDL_Rect rectHoriz = {0, 0, hEdge.w, hEdge.h};
+    // SDL_Rect rectVert = {0, 0, vEdge.w, vEdge.h};
+    // SDL_Rect rectDot = {0, 0, hEdge.w, hEdge.h};
     startPoint = getDotScreenCoordinate(1, 1);
     hEdge.x = startPoint.x + dotSize;
     hEdge.y = startPoint.y + offset;
@@ -703,9 +775,13 @@ void Maze::createBasicStructure(Window* window) {
     edgeColor.r = 0x00;
     edgeColor.g = 0xF0;
     edgeColor.b = 0xFF;
-    window->renderRect(&hEdge, edgeColor);
-    window->renderRect(&vEdge, edgeColor);
-    window->renderRect(&dot, dotColor);
+    window->renderTexture(pacWallHoriz, NULL, &hEdge);
+    window->renderTexture(pacWallVert, NULL, &vEdge);
+    window->renderTexture(pacWallHoriz, NULL, &dot);
+
+    // window->renderRect(&hEdge, edgeColor);
+    // window->renderRect(&vEdge, edgeColor);
+    // window->renderRect(&dot, dotColor);
     boundaryRectGhost.push_back(dot);
     boundaryRectGhost.push_back(hEdge);
     boundaryRectGhost.push_back(vEdge);
@@ -723,9 +799,13 @@ void Maze::createBasicStructure(Window* window) {
     edgeColor.r = 0x00;
     edgeColor.g = 0xF0;
     edgeColor.b = 0xFF;
-    window->renderRect(&hEdge, edgeColor);
-    window->renderRect(&vEdge, edgeColor);
-    window->renderRect(&dot, dotColor);
+
+    window->renderTexture(pacWallHoriz, NULL, &hEdge);
+    window->renderTexture(pacWallVert, NULL, &vEdge);
+    window->renderTexture(pacWallHoriz, NULL, &dot);
+    // window->renderRect(&hEdge, edgeColor);
+    // window->renderRect(&vEdge, edgeColor);
+    // window->renderRect(&dot, dotColor);
     boundaryRectGhost.push_back(dot);
     boundaryRectGhost.push_back(hEdge);
     boundaryRectGhost.push_back(vEdge);

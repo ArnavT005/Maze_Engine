@@ -279,9 +279,11 @@ bool game(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSe
 
     srand(SEED);
 
+    std::string bgType = std::to_string((rand() % 6 + 1));
+
     // create maze
     Maze maze(16, 45, 15, 25);
-   
+    maze.bgType = bgType;
     SDL_Color boundaryColor = {0xFF, 0x00, 0x00, 0xFF};
     SDL_Texture* background = SDL_CreateTexture(window->getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
    
@@ -305,7 +307,7 @@ bool game(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSe
     Pacman p2(&maze, window, 2);
 
     // create scoreboard
-    Scoreboard scoreBoard(&scr, window, &p1, &p2);
+    Scoreboard scoreBoard(&scr, window, &p1, &p2, bgType);
     
     // create manager
     Manager manager(&maze);
@@ -523,9 +525,14 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
     finalMode = false; 
     createNew = false;
 
+    srand(SEED);
+
+    std::string bgType = std::to_string(rand() % 6 + 1);
+
     // create maze
     Maze maze(16, 45, 15, 25);
-   
+    maze.bgType = bgType;
+
     SDL_Color boundaryColor = {0xFF, 0x00, 0x00, 0xFF};
     SDL_Texture* background = SDL_CreateTexture(window->getRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1025, 1025);
    
@@ -549,7 +556,7 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
     Pacman p2(&maze, window, 2);
 
     // create scoreboard
-    Scoreboard scoreBoard(&scr, window, &p1, &p2);
+    Scoreboard scoreBoard(&scr, window, &p1, &p2, bgType);
     
     // create manager
     Manager manager(&maze);
@@ -586,7 +593,7 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
 
     string sendMsg = "default", final = "GAME OVER";
     int len;
-    char recvdMsg[10];
+    char recvdMsg[1000];
 
     string Quit = "QUIT";
     bool upFlag = false, downFlag = false, rightFlag = false, leftFlag = false;
@@ -1087,15 +1094,21 @@ int main(int argc, char** argv) {
         if(quit)
             break;
         if(menu.onlinePossible) {
-            while(SDLNet_CheckSockets(set, 0) > 0) {
-                if(SDLNet_SocketReady(server) != 0) {
-                    if(SDLNet_TCP_Recv(server, msg, 1000) > 0) {
-                        if(strcmp(msg, "QUIT") == 0) {
-                            menu.onlinePossible = false;
+            if(server != NULL) {
+                while(SDLNet_CheckSockets(set, 0) > 0) {
+                    if(SDLNet_SocketReady(server) != 0) {
+                        if(SDLNet_TCP_Recv(server, msg, 1000) > 0) {
+                            if(strcmp(msg, "QUIT") == 0) {
+                                menu.onlinePossible = false;
+                                break;
+                            }
                         }
                     }
-                }
-            } 
+                } 
+            }
+            else {
+                menu.onlinePossible = false;
+            }
         }
         if(menu.isRunning == true) {
             if(menu.mode == 1) {
@@ -1173,7 +1186,6 @@ int main(int argc, char** argv) {
                         menu.render(&window);
                         window.updateWindow();    
                         if(isConnected) {
-                            srand(SEED);
                             quit = gameOnline(&menu, &window, id, &server, &set, SEED);              
                         } 
                     }               

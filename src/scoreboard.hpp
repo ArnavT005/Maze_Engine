@@ -4,8 +4,10 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <string>
+#include <stdlib.h>
 #include <iostream>
 #include <sstream>
+#include <string.h>
 #include "pacman.hpp"
 
 
@@ -14,12 +16,13 @@ class Scoreboard {
 	public:
 	void free1();
 	Scoreboard();
-	Scoreboard(SDL_Rect* rect, Window* window, Pacman* p1, Pacman* p2);
+	Scoreboard(SDL_Rect* rect, Window* window, Pacman* p1, Pacman* p2, std::string bgType);
 	void free();
 	void loadTexture(Window* window);
 	void loadRenderedText(Window* window);
 	void render(Window* window);
 
+	std::string bgType; 
 	SDL_Rect location;
 	SDL_Texture* bgTexture;
 	SDL_Texture* P1;
@@ -110,7 +113,7 @@ Scoreboard::Scoreboard() {
 	p2 = NULL;
 }
 
-Scoreboard::Scoreboard(SDL_Rect* rect, Window* window, Pacman* p1, Pacman* p2) {
+Scoreboard::Scoreboard(SDL_Rect* rect, Window* window, Pacman* p1, Pacman* p2, std::string bgType) {
 	location = *rect;
 	bgTexture = NULL;
 	scoreFont = NULL;
@@ -138,6 +141,7 @@ Scoreboard::Scoreboard(SDL_Rect* rect, Window* window, Pacman* p1, Pacman* p2) {
 	frameCount2 = 0;
 	this->p1 = p1;
 	this->p2 = p2;
+	this->bgType = bgType; 
 	loadTexture(window);
 } 
 
@@ -165,7 +169,7 @@ void Scoreboard::free() {
 }
 
 void Scoreboard::loadTexture(Window* window) {
-	SDL_Surface* background = IMG_Load("../img/background2.png");
+	SDL_Surface* background = IMG_Load(("../img/background/background" + bgType + ".png").c_str());
 	if(background == NULL) {
 		std::cout << "Unable to load background image! SDL_Image Error: " << IMG_GetError() << "\n";
 	}
@@ -320,13 +324,13 @@ void Scoreboard::loadRenderedText(Window* window) {
 
 void Scoreboard::render(Window* window) {
 	window->renderTexture(bgTexture, &location, &location);
-	SDL_Rect rectP1 = {1040, 25, 180, 60};
-	SDL_Rect rectP2 = {1040, 820, 200, 60};
-	SDL_Rect rectScoreP1 = {1040, 85, 200, 60};
-	SDL_Rect rectScoreP2 = {1040, 880, 200, 60};
-	SDL_Rect rectLivesP1 = {1040, 145, 100, 60};
-	SDL_Rect rectLivesP2 = {1040, 930, 100, 60};
-	SDL_Rect rectTimer = {1040, 450, 200, 60};
+	SDL_Rect rectP1 = {1040, 45, 150, 40};
+	SDL_Rect rectP2 = {1040, 840, 150, 40};
+	SDL_Rect rectScoreP1 = {1040, 105, 150, 40};
+	SDL_Rect rectScoreP2 = {1040, 900, 150, 40};
+	SDL_Rect rectLivesP1 = {1040, 160, 100, 40};
+	SDL_Rect rectLivesP2 = {1040, 945, 100, 40};
+	SDL_Rect rectTimer = {1040, 450, 200, 40};
 
 	SDL_Rect life1Rect1 = {1150, 158, 45, 45};
 	SDL_Rect life1Rect2 = {1195, 158, 45, 45};
