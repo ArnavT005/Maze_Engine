@@ -82,6 +82,7 @@ int main(){
     string id1 = "1", id2 = "2";
     string connected = "CONNECTED", def = "default";
     char msg1[1000], msg2[1000];
+    int response = 0;
 
     
     // connect to two clients
@@ -163,6 +164,8 @@ int main(){
                             close();
                             return 0;
                         }
+                        else if(strcmp(msg1, "START") == 0)
+                            response = 1;
                     }
                 }
             }
@@ -179,9 +182,6 @@ int main(){
 
         // wait for clients to send initial message
         int len1, len2, activity1, activity2;
-        int response = 0;
-        if(strcmp(msg1, "START") == 0)
-            response = 1;
         while(response < 2) {
             if(SDLNet_CheckSockets(set, -1) < 0) {
                 cout << "Error generated while checking sockets(Bad sockets)! SDLNet Error: " << SDLNet_GetError() << "\n";
@@ -257,6 +257,8 @@ int main(){
                 }
             }
         }
+
+        response = 0;
 
         if(quit)
             break;

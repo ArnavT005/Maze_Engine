@@ -1141,7 +1141,7 @@ int main(int argc, char** argv) {
                 }
                 else {
                     while(menu.isRunning) {
-                        while(SDL_PollEvent(&event)) {
+                        if(SDL_PollEvent(&event)) {
                             if(event.type == SDL_QUIT || event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
                                 quit = true;
                                 menu.isRunning = false;  
@@ -1189,6 +1189,9 @@ int main(int argc, char** argv) {
                         menu.render(&window);
                         window.updateWindow();    
                         if(isConnected) {
+                            long n = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch()).count();
+                            n %= 5000;
+                            SDL_Delay(5000 - n);
                             quit = gameOnline(&menu, &window, id, &server, &set, SEED);              
                         } 
                     }               
