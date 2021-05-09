@@ -3,6 +3,8 @@
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_net.h>
+#include <chrono>
+#include <random>
 #include "sound.hpp"
 #include "window.hpp"
 #include "maze.hpp"
@@ -310,8 +312,8 @@ bool game(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSe
     Scoreboard scoreBoard(&scr, window, &p1, &p2, bgType);
     
     // create manager
-    Manager manager(&maze);
-    manager.generateEatables(window, SEED);
+    Manager manager(&maze, SEED);
+    manager.generateEatables(window);
     manager.generatePortals(window);
     int numEat = manager.eatables.size();
 
@@ -526,8 +528,9 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
     createNew = false;
 
     srand(SEED);
-
-    std::string bgType = std::to_string(rand() % 6 + 1);
+    unsigned randomBG = std::chrono::system_clock::now().time_since_epoch().count();
+    std::mt19937 generator(randomBG);
+    std::string bgType = std::to_string(generator() % 6 + 1);
 
     // create maze
     Maze maze(16, 45, 15, 25);
@@ -559,8 +562,8 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
     Scoreboard scoreBoard(&scr, window, &p1, &p2, bgType);
     
     // create manager
-    Manager manager(&maze);
-    manager.generateEatables(window, SEED);
+    Manager manager(&maze, SEED);
+    manager.generateEatables(window);
     manager.generatePortals(window);
     int numEat = manager.eatables.size();
 

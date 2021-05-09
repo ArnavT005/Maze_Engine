@@ -180,6 +180,8 @@ int main(){
         // wait for clients to send initial message
         int len1, len2, activity1, activity2;
         int response = 0;
+        if(strcmp(msg1, "START") == 0)
+            response = 1;
         while(response < 2) {
             if(SDLNet_CheckSockets(set, -1) < 0) {
                 cout << "Error generated while checking sockets(Bad sockets)! SDLNet Error: " << SDLNet_GetError() << "\n";

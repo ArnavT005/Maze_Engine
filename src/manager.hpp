@@ -12,8 +12,8 @@
 class Manager {
 
 	public:
-	Manager(Maze* maze);
-	void generateEatables(Window* window, unsigned int SEED);
+	Manager(Maze* maze, unsigned int SEED);
+	void generateEatables(Window* window);
     void generatePortals(Window* window);
     void updatePortals();
     void renderPortals(Window* window);
@@ -23,21 +23,21 @@ class Manager {
 	Maze* maze;
 	std::vector<Eatable> eatables;
     std::vector<Portal> portals;
+    std::mt19937 generator;
 
 };
 
-
-Manager::Manager(Maze* maze) {
+Manager::Manager(Maze* maze, unsigned int SEED) {
 	this->maze = maze;
+    generator.seed(SEED);
 	eatables.clear();
     portals.clear();
 }
 
 
 
-void Manager::generateEatables(Window* window, unsigned int SEED) {
+void Manager::generateEatables(Window* window) {
 
-    std::mt19937 generator(SEED);
     Eatable item;
     int num = 0;
     for(int i = 0; i < maze->dimension; i ++) {
@@ -117,9 +117,9 @@ void Manager::checkIfTeleport(Pacman* pac) {
             rect.y = portals[i].screenY;
             rect.w = rect.h = 45;
             if(pac->collisionDetectorCircle(&pac->colliderSphere, &rect) && !pac->isDead) {
-                int portalNum = rand() % size;
+                int portalNum = generator() % size;
                 while(portalNum == i || !portals[portalNum].isActive) {
-                    portalNum = rand() % size;
+                    portalNum = generator() % size;
                 }
                 pac->screenX = portals[portalNum].screenX;
                 pac->screenY = portals[portalNum].screenY;
