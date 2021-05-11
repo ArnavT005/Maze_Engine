@@ -48,7 +48,7 @@ void Manager::generateEatables(Window* window) {
             else {
                 SDL_Point point = maze->getBlockScreenCoordinate(i, j);
                 SDL_Point dot = maze->getDotScreenCoordinate(maze->dimension + 1 - i, maze->dimension + 1 -j);
-                int randomNumber = generator() % 100;
+                unsigned int randomNumber = generator() % (unsigned int)100;
                 if(randomNumber < 98 || num >= 8) {
                     // create 10 point item
                     item.setValues(point.x + 15, point.y + 15, 15, 15, TEN_POINT, window);
@@ -117,9 +117,9 @@ void Manager::checkIfTeleport(Pacman* pac) {
             rect.y = portals[i].screenY;
             rect.w = rect.h = 45;
             if(pac->collisionDetectorCircle(&pac->colliderSphere, &rect) && !pac->isDead) {
-                int portalNum = generator() % size;
+                unsigned int portalNum = generator() % (unsigned int)size;
                 while(portalNum == i || !portals[portalNum].isActive) {
-                    portalNum = generator() % size;
+                    portalNum = generator() % (unsigned int)size;
                 }
                 pac->screenX = portals[portalNum].screenX;
                 pac->screenY = portals[portalNum].screenY;

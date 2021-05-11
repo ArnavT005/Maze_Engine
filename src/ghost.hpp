@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <iostream>
+#include <random>
 #include <SDL2/SDL_mixer.h>
 #include "maze.hpp"
 #include "window.hpp"
@@ -75,6 +76,8 @@ class Ghost {
     int prevVel;
     bool success;				// error reporting flag
     int frameCount;
+    std::mt19937 generator;
+    
     Uint32 scareStart;
     SDL_Texture* up;
     SDL_Texture* right;
@@ -98,8 +101,6 @@ class Ghost {
     Window* window;
 
     int channel;
-   // int random_seed;
-
 };
 
 void Ghost::free() {
@@ -551,7 +552,7 @@ int Ghost::BFS(int destX, int destY, vector<vector<int>> &m){
 }
 
 int Ghost::moveTo(){
-    int destX = destinationX, destY = destinationY, dimension = maze->dimension;
+    unsigned int destX = destinationX, destY = destinationY, dimension = maze->dimension;
     vector<vector<int>> distance(dimension, std::vector<int>(dimension, -1));
     int blkX = maze->screenToBlockCoordinate(screenX, screenY).x;
     int blkY = maze->screenToBlockCoordinate(screenX, screenY).y;
@@ -566,8 +567,8 @@ int Ghost::moveTo(){
     	}
     	moveDir = BFS(destX, destY, distance);
     	while(moveDir == INITIAL) {
-    		destX = rand() % dimension;
-    		destY = rand() % dimension;
+    		destX = generator() % dimension;
+    		destY = generator() % dimension;
     		moveDir = BFS(destX, destY, distance);
     	}
 
@@ -609,8 +610,8 @@ int Ghost::moveTo(){
 	        else {
 	        	moveDir = BFS(destinationX, destinationY, distance);
 	        	while(moveDir == 0) {
-	        		destinationX = rand() % dimension;
-	        		destinationY = rand() % dimension;
+	        		destinationX = (int)(generator() % dimension);
+	        		destinationY = (int)(generator() % dimension);
 	        		moveDir = BFS(destinationX, destinationY, distance);
 	        	}
 	        	return moveDir;	
@@ -637,8 +638,8 @@ int Ghost::moveTo(){
 		        moveDir = BFS(destinationX, destinationY, distance);
 		        while(moveDir == INITIAL) {
 		        	randomOn = true;
-		        	destinationX = rand() % dimension;
-		        	destinationY = rand() % dimension;
+		        	destinationX = (int)(generator() % dimension);
+		        	destinationY = (int)(generator() % dimension);
 		        	moveDir = BFS(destinationX, destinationY, distance);
 		        }
 	        	return moveDir;
@@ -657,8 +658,8 @@ int Ghost::moveTo(){
 	        GHOST_VEL = 5;
 	      	moveDir = BFS(destX, destY, distance);
 	        while(moveDir == INITIAL) {
-	        	destX = rand()%dimension;
-	        	destY = rand()%dimension;
+	        	destX = generator() % dimension;
+	        	destY = generator() % dimension;
 	        	moveDir = BFS(destX, destY, distance);
 	        }
 	        destinationX = destX;
@@ -670,8 +671,8 @@ int Ghost::moveTo(){
 	        moveDir = BFS(destX, destY, distance);
 	        if(distance[blkX][blkY] < 3){
 	        	if(mode != 5) mode = 1; 
-        		destinationX = rand() % dimension; 
-        		destinationY = rand() % dimension;
+        		destinationX = generator() % dimension; 
+        		destinationY = generator() % dimension;
         		randomOn = true;
 	        }
 	        else {
@@ -830,8 +831,8 @@ int Ghost::moveTo(){
 			// distance > 3, move randomly
 			moveDir = BFS(destinationX, destinationY, distance);
 			while(moveDir == 0) {
-				destinationX = rand() % dimension;
-				destinationY = rand() % dimension;
+				destinationX = generator() % dimension;
+				destinationY = generator() % dimension;
 				moveDir = BFS(destinationX, destinationY, distance);
 			}
 			return moveDir;

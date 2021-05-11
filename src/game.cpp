@@ -310,8 +310,6 @@ bool game(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSe
     }
 
     window->setRenderTarget(NULL);
-    
-    std::cout << i << "\n";
 
     // create pacman
     Pacman p1(&maze, window, 1);
@@ -339,6 +337,14 @@ bool game(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSe
     Ghost g6;
     Ghost g7(&maze, TYPE_CLYDE, 2, window, 4);
     Ghost g8;
+    g1.generator.seed(SEED % 65536 + 1);
+    g2.generator.seed(SEED % 65536 + 2);
+    g3.generator.seed(SEED % 65536 + 3);
+    g4.generator.seed(SEED % 65536 + 4);
+    g5.generator.seed(SEED % 65536 + 5);
+    g6.generator.seed(SEED % 65536 + 6);
+    g7.generator.seed(SEED % 65536 + 7);
+    g8.generator.seed(SEED % 65536 + 8);
     
     // clear window
     window->clearWindow();
@@ -539,7 +545,7 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
     srand(SEED);
     unsigned randomBG = std::chrono::system_clock::now().time_since_epoch().count();
     std::mt19937 generator(randomBG);
-    std::string bgType = std::to_string(generator() % 6 + 1);
+    std::string bgType = std::to_string(generator() % (unsigned int)6 + (unsigned int)1);
 
     // create maze
     Maze maze(16, 45, 15, 25);
@@ -598,6 +604,14 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
     Ghost g6;
     Ghost g7(&maze, TYPE_CLYDE, 2, window, 4);
     Ghost g8;
+    g1.generator.seed(SEED % 65536 + 1);
+    g2.generator.seed(SEED % 65536 + 2);
+    g3.generator.seed(SEED % 65536 + 3);
+    g4.generator.seed(SEED % 65536 + 4);
+    g5.generator.seed(SEED % 65536 + 5);
+    g6.generator.seed(SEED % 65536 + 6);
+    g7.generator.seed(SEED % 65536 + 7);
+    g8.generator.seed(SEED % 65536 + 8);
     
     // clear window
     window->clearWindow();
@@ -1207,9 +1221,6 @@ int main(int argc, char** argv) {
                         menu.render(&window);
                         window.updateWindow();    
                         if(isConnected) {
-                            long n = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch()).count();
-                            n %= 5000;
-                            SDL_Delay(5000 - n);
                             quit = gameOnline(&menu, &window, id, &server, &set, SEED);              
                         } 
                     }               

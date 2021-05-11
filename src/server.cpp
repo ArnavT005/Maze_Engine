@@ -4,6 +4,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <chrono>
 
 using namespace std;
 
@@ -281,6 +282,7 @@ int main(){
             close();
             return 0;
         } 
+
         if(SDLNet_TCP_Send(client[1], (connected + number).c_str(), 10 + len) < 10 + len) {
             cout << "Unable to send message to client 2 (Bad connection)! SDLNet Error: " << SDLNet_GetError() << "\n";                
             SDLNet_TCP_DelSocket(set, client[1]);
