@@ -300,9 +300,18 @@ bool game(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSe
     maze.createBasicStructure(window);
     maze.generateMazeRandom(window);
 
+    int i = 0;
+    while(!maze.BFS() && i < 16) {
+        maze.refreshMaze(window);
+        maze.createBase(window, 0, 0, boundaryColor);
+        maze.createBasicStructure(window);
+        maze.generateMazeRandom(window);
+        i ++;
+    }
 
     window->setRenderTarget(NULL);
     
+    std::cout << i << "\n";
 
     // create pacman
     Pacman p1(&maze, window, 1);
@@ -549,6 +558,15 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
     maze.createBase(window, 0, 0, boundaryColor);
     maze.createBasicStructure(window);
     maze.generateMazeRandom(window);
+
+    int i = 0;
+    while(!maze.BFS() && i < 16) {
+        maze.refreshMaze(window);
+        maze.createBase(window, 0, 0, boundaryColor);
+        maze.createBasicStructure(window);
+        maze.generateMazeRandom(window);
+        i ++;
+    }
 
 
     window->setRenderTarget(NULL);

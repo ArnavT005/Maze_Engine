@@ -25,10 +25,12 @@ class Maze {
     SDL_Point screenToDotCoordinate(int x, int y);
     SDL_Point screenToBlockCoordinate(int x, int y);
     void loadTexture(Window* window);
+    void refreshMaze(Window* window);
     void createBase(Window* window, int x, int y, SDL_Color boundaryColor);
     void createBasicStructure(Window* window);
     void updateBlock(int i, int j, int degree, int up, int right, int down, int left);
     void createEdge(Window* window, int i, int j, int side);
+    bool BFS();
     void generateMazeRandom(Window* window);
 
     std::string bgType;
@@ -236,6 +238,78 @@ void Maze::loadTexture(Window* window) {
     }
 }
 
+bool Maze::BFS(){
+    
+    int size = dimension;
+    bool reachable = true;
+    std::vector<std::vector<int>> m(size, std::vector<int>(size, -1));
+    m[0][0] = 0;
+    std::vector<std::vector<int>> que;
+    que.push_back(std::vector<int> {0, 0});
+    while(!que.empty()){
+        std::vector<int> pt = que[0];
+        que.erase(que.begin());
+        if(maze[pt[0]][pt[1]].up != ALL_DENIED && pt[0] > 0 && m[pt[0]-1][pt[1]] == -1){
+            m[pt[0]-1][pt[1]] = m[pt[0]][pt[1]] + 1;
+            que.push_back(std::vector<int> {pt[0]-1, pt[1]});
+        }
+        if(maze[pt[0]][pt[1]].down != ALL_DENIED && pt[0] < size - 1 && m[pt[0]+1][pt[1]] == -1){
+            m[pt[0]+1][pt[1]] = m[pt[0]][pt[1]] + 1;
+            que.push_back(std::vector<int> {pt[0]+1, pt[1]});
+        }
+        if(maze[pt[0]][pt[1]].right != ALL_DENIED && pt[1] < size - 1 && m[pt[0]][pt[1]+1] == -1){
+            m[pt[0]][pt[1]+1] = m[pt[0]][pt[1]] + 1;
+            que.push_back(std::vector<int> {pt[0], pt[1]+1});
+        }
+        if(maze[pt[0]][pt[1]].left != ALL_DENIED && pt[1] > 0 && m[pt[0]][pt[1]-1] == -1){
+            m[pt[0]][pt[1]-1] = m[pt[0]][pt[1]] + 1;
+            que.push_back(std::vector<int> {pt[0], pt[1]-1});
+        }
+    }
+    int corn1 = dimension / 2 - 2, corn2 = dimension / 2 + 1;
+    for(int i = 0; i < dimension; i ++) {
+        for(int j = 0; j < dimension; j ++) {
+            if(m[i][j] == -1) {
+                if(i == corn1 && j ==  corn1 || i == corn1 && j == corn2 || i == corn2 && j == corn1 || i == corn2 && j == corn2)
+                    continue;
+                else
+                    reachable = false;
+            }
+        }
+    }
+    
+    return reachable;
+}
+
+
+void Maze::refreshMaze(Window* window) {
+    window->clearWindow();
+    for(int i = 0; i < dimension; i ++) {
+        for(int j = 0; j < dimension; j ++) {
+            maze[i][j].degree = 4;
+            maze[i][j].up = ACCESS_ALLOWED;
+            maze[i][j].right = ACCESS_ALLOWED;
+            maze[i][j].down = ACCESS_ALLOWED;
+            maze[i][j].left = ACCESS_ALLOWED;
+            if(i == 0) {
+                maze[i][j].up = ALL_DENIED;
+                maze[i][j].degree --;
+            }
+            else if(i == dimension - 1) {
+                maze[i][j].down = ALL_DENIED;
+                maze[i][j].degree --;
+            }
+            if(j == 0) {
+                maze[i][j].left = ALL_DENIED;
+                maze[i][j].degree --;
+            }
+            else if(j == dimension - 1) {
+                maze[i][j].right = ALL_DENIED;
+                maze[i][j].degree --;
+            }
+        }
+    }
+}
 
 void Maze::createBase(Window *window, int x, int y, SDL_Color boundaryColor) {
     
