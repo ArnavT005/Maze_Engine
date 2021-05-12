@@ -309,6 +309,8 @@ void Maze::refreshMaze(Window* window) {
             }
         }
     }
+    boundaryRectGhost.clear();
+    boundaryRectPacman.clear();
 }
 
 void Maze::createBase(Window *window, int x, int y, SDL_Color boundaryColor) {
@@ -1036,8 +1038,8 @@ void Maze::generateMazeRandom(Window* window) {
             int counter = 0;
             int extra;
             side = rand() % 4;
-            deg1 = rand() % 2 + 1;
-            deg2 = rand() % 2 + 1;
+            deg1 = /*rand() % 2 +*/ 1;
+            deg2 = /*rand() % 2 +*/ 1;
             while(!flag && counter < 16) {
                 
                 switch(side) {

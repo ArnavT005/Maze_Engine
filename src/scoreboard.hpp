@@ -330,7 +330,7 @@ void Scoreboard::render(Window* window) {
 	SDL_Rect rectScoreP2 = {1040, 900, 150, 40};
 	SDL_Rect rectLivesP1 = {1040, 160, 100, 40};
 	SDL_Rect rectLivesP2 = {1040, 945, 100, 40};
-	SDL_Rect rectTimer = {1040, 450, 200, 40};
+	SDL_Rect rectTimer = {1040, 485, 200, 40};
 
 	SDL_Rect life1Rect1 = {1150, 158, 45, 45};
 	SDL_Rect life1Rect2 = {1195, 158, 45, 45};
@@ -345,12 +345,14 @@ void Scoreboard::render(Window* window) {
 
 	if(SDL_GetTicks() - start < 3150) {
 		rectTimer.x = 1080;
-		rectTimer.w = 60;
+		rectTimer.y = 470;
+		rectTimer.w = 30;
 		rectTimer.h = 80;
 	}
 	else if(SDL_GetTicks() - start < 4000) {
 		rectTimer.x = 1080;
-		rectTimer.w = 80;
+		rectTimer.y = 470;
+		rectTimer.w = 60;
 		rectTimer.h = 80;
 	}
 	window->renderTexture(P1, NULL, &rectP1);

@@ -14,10 +14,10 @@
 #include "scoreboard.hpp"
 #include "menu.hpp"
 
-int timeToChangeMode = 24000;
-int timeToRandomize = 44000;
-int timeToFinale = 54000;
-int finishTime = 74000;
+int timeToChangeMode = 34000;
+int timeToRandomize = 64000;
+int timeToFinale = 74000;
+int finishTime = 104000;
 bool changeMode = false, changedMode1 = false, changedMode2 = false; 
 bool finalMode = false, createNew = false;
 SDL_Point points[952576];
