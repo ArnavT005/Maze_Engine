@@ -14,16 +14,16 @@ NOTE: Game's performance not guaranteed on other platforms
 ------------------------------------------------------------
 PACMAN GAME: INSTALLATION INSTRUCTIONS (on Ubuntu 20.04 LTS)  
 ------------------------------------------------------------
-INSTALLING SDL:  
-	sudo apt-get install libsdl2-dev  
-INSTALLING SDL_image:  
-	sudo apt-get install libsdl2-image-dev  
-INSTALLING SDL_ttf:  
-	sudo apt-get install libsdl2-ttf-dev  
-INSTALLING SDL_mixer:  
-	sudo apt-get install libsdl2-mixer-dev  
-INSTALLING SDL_net:  
-	sudo apt-get install libsdl2-net-dev  
+- INSTALLING SDL:  
+	- sudo apt-get install libsdl2-dev  
+- INSTALLING SDL_image:  
+ 	- sudo apt-get install libsdl2-image-dev  
+- INSTALLING SDL_ttf:  
+ 	- sudo apt-get install libsdl2-ttf-dev  
+- INSTALLING SDL_mixer:  
+ 	- sudo apt-get install libsdl2-mixer-dev  
+- INSTALLING SDL_net:  
+ 	- sudo apt-get install libsdl2-net-dev  
 	
 (you may have to run "sudo apt-get update" before running these commands, or if there is an error)  
 
@@ -45,13 +45,13 @@ PACMAN GAME: RUNNING GAME
    The servers needs to be restarted in case the client disconnects, for reconnection.)  
 - ENJOY!  
 
------------------
-PACMAN GAME: IDEA
------------------
+--------------------------
+PACMAN GAME: IDEA/FEATURES
+--------------------------
 Disclaimer: Our two player pacman (local/online) builds up on the original single player pacman.  
 
 We have added new features (which are our original):  
-GENERAL:  
+- GENERAL:  
 	- Add 2 player game modes (Local/Online)  
 	- Add "safe" areas for players (GHOSTS DENIED!)  
 	- Background theme is chosen at random from 5 predefined backgrounds.  
@@ -63,7 +63,7 @@ GENERAL:
 	- New game mode: DARK MODE (scary!).  
 	  (Players have limited visibility and are targeted, a real challenge!)  
 	- Various new sound effects have been added for different in-game activities  
-PLAYER:  
+- PLAYER:  
 	- Player can now teleport using any of the 4 portals present.  
 	  Destination portal is picked up at random (surprise!)  
 	- Added a new "zone" around the players, a.k.a Parry Zone.  
@@ -71,7 +71,7 @@ PLAYER:
 	  (Can be useful when you are at a dead end. It has a cooldown though!)  
 	- Players can now collide with one another, which can lead to unpleasant encounter!  
 	  (It is a fight to survive and win!)  
-GHOST:  
+- GHOST:  
 	- Ghosts can now split up at a specific time leading to more number of them.  
 	- Add new mode: DARK MODE  
 	- Modified Ghost AI. Inky now speeds up when going crazy! Be wary of him.  
