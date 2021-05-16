@@ -249,7 +249,7 @@ void switchGhostMode(int mode, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Ghost
 
 void renderBlackScreen(Pacman* p1, Pacman* p2, Window* window, Uint32 timeNow) {
     if(timeNow >= timeToFinale)
-        SDL_SetRenderDrawColor(window->getRenderer(), 0x00, 0x00, 0x00, 0xFF);
+        SDL_SetRenderDrawColor(window->getRenderer(), 0x00, 0x00, 0x00, 0x00);
     else
         SDL_SetRenderDrawColor(window->getRenderer(), 0x00, 0x00, 0x00, 0x00);
     SDL_SetRenderDrawBlendMode(window->getRenderer(), SDL_BLENDMODE_BLEND);
@@ -333,18 +333,18 @@ bool game(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSe
     Ghost g2(&maze, TYPE_PINKY, 1, window, 1);
     Ghost g3(&maze, TYPE_INKY, 1, window, 2);
     Ghost g4(&maze, TYPE_CLYDE, 1, window, 3);
-    Ghost g5;
-    Ghost g6;
+    Ghost g5;   // second blinky
+    Ghost g6;   // second pinky
     Ghost g7(&maze, TYPE_CLYDE, 2, window, 4);
-    Ghost g8;
-    g1.generator.seed(SEED % 65536 + 1);
-    g2.generator.seed(SEED % 65536 + 2);
-    g3.generator.seed(SEED % 65536 + 3);
-    g4.generator.seed(SEED % 65536 + 4);
-    g5.generator.seed(SEED % 65536 + 5);
-    g6.generator.seed(SEED % 65536 + 6);
-    g7.generator.seed(SEED % 65536 + 7);
-    g8.generator.seed(SEED % 65536 + 8);
+    Ghost g8;   // second inky
+    g1.generator.seed(SEED % 65536 + 10);
+    g2.generator.seed(SEED % 65536 + 20);
+    g3.generator.seed(SEED % 65536 + 30);
+    g4.generator.seed(SEED % 65536 + 40);
+    g5.generator.seed(SEED % 65536 + 50);
+    g6.generator.seed(SEED % 65536 + 60);
+    g7.generator.seed(SEED % 65536 + 70);
+    g8.generator.seed(SEED % 65536 + 80);
     
     // clear window
     window->clearWindow();
@@ -392,6 +392,9 @@ bool game(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSe
                 }
                 if(changedMode2) {
                     g6.handleEvent(event, &p1, &p2);
+                }
+                if(createNew) {
+                    g8.handleEvent(event, &p1, &p2);
                 }
             }
             if(menu->onlinePossible) {
@@ -600,18 +603,18 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
     Ghost g2(&maze, TYPE_PINKY, 1, window, 1);
     Ghost g3(&maze, TYPE_INKY, 1, window, 2);
     Ghost g4(&maze, TYPE_CLYDE, 1, window, 3);
-    Ghost g5;
-    Ghost g6;
+    Ghost g5;   // second blinky
+    Ghost g6;   // second pinky
     Ghost g7(&maze, TYPE_CLYDE, 2, window, 4);
-    Ghost g8;
-    g1.generator.seed(SEED % 65536 + 1);
-    g2.generator.seed(SEED % 65536 + 2);
-    g3.generator.seed(SEED % 65536 + 3);
-    g4.generator.seed(SEED % 65536 + 4);
-    g5.generator.seed(SEED % 65536 + 5);
-    g6.generator.seed(SEED % 65536 + 6);
-    g7.generator.seed(SEED % 65536 + 7);
-    g8.generator.seed(SEED % 65536 + 8);
+    Ghost g8;   // second inky
+    g1.generator.seed(SEED % 65536 + 10);
+    g2.generator.seed(SEED % 65536 + 20);
+    g3.generator.seed(SEED % 65536 + 30);
+    g4.generator.seed(SEED % 65536 + 40);
+    g5.generator.seed(SEED % 65536 + 50);
+    g6.generator.seed(SEED % 65536 + 60);
+    g7.generator.seed(SEED % 65536 + 70);
+    g8.generator.seed(SEED % 65536 + 80);
     
     // clear window
     window->clearWindow();
@@ -725,6 +728,9 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
                 }
                 if(changedMode2) {
                     g6.handleEvent(event, &p1, &p2);
+                }
+                if(createNew) {
+                    g8.handleEvent(event, &p1, &p2);
                 }
             }
             if(*server != NULL) {
@@ -862,6 +868,9 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
                     }
                     if(changedMode2) {
                         g6.handleEvent(E, &p1, &p2);
+                    }
+                    if(createNew) {
+                        g8.handleEvent(E, &p1, &p2);
                     } 
                 }       
             }

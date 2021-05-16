@@ -214,6 +214,7 @@ Ghost::Ghost() {
 }
 
 Ghost::Ghost(Ghost &g){
+	
 	rowAligned = g.rowAligned;
 	colAligned = g.colAligned;          // To check if ghost is row/column aligned
     maze = g.maze;                      // Maze
@@ -222,10 +223,11 @@ Ghost::Ghost(Ghost &g){
     screenY = g.screenY;				// screen coordinates of ghost
     velX = g.velX; velY = g.velY;						// horizontal and vertical velocities in pixels per frame
     colliderBox = g.colliderBox;
+	colliderSphere = g.colliderSphere;
     type = g.type;
     direction = g.direction;
-    destinationX = g.destinationX;
-    destinationY = g.destinationY;		
+    destinationX = (int) (generator() % maze->dimension);
+    destinationY = (int) (generator() % maze->dimension);		
     mode = g.mode;					// set value default
     prevMode = g.prevMode;
     state = g.state;
@@ -250,7 +252,6 @@ Ghost::Ghost(Ghost &g){
     downDead = g.downDead;
     final = g.final;
     randomOn = g.randomOn;
-	colliderSphere = g.colliderSphere;
 	isDead = g.isDead;
 	isScared = g.isScared;
 	window = g.window;
@@ -576,8 +577,6 @@ int Ghost::moveTo(){
    			BFS(pacLoc.x, pacLoc.y, distance);
    			if(distance[blkX][blkY] > 3 && blkX == destinationX && blkY == destinationY) {
    				mode = 2;
-   				// destinationX = pacLoc.x;
-   				// destinationY = pacLoc.y;
    			}
    			else if(distance[blkX][blkY] > 3) {
    				if(destX != destinationX || destY != destinationY) {
@@ -608,6 +607,8 @@ int Ghost::moveTo(){
 	        if(moveDir != 0)
 	        	return moveDir;
 	        else {
+	        	destinationX = (int)(generator() % dimension);
+	        	destinationY = (int)(generator() % dimension);	        	
 	        	moveDir = BFS(destinationX, destinationY, distance);
 	        	while(moveDir == 0) {
 	        		destinationX = (int)(generator() % dimension);
@@ -649,7 +650,11 @@ int Ghost::moveTo(){
 	        		randomOn = false;
 	        	}
 	        	else {
-	        		return BFS(destinationX, destinationY, distance);
+	        		moveDir = BFS(destinationX, destinationY, distance);
+	        		if(moveDir != 0)
+	        			return moveDir;
+	        		else
+	        			randomOn = false;
 	        	}
 	        }
 	        
@@ -670,7 +675,7 @@ int Ghost::moveTo(){
 	        destX = pacLoc.x; destY = pacLoc.y;
 	        moveDir = BFS(destX, destY, distance);
 	        if(distance[blkX][blkY] < 3){
-	        	if(mode != 5) mode = 1; 
+	        	mode = 1; 
         		destinationX = generator() % dimension; 
         		destinationY = generator() % dimension;
         		randomOn = true;
@@ -698,7 +703,7 @@ int Ghost::moveTo(){
 		int vert = pacLoc.x - blkX >= 0 ? pacLoc.x - blkX : blkX - pacLoc.x;
 		int horiz  = pacLoc.y - blkY >= 0 ? pacLoc.y - blkY : blkY - pacLoc.y;
 		BFS(pacLoc.x, pacLoc.y, distance);
-		if(distance[blkX][blkY] <= 3) {
+		if(distance[blkX][blkY] <= 3 && distance[blkX][blkY] != 0 && distance[blkX][blkY] != -1) {
 			if(pacLoc.x >= blkX) {
 				if(pacLoc.y >= blkY) {
 					if(maze->maze[blkX][blkY].left == ALL_DENIED || maze->maze[blkX][blkY].left == GHOST_DENIED) {
@@ -829,6 +834,8 @@ int Ghost::moveTo(){
 		}	
 		else {
 			// distance > 3, move randomly
+			destinationX = (int) (generator() % dimension);
+			destinationY = (int) (generator() % dimension);
 			moveDir = BFS(destinationX, destinationY, distance);
 			while(moveDir == 0) {
 				destinationX = generator() % dimension;
@@ -1004,7 +1011,7 @@ void Ghost::render(Window* window) {
 				frameCount = 0;
 			}
 			else {
-				window->renderTexture(final, &movingPosition, &onScreenRect);
+				window->renderTexture(up, &movingPosition, &onScreenRect);
 				frameCount++;
 			}
 			break;
@@ -1026,7 +1033,7 @@ void Ghost::render(Window* window) {
 				frameCount = 0;
 			}
 			else {
-				window->renderTexture(final, &movingPosition, &onScreenRect);
+				window->renderTexture(right, &movingPosition, &onScreenRect);
 				frameCount++;
 			}
 			break;
@@ -1048,7 +1055,7 @@ void Ghost::render(Window* window) {
 				frameCount = 0;
 			}
 			else {
-				window->renderTexture(final, &movingPosition, &onScreenRect);
+				window->renderTexture(down, &movingPosition, &onScreenRect);
 				frameCount++;
 			}
 			break;
@@ -1072,7 +1079,7 @@ void Ghost::render(Window* window) {
 				frameCount = 0;
 			}
 			else {
-				window->renderTexture(final, &movingPosition, &onScreenRect);
+				window->renderTexture(left, &movingPosition, &onScreenRect);
 				frameCount++;
 			}
 			break;			
