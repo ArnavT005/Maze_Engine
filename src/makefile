@@ -1,28 +1,36 @@
-#OBJS specifies which files to compile as part of the project
-OBJS = game.cpp
+# C++ files which may be compiled
+GAME = game.cpp
 
-#CC specifies which compiler we're using
+SRVR = server.cpp
+
+AUX = block.cpp eatable.cpp ghost.cpp manager.cpp maze.cpp menu.cpp pacman.cpp portal.cpp scoreboard.cpp window.cpp
+
+# compiler specification
 CC = g++
 
-#COMPILER_FLAGS specifies the additional compilation options we're using
-# -w suppresses all warnings
+# suppress warnings
 COMPILER_FLAGS = -w
 
-#LINKER_FLAGS specifies the libraries we're linking against
+# linking libraries
 LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lSDL2_net
 
-#OBJ_NAME specifies the name of our exectuable
-OBJ_NAME = game
+# executable name
+GAME_NAME = game
 
-#This is the target that compiles our executable
-all : $(OBJS)
-	$(CC) $(OBJS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
+SRVR_NAME = server
+
+# this is the target that creates both executable files (both game and server)
+all : $(GAME) $(SRVR) $(AUX)
+	$(CC) $(GAME) $(AUX) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(GAME_NAME)
+	$(CC) $(SRVR) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(SRVR_NAME)
+
+# this target only creates game executable
+game: $(GAME) $(AUX)
+	$(CC) $(GAME) $(AUX) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(GAME_NAME)
+
+# this target only creates server executable
+server: $(SRVR)
+	$(CC) $(SRVR) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(SRVR_NAME)
 
 clean:
-	rm $(OBJ_NAME)
-
-server: server.cpp
-	$(CC) server.cpp $(COMPILER_FLAGS) $(LINKER_FLAGS) -o server
-
-client: client.cpp
-	$(CC) client.cpp $(COMPILER_FLAGS) $(LINKER_FLAGS) -o client
+	rm $(GAME_NAME) $(SRVR_NAME)

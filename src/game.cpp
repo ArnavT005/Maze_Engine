@@ -1,3 +1,5 @@
+#pragma once
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
@@ -5,7 +7,6 @@
 #include <SDL2/SDL_net.h>
 #include <chrono>
 #include <random>
-#include "sound.hpp"
 #include "window.hpp"
 #include "maze.hpp"
 #include "pacman.hpp"
@@ -21,6 +22,10 @@ int finishTime = 104000;
 bool changeMode = false, changedMode1 = false, changedMode2 = false; 
 bool finalMode = false, createNew = false;
 SDL_Point points[952576];
+Mix_Music *bground = NULL;
+Mix_Chunk* tenSecTimer = NULL;
+Mix_Chunk* start = NULL;
+Mix_Chunk* buzzer = NULL;
 
 bool SDL_init() {
     bool success = true;
@@ -58,7 +63,44 @@ void close() {
     SDL_Quit();
 }
 
+void LoadMusic() {
+    Mix_AllocateChannels(32);
+    tenSecTimer = Mix_LoadWAV( "../music/countdown.mp3");
+    if( tenSecTimer == NULL ){
+        printf( "Failed to load music! SDL_mixer Error: %s\n", Mix_GetError());
+    }
+    buzzer = Mix_LoadWAV( "../music/buzzer.wav");
+    if(buzzer == NULL ){
+        printf( "Failed to load music! SDL_mixer Error: %s\n", Mix_GetError());
+    }
+    bground = Mix_LoadMUS("../music/background.mp3");
+    if(bground == NULL) 
+        std::cout << "Failed to load music! SDL_mixer Error: " << Mix_GetError() << "\n";
+    start = Mix_LoadWAV( "../music/intro.wav");
+    if(start == NULL ){
+        printf( "Failed to load music! SDL_mixer Error: %s\n", Mix_GetError());
+    }
+}
 
+void ClearMusic() {
+    if(bground != NULL) {
+        Mix_FreeMusic(bground);
+        bground = NULL;
+    }
+    if(start != NULL) {
+        Mix_FreeChunk(start);
+        start = NULL;
+    }
+    if(buzzer != NULL) {
+        Mix_FreeChunk(buzzer);
+        buzzer = NULL;
+    }
+    if(tenSecTimer != NULL) {
+        Mix_FreeChunk(tenSecTimer);
+        tenSecTimer = NULL;
+    }
+
+}
 
 void ScoreUpdate(Scoreboard* board, Pacman* p1, Pacman* p2, Window* window) {
     int time = SDL_GetTicks() - board->start;
@@ -1246,6 +1288,7 @@ int main(int argc, char** argv) {
     Mix_HaltMusic();
     Mix_HaltChannel(-1);
     SDL_Delay(5000);
+    menu.free();
     window.free();
     ClearMusic();
     if(set != NULL) {
