@@ -291,7 +291,7 @@ void switchGhostMode(int mode, Ghost* g1, Ghost* g2, Ghost* g3, Ghost* g4, Ghost
 
 void renderBlackScreen(Pacman* p1, Pacman* p2, Window* window, Uint32 timeNow) {
     if(timeNow >= timeToFinale)
-        SDL_SetRenderDrawColor(window->getRenderer(), 0x00, 0x00, 0x00, 0x00);
+        SDL_SetRenderDrawColor(window->getRenderer(), 0x00, 0x00, 0x00, 0xFF);
     else
         SDL_SetRenderDrawColor(window->getRenderer(), 0x00, 0x00, 0x00, 0x00);
     SDL_SetRenderDrawBlendMode(window->getRenderer(), SDL_BLENDMODE_BLEND);
@@ -375,10 +375,10 @@ bool game(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSe
     Ghost g2(&maze, TYPE_PINKY, 1, window, 1);
     Ghost g3(&maze, TYPE_INKY, 1, window, 2);
     Ghost g4(&maze, TYPE_CLYDE, 1, window, 3);
-    Ghost g5;   // second blinky
-    Ghost g6;   // second pinky
-    Ghost g7(&maze, TYPE_CLYDE, 2, window, 4);
-    Ghost g8;   // second inky
+    Ghost g5(&maze, TYPE_BLINKY, 1, window, 5);   // second blinky
+    Ghost g6(&maze, TYPE_PINKY, 1, window, 6);   // second pinky
+    Ghost g7(&maze, TYPE_CLYDE, 1, window, 4);
+    Ghost g8(&maze, TYPE_INKY, 1, window, 7);   // second inky
     g1.generator.seed(SEED % 65536 + 10);
     g2.generator.seed(SEED % 65536 + 20);
     g3.generator.seed(SEED % 65536 + 30);
@@ -465,33 +465,30 @@ bool game(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSe
         p2.isBuffed = temp;
         Uint32 timeNow = SDL_GetTicks() - startTime;
         if(timeNow >= timeToChangeMode && !changeMode) {
-            switchGhostMode(2, &g1, &g2, &g3, &g4, NULL, NULL, &g7, NULL);
+            switchGhostMode(2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8);
             changeMode = true;
         }
         if(timeNow >= timeToChangeMode && (!changedMode1 || !changedMode2)) {   
-            if(g1.mode != 3 && g1.mode != 4) {
-                g5 = g1;
-                g5.channel = 5;
+            if(g1.mode != 3 && g1.mode != 4 && !changedMode1) {
+                g5.splitGhost(g1);
                 changedMode1 = true;
             }
-            if(g2.mode != 3 && g2.mode != 4) {
-                g6 = g2;
-                g6.channel = 6;
+            if(g2.mode != 3 && g2.mode != 4 && !changedMode2) {
+                g6.splitGhost(g2);
                 changedMode2 = true;
             }    
         }
         if(timeNow >= timeToRandomize && !randomized){
-            switchGhostMode(1, &g1, &g2, &g3, &g4, &g5, &g6, &g7, NULL);
+            switchGhostMode(1, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8);
             randomized = true;
         }
         if(timeNow >= timeToFinale && !finalMode) {
-            switchGhostMode(5, &g1, &g2, &g3, &g4, &g5, &g6, &g7, NULL);
+            switchGhostMode(5, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8);
             finalMode = true;
         }
         if(timeNow >= timeToFinale && !createNew) {
             if(g3.mode != 3 && g3.mode != 4) {
-                g8 = g3;
-                g8.channel = 7;
+                g8.splitGhost(g3);
                 createNew = true;
             }
         }
@@ -570,6 +567,7 @@ bool game(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSe
     g7.free();
     g8.free();
     manager.freePortals();
+    manager.freeEatables();
     p2.free(); p1.free();
     scoreBoard.free1();
     if(background != NULL) {
@@ -645,10 +643,10 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
     Ghost g2(&maze, TYPE_PINKY, 1, window, 1);
     Ghost g3(&maze, TYPE_INKY, 1, window, 2);
     Ghost g4(&maze, TYPE_CLYDE, 1, window, 3);
-    Ghost g5;   // second blinky
-    Ghost g6;   // second pinky
+    Ghost g5(&maze, TYPE_BLINKY, 1, window, 5);   // second blinky
+    Ghost g6(&maze, TYPE_PINKY, 1, window, 6);   // second pinky
     Ghost g7(&maze, TYPE_CLYDE, 2, window, 4);
-    Ghost g8;   // second inky
+    Ghost g8(&maze, TYPE_INKY, 1, window, 7);   // second inky
     g1.generator.seed(SEED % 65536 + 10);
     g2.generator.seed(SEED % 65536 + 20);
     g3.generator.seed(SEED % 65536 + 30);
@@ -937,33 +935,30 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
 
         Uint32 timeNow = SDL_GetTicks() - startTime;
         if(timeNow >= timeToChangeMode && !changeMode) {
-            switchGhostMode(2, &g1, &g2, &g3, &g4, NULL, NULL, &g7, NULL);
+            switchGhostMode(2, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8);
             changeMode = true;
         }
         if(timeNow >= timeToChangeMode && (!changedMode1 || !changedMode2)) {   
-            if(g1.mode != 3 && g1.mode != 4) {
-                g5 = g1;
-                g5.channel = 5;
+            if(g1.mode != 3 && g1.mode != 4 && !changedMode1) {
+                g5.splitGhost(g1);
                 changedMode1 = true;
             }
-            if(g2.mode != 3 && g2.mode != 4) {
-                g6 = g2;
-                g6.channel = 6;
+            if(g2.mode != 3 && g2.mode != 4 && !changedMode2) {
+                g6.splitGhost(g2);
                 changedMode2 = true;
             }    
         }
         if(timeNow >= timeToRandomize && !randomized){
-            switchGhostMode(1, &g1, &g2, &g3, &g4, &g5, &g6, &g7, NULL);
+            switchGhostMode(1, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8);
             randomized = true;
         }
         if(timeNow >= timeToFinale && !finalMode) {
-            switchGhostMode(5, &g1, &g2, &g3, &g4, &g5, &g6, &g7, NULL);
+            switchGhostMode(5, &g1, &g2, &g3, &g4, &g5, &g6, &g7, &g8);
             finalMode = true;
         }
         if(timeNow >= timeToFinale && !createNew) {
             if(g3.mode != 3 && g3.mode != 4) {
-                g8 = g3;
-                g8.channel = 7;
+                g8.splitGhost(g3);
                 createNew = true;
             }
         }
@@ -1048,6 +1043,7 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
     g7.free();
     g8.free();
     manager.freePortals();
+    manager.freeEatables();
     p2.free(); p1.free();
     scoreBoard.free1();
     if(background != NULL) {

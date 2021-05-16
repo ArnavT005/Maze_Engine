@@ -30,6 +30,7 @@ Portal::Portal() {
 	opening = NULL;
 	active = NULL;
 	closing = NULL;
+	teleport = NULL;
 	start = 0;
 }
 

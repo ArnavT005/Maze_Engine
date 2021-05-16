@@ -123,52 +123,33 @@ Ghost::Ghost() {
     downDead = NULL;
     leftDead = NULL;
     final = NULL;
+
+    parry = NULL;
+    retreat = NULL;
+    pacDeath = NULL;
+    ghostDeath = NULL;
+
     channel = 0;
 }
 
-Ghost::Ghost(Ghost &g){
+void Ghost::splitGhost(Ghost g){
 	
 	rowAligned = g.rowAligned;
 	colAligned = g.colAligned;          // To check if ghost is row/column aligned
-    maze = g.maze;                      // Maze
-    boundingRect = g.boundingRect;      // bounding rectangles
     screenX = g.screenX;
     screenY = g.screenY;				// screen coordinates of ghost
     velX = g.velX; velY = g.velY;						// horizontal and vertical velocities in pixels per frame
     colliderBox = g.colliderBox;
 	colliderSphere = g.colliderSphere;
-    type = g.type;
+	destinationX = (int) (generator() % maze->dimension);
+	destinationY = (int) (generator() % maze->dimension);
     direction = g.direction;
-    destinationX = (int) (generator() % maze->dimension);
-    destinationY = (int) (generator() % maze->dimension);		
     mode = g.mode;					// set value default
     prevMode = g.prevMode;
-    state = g.state;
     GHOST_VEL = g.GHOST_VEL;     			// 1 pixel per frame
     prevVel = g.prevVel;
     success = g.success;				// error reporting flag
     frameCount = g.frameCount;
-    up = g.up;
-    right = g.right;
-    down = g.down;
-    left = g.left;			// rendering textures
-    rightAngry = g.rightAngry;
-    downAngry = g.downAngry;
-    leftAngry = g.leftAngry;		// rendering angry textures
-    upScared = g.upScared;
-    rightScared = g.rightScared;
-    downScared = g.downScared;
-    leftScared = g.leftScared;
-    rightDead = g.rightDead;
-    upDead = g.upDead;
-    leftDead = g.leftDead;
-    downDead = g.downDead;
-    final = g.final;
-    randomOn = g.randomOn;
-	isDead = g.isDead;
-	isScared = g.isScared;
-	window = g.window;
-
 }
 
 Ghost::Ghost(Maze* maze, int ghostType, int mode, Window* window, int channel) {
@@ -541,8 +522,10 @@ int Ghost::moveTo(){
 	        if(moveDir != 0)
 	        	return moveDir;
 	        else {
-	        	destinationX = (int)(generator() % dimension);
-	        	destinationY = (int)(generator() % dimension);	        	
+	        	if(blkX == destinationX && blkY == destinationY) {
+	        		destinationX = (int)(generator() % dimension);
+	        		destinationY = (int)(generator() % dimension);	  
+	        	}      	
 	        	moveDir = BFS(destinationX, destinationY, distance);
 	        	while(moveDir == 0) {
 	        		destinationX = (int)(generator() % dimension);
@@ -554,44 +537,37 @@ int Ghost::moveTo(){
 	        
 		}
 		else if(type == TYPE_PINKY){
-	        if(!randomOn) {	
-		        int nextX = 0, nextY = 0;
-		        if(state == MOVE_UP) {
-		        	nextX = -2;
-		        }
-		        else if(state == MOVE_DOWN) {
-		        	nextX = 2;
-		        }
-		        else if(state == MOVE_RIGHT) {
-		        	nextY = 2;
-		        }
-		        else if(state == MOVE_LEFT) {
-		        	nextY = -2;
-		        }
-		        destinationX = (dimension + pacLoc.x + nextX) % dimension; 
-		        destinationY = (dimension + pacLoc.y + nextY) % dimension;
-		        moveDir = BFS(destinationX, destinationY, distance);
-		        while(moveDir == INITIAL) {
-		        	randomOn = true;
-		        	destinationX = (int)(generator() % dimension);
-		        	destinationY = (int)(generator() % dimension);
-		        	moveDir = BFS(destinationX, destinationY, distance);
-		        }
-	        	return moveDir;
+	        int nextX = 0, nextY = 0;
+	        if(state == MOVE_UP) {
+	        	nextX = -2;
 	        }
+	        else if(state == MOVE_DOWN) {
+	        	nextX = 2;
+	        }
+	        else if(state == MOVE_RIGHT) {
+	        	nextY = 2;
+	        }
+	        else if(state == MOVE_LEFT) {
+	        	nextY = -2;
+	        }
+	        destX = (dimension + pacLoc.x + nextX) % dimension; 
+	        destY = (dimension + pacLoc.y + nextY) % dimension;
+	        moveDir = BFS(destX, destY, distance);
+	        if(moveDir != 0)
+	        	return moveDir;
 	        else {
 	        	if(blkX == destinationX && blkY == destinationY) {
-	        		randomOn = false;
-	        	}
-	        	else {
+	        		destinationX = (int)(generator() % dimension);
+	        		destinationY = (int)(generator() % dimension);	  
+	        	}      	
+	        	moveDir = BFS(destinationX, destinationY, distance);
+	        	while(moveDir == 0) {
+	        		destinationX = (int)(generator() % dimension);
+	        		destinationY = (int)(generator() % dimension);
 	        		moveDir = BFS(destinationX, destinationY, distance);
-	        		if(moveDir != 0)
-	        			return moveDir;
-	        		else
-	        			randomOn = false;
 	        	}
-	        }
-	        
+	        	return moveDir;	
+	        }      
 	    }
 		else if(type == TYPE_INKY){
 	        GHOST_VEL = 5;
@@ -609,26 +585,31 @@ int Ghost::moveTo(){
 	        destX = pacLoc.x; destY = pacLoc.y;
 	        moveDir = BFS(destX, destY, distance);
 	        if(distance[blkX][blkY] < 3){
-	        	mode = 1; 
-        		destinationX = generator() % dimension; 
-        		destinationY = generator() % dimension;
-        		randomOn = true;
+	        	if(mode != 5) mode = 1; 
+        		destinationX = (int) (generator() % dimension); 
+        		destinationY = (int) (generator() % dimension);
+        		moveDir = BFS(destinationX, destinationY, distance);
+	        	while(moveDir == 0) {
+	        		destinationX = (int) (generator() % dimension);
+	        		destinationY = (int) (generator() % dimension);
+	        		moveDir = BFS(destinationX, destinationY, distance);
+	        	}
+	        	return moveDir;
 	        }
 	        else {
-	        	if(!randomOn) {
-	        		destinationX = destX;
-	        		destinationY = destY;
-	        	}
-	        	else {
-		        	moveDir = BFS(destinationX, destinationY, distance);
-		        	if(moveDir == 0) {
-		        		destinationX = destX;
-		        		destinationY = destY;
-		        		randomOn = false;
-		        	}	
+		        if(blkX == destinationX && blkY == destinationY) {
+		        	return moveDir;
 		        }	
+		        else {
+		        	moveDir = BFS(destinationX, destinationY, distance);
+		        	while(moveDir == 0) {
+		        		destinationX = (int) (generator() % dimension);
+		        		destinationY = (int) (generator() % dimension);
+		        		moveDir = BFS(destinationX, destinationY, distance);
+		        	}
+		        	return moveDir;
+		        }
 	        }
-	        return moveDir;
 	    }
 	}
 	else if(mode == 3){
@@ -945,7 +926,7 @@ void Ghost::render(Window* window) {
 				frameCount = 0;
 			}
 			else {
-				window->renderTexture(up, &movingPosition, &onScreenRect);
+				window->renderTexture(final, &movingPosition, &onScreenRect);
 				frameCount++;
 			}
 			break;
@@ -967,7 +948,7 @@ void Ghost::render(Window* window) {
 				frameCount = 0;
 			}
 			else {
-				window->renderTexture(right, &movingPosition, &onScreenRect);
+				window->renderTexture(final, &movingPosition, &onScreenRect);
 				frameCount++;
 			}
 			break;
@@ -989,7 +970,7 @@ void Ghost::render(Window* window) {
 				frameCount = 0;
 			}
 			else {
-				window->renderTexture(down, &movingPosition, &onScreenRect);
+				window->renderTexture(final, &movingPosition, &onScreenRect);
 				frameCount++;
 			}
 			break;
@@ -1013,7 +994,7 @@ void Ghost::render(Window* window) {
 				frameCount = 0;
 			}
 			else {
-				window->renderTexture(left, &movingPosition, &onScreenRect);
+				window->renderTexture(final, &movingPosition, &onScreenRect);
 				frameCount++;
 			}
 			break;			
@@ -1021,7 +1002,6 @@ void Ghost::render(Window* window) {
 	if(frameCount == 8) {
 		frameCount = 0;
 	}
-
 }
 
 bool Ghost::parryPossible(Pacman* pac1) {

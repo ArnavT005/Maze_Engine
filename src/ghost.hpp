@@ -40,7 +40,7 @@ class Ghost {
     static const int ANIMATION_FRAMES = 2;
     void free();
     Ghost();
-    Ghost(Ghost &g);
+    void splitGhost(Ghost g);
     Ghost(Maze* maze, int j, int k, Window* window, int channel);
     void loadTexture(Window* window);
     void checkAlignment();
@@ -95,10 +95,12 @@ class Ghost {
     SDL_Texture* downDead;
     SDL_Texture* leftDead;
     SDL_Texture* final;
+
     Mix_Chunk* parry;
     Mix_Chunk* pacDeath;
     Mix_Chunk* ghostDeath;
     Mix_Chunk* retreat;
+
     bool randomOn;				
     bool isDead;
     bool isScared;

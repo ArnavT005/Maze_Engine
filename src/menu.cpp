@@ -35,6 +35,7 @@ Menu::Menu() {
 	P1 = NULL;
 	P2 = NULL;
 	draw = NULL;
+	click = NULL;
 }
 
 Menu::Menu(Window* window) {

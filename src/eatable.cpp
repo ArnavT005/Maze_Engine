@@ -3,6 +3,8 @@
 Eatable::Eatable() {
 	
 	texture = NULL;
+	powerupLarge = NULL;
+	powerupSmall = NULL;
 	
 	location.x = 0;
 	location.y = 0;
@@ -17,6 +19,8 @@ Eatable::Eatable() {
 Eatable::Eatable(int x, int y, int w, int h, int type, Window* window) {
 
 	texture = NULL;
+	powerupLarge = NULL;
+	powerupSmall = NULL;
 
 	location.x = x;
 	location.y = y;
