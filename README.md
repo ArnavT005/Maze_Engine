@@ -34,13 +34,14 @@ PACMAN GAME: RUNNING GAME
 - Change to "src" directory  
 - Open terminal  
 - LOCAL:  
-  - run "make"  
+  - run "make" or "make game"  
   - execute game by running the command "./game"  
 - ONLINE:  
-  - run "make server"  
-  - run "make"  
+  - run "make" to compile both server-client executables together  
+  - run "make server" (to only compile server executable)
+  - run "make game" (to only compile client executable)
   - run server on a machine using "./server"  
-  - run game on two different machines/terminals using "./game"  
+  - run game (client) on two different machines/terminals using "./game"  
   (Note that the server disconnects when either of the client disconnects (closes game).  
    The servers needs to be restarted in case the client disconnects, for reconnection.)  
 - ENJOY!  
@@ -53,6 +54,7 @@ Disclaimer: Our two player pacman (local/online) builds up on the original singl
 We have added new features (which are our original):  
 - GENERAL:  
 	- Add 2 player game modes (Local/Online)  
+	- Add networking. Players can now play together even when on different machines. Only LAN supported as of now.
 	- Add "safe" areas for players (GHOSTS DENIED!)  
 	- Background theme is chosen at random from 5 predefined backgrounds.  
 	  This can act as a breath of fresh air, when playing multiple times.  
@@ -60,6 +62,8 @@ We have added new features (which are our original):
 	  (Note that it is ensured that there are no closed areas)  
 	- "Rematch" option is now available at the end of the match.  
 	  (for both Local/Online play. Enjoy!)  
+	- Players can enjoy all the game modes (local/online) as long as they are connected to the server.  
+	- A message is printed on terminal when the connection between client and server is slow. Slow connection may lead to lag and/or loss of information.
 	- New game mode: DARK MODE (scary!).  
 	  (Players have limited visibility and are targeted, a real challenge!)  
 	- Various new sound effects have been added for different in-game activities  
