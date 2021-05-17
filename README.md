@@ -1,8 +1,8 @@
-# PACMAN and Maze Simulation  
+# PACMAN PRO 
 Task 2 of course COP290, Spring 2021  
 
 --------------------------------
-PACMAN GAME: SYSTEM REQUIREMENTS  
+PACMAN PRO: SYSTEM REQUIREMENTS  
 --------------------------------  
 Recommended OS: Ubuntu 20.04 LTS  
 Recommended Resolution: 1920x1080 or higher  
@@ -12,7 +12,7 @@ Recommended Networking: LAN on different devices
 NOTE: Game's performance not guaranteed on other platforms  
 
 ------------------------------------------------------------
-PACMAN GAME: INSTALLATION INSTRUCTIONS (on Ubuntu 20.04 LTS)  
+PACMAN PRO: INSTALLATION INSTRUCTIONS (on Ubuntu 20.04 LTS)  
 ------------------------------------------------------------
 - INSTALLING SDL:  
 	- sudo apt-get install libsdl2-dev  
@@ -28,9 +28,9 @@ PACMAN GAME: INSTALLATION INSTRUCTIONS (on Ubuntu 20.04 LTS)
 (you may have to run "sudo apt-get update" before running these commands, or if there is an error)  
 
 -----------------------------
-PACMAN GAME: RUNNING THE GAME  
+PACMAN PRO: RUNNING THE GAME  
 -----------------------------
-- Clone the repo <https://github.com/ArnavT005/Maze_Game>  
+- Clone the repo https://github.com/ArnavT005/Maze_Game  
 - Change to "src" directory  
 - Open terminal  
 - LOCAL:  
@@ -47,9 +47,9 @@ PACMAN GAME: RUNNING THE GAME
 - ENJOY!  
 
 ---------------------
-PACMAN GAME: FEATURES
+PACMAN PRO: FEATURES
 ---------------------
-We have added some really great features for you :  
+We have added some really awesome *pro* features for you :  
 
 - GENERAL:  
 	- Add 2 player game modes (Local/Online)  
@@ -98,10 +98,8 @@ Present in "img" and "font" folder. All open source.
 MUSIC:  
 Background music-  
 Music: [Space Ambience] by Alexander Nakarada (www.serpentsoundstudios.com)  
-Licensed under Creative Commons BY Attribution 4.0 License  
-https://creativecommons.org/licenses/by/4.0/  
-Other sound effects/music-  
-Present in "music" folder. All open source.  
+Licensed under Creative Commons BY Attribution 4.0 License https://creativecommons.org/licenses/by/4.0/  
+All other sound effects in [music](../music) folder are open source.
 
 
 
