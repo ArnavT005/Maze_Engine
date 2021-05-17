@@ -81,9 +81,9 @@ We have added some really awesome *pro* features for you :
 
 Disclaimer: Our two player pacman (local/online) builds up on the original single player pacman. Many of the original pacman mechanics have been recreated, and hence are omitted from this section. 
 
----------------------------
-PACMAN GAME: RESOURCES USED  
----------------------------
+----------------------------------------
+PACMAN PRO: RESOURCES USED IN EVELOPMENT   
+----------------------------------------
 SDL, SDL_image, SDL_mixer, SDL_ttf:  
 https://lazyfoo.net/tutorials/SDL/index.php  
 
@@ -98,8 +98,8 @@ Present in "img" and "font" folder. All open source.
 MUSIC:  
 Background music-  
 Music: [Space Ambience] by Alexander Nakarada (www.serpentsoundstudios.com)  
-Licensed under Creative Commons BY Attribution 4.0 License https://creativecommons.org/licenses/by/4.0/  
-All other sound effects in [music](../music) folder are open source.
+Licensed under Creative Commons BY Attribution 4.0 [License](https://creativecommons.org/licenses/by/4.0/)  
+All other sound effects in *music* folder are open source.
 
 
 
