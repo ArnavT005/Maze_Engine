@@ -97,7 +97,7 @@ Present in "img" and "font" folder. All open source.
 
 MUSIC:  
 Background music-  
-Music: [Space Ambience](www.serpentsoundstudios.com) by Alexander Nakarada 
+Music: [Space Ambience](https://serpentsoundstudios.com) by Alexander Nakarada 
 Licensed under Creative Commons BY Attribution 4.0 [License](https://creativecommons.org/licenses/by/4.0/)  
 All other sound effects in *music* folder are open source.
 
