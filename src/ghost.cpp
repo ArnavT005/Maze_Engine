@@ -550,15 +550,25 @@ int Ghost::moveTo(){
 	        else if(state == MOVE_LEFT) {
 	        	nextY = -2;
 	        }
-	        destX = (dimension + pacLoc.x + nextX) % dimension; 
-	        destY = (dimension + pacLoc.y + nextY) % dimension;
+	        BFS(pacLoc.x, pacLoc.y, distance);
+	        if(distance[blkX][blkY] < 3) {
+	        	destX = pacLoc.x;
+	        	destY = pacLoc.y;
+	        }
+	        else {
+		        destX = (dimension + pacLoc.x + nextX) % dimension; 
+		        destY = (dimension + pacLoc.y + nextY) % dimension;
+	        }
 	        moveDir = BFS(destX, destY, distance);
-	        if(moveDir != 0)
+	        if(moveDir != 0) {
+	        	destinationX = destX;
+	        	destinationY = destY;
 	        	return moveDir;
+	        }
 	        else {
 	        	if(blkX == destinationX && blkY == destinationY) {
-	        		destinationX = (int)(generator() % dimension);
-	        		destinationY = (int)(generator() % dimension);	  
+	        		destinationX = pacLoc.x;
+	        		destinationY = pacLoc.y;	  
 	        	}      	
 	        	moveDir = BFS(destinationX, destinationY, distance);
 	        	while(moveDir == 0) {
@@ -598,10 +608,13 @@ int Ghost::moveTo(){
 	        }
 	        else {
 		        if(blkX == destinationX && blkY == destinationY) {
+		        	destinationX = destX;
+		        	destinationY = destY;
 		        	return moveDir;
 		        }	
 		        else {
 		        	moveDir = BFS(destinationX, destinationY, distance);
+		        	int i = 0;
 		        	while(moveDir == 0) {
 		        		destinationX = (int) (generator() % dimension);
 		        		destinationY = (int) (generator() % dimension);

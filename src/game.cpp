@@ -1083,7 +1083,7 @@ int main(int argc, char** argv) {
         return 0;
     }
     // 1023
-    Window window("Maze", 1405, 1025);
+    Window window("PACMAN", 1405, 1025);
     if(!window.getSuccess()) {
         close();
         return 0;
