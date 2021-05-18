@@ -1,8 +1,0 @@
-The game has two major parts:
-
-LOCAL:
-Compiles and executes perfectly. All game mechanics (parry, teleport, ghost AI, eatables etc.) and maze generation works as expected. All problems resolved.
-
-ONLINE:
-Compiles and executes fine. However, we haven't been able to test it out extensively due to lack of hardware. Running two terminals on the same laptop can be two heavy, due to simultaneous rendering of game graphics. This can slow down the server-client connection and in fact the game as a whole. However, all networking features are in place and they even work perfectly, when the laptop is not overheated :)
-Consequently, a "slow connection" message is displayed on the terminal in case there is a chance of delay or data loss.
