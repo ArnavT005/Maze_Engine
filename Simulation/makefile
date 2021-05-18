@@ -10,7 +10,7 @@ CC = g++
 COMPILER_FLAGS = -w
 
 # linking libraries
-LINKER_FLAGS = -lSDL2 -lSDL2_image
+LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_mixer
 
 # executable name
 SIM_NAME = simulator

@@ -17,6 +17,10 @@ void Ghost::free() {
 		SDL_DestroyTexture(left);
 		left = NULL;
 	}
+	if(movement != NULL) {
+		Mix_FreeChunk(movement);
+		movement = NULL;
+	}
 }
 
 Ghost::Ghost() {
@@ -144,6 +148,21 @@ void Ghost::loadTexture(Window* window) {
 		}
 		SDL_FreeSurface(leftSurf);
 	}
+	movement = Mix_LoadWAV("../music/eat10.wav");
+	if(movement == NULL) {
+		std::cout << "Failed to load music! SDL_Mixer Error: " << Mix_GetError() << "\n";
+		success = false;
+	}
+	endSound = Mix_LoadWAV("../music/pacman_intermission.wav");
+	if(endSound == NULL) {
+		std::cout << "Failed to load music! SDL_Mixer Error: " << Mix_GetError() << "\n";
+		success = false;
+	}
+	found = Mix_LoadWAV("../music/eat50.wav");
+	if(found == NULL) {
+		std::cout << "Failed to load music! SDL_Mixer Error: " << Mix_GetError() << "\n";
+		success = false;
+	}
 }
 
 void Ghost::checkAlignment() {
@@ -205,12 +224,15 @@ void Ghost::update(Window* window) {
 				}
 			}
 			if(reached) {
-		    	if(dest.size() == 0)
+		    	if(dest.size() == 0) {
 		    		end = true;
+		    		Mix_PlayChannel(2, endSound, 0);
+		    	}
 		    	std::pair<int, int> loc = chooseLoc(window);
 		    	destinationX = loc.first;
 		    	destinationY = loc.second;
 		    }
+		    Mix_PlayChannel(1, movement, 0);	
 		}
 	}
 	switch(direction) {
@@ -552,6 +574,7 @@ void Ghost::renderRadar(Window* window) {
 	int sqRadar = radarRadius * radarRadius;
 	if(distanceSq1 <= sqRadar) {
 		targetAcquired = true;
+		Mix_PlayChannel(3, found, 0);
 		radarRadius = 0;
 	}
 }

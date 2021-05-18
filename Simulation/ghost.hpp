@@ -91,4 +91,8 @@ class Ghost {
     SDL_Texture* right;
     SDL_Texture* down;
     SDL_Texture* left;			// rendering textures
+
+    Mix_Chunk* movement;
+    Mix_Chunk* endSound;
+    Mix_Chunk* found;
 };

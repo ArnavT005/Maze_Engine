@@ -2,6 +2,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 #include <vector>
 #include "window.hpp"
 #include "maze.hpp"
@@ -17,6 +18,10 @@ bool SDL_init() {
     else {
         if(IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
             std::cout << "IMG unable to initialize! SDL_Image Error: " << IMG_GetError() << "\n";
+            success = false;
+        }
+        if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+            std::cout << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << "\n";
             success = false;
         }
     }
@@ -126,8 +131,18 @@ int main(int argc, char** argv) {
     ghost.dest.push_back(std::make_pair(endX, endY));
 
     SDL_Event event;
+    Mix_Chunk* startGame = Mix_LoadWAV("../music/intro.wav");
+    if(startGame == NULL) {
+        std::cout << "Failed to load music! SDL_Mixer Error: " << Mix_GetError() << "\n";
+    }
+    else {
+        if(Mix_PlayChannel(0, startGame, 0) == -1) {
+            std::cout << "Error in playing music! SDL_Mixer Error: " << Mix_GetError() << "\n";
+        }    
+    }
 
     bool quit = false;
+    Uint32 start = SDL_GetTicks();
 
     while(!quit) {
         while(SDL_PollEvent(&event)) {
@@ -136,8 +151,10 @@ int main(int argc, char** argv) {
                 break;
             }
         } 
-        ghost.update(&window);
-        ghost.move();
+        if(SDL_GetTicks() - start >= 4000) {
+            ghost.update(&window);
+            ghost.move();
+        }    
         window.clearWindow();
         window.renderTexture(background, NULL, &bg);
 	    if(ghost.targetAcquired) {
