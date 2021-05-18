@@ -1175,7 +1175,6 @@ void Ghost::checkPacmanCollision(Pacman* pac1) {
 		}
 	}
 	else if(checkCollision && !isDead){
-		//std::cout << "Hello\n";
 		mode = 4;
 		prevVel = GHOST_VEL;
 		GHOST_VEL = 5;

@@ -1082,7 +1082,6 @@ int main(int argc, char** argv) {
     if(!SDL_init()) {
         return 0;
     }
-    // 1023
     Window window("PACMAN", 1405, 1025);
     if(!window.getSuccess()) {
         close();

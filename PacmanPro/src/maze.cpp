@@ -113,6 +113,7 @@ SDL_Point Maze::getDotScreenCoordinate(int i, int j) {
         return point;
 }
 
+// 1-indexed
 SDL_Point Maze::screenToDotCoordinate(int x, int y) {
     SDL_Point point = {(y - padding) / (blockSize + dotSize) + 1, (x - padding) / (blockSize + dotSize) + 1};
     return point;
@@ -278,8 +279,6 @@ void Maze::createBase(Window *window, int x, int y, SDL_Color boundaryColor) {
     SDL_Rect horizontalLayer = {x, y, windowHeight, padding};
     SDL_Rect verticalLayer = {x, y, padding, windowHeight};
 
-    // window->renderRect(&horizontalLayer, boundaryColor);
-    // window->renderRect(&verticalLayer, boundaryColor);
     window->renderTexture(texture, &horizontalLayer, &horizontalLayer);
     window->renderTexture(texture, &verticalLayer, &verticalLayer);
 
@@ -291,8 +290,6 @@ void Maze::createBase(Window *window, int x, int y, SDL_Color boundaryColor) {
     horizontalLayer.y += windowHeight - padding;
     verticalLayer.x += windowHeight - padding;
 
-    // window->renderRect(&horizontalLayer, boundaryColor);
-    // window->renderRect(&verticalLayer, boundaryColor);
     window->renderTexture(texture, &horizontalLayer, &horizontalLayer);
     window->renderTexture(texture, &verticalLayer, &verticalLayer);
 
@@ -308,12 +305,11 @@ void Maze::createBase(Window *window, int x, int y, SDL_Color boundaryColor) {
              hEdge = {startPoint.x + dotSize, startPoint.y, blockSize, dotSize},
              block = {startPoint.x + dotSize, startPoint.y + dotSize, blockSize, blockSize};
 
-    SDL_Color dotInnerColor = /*{0x02, 0xc9, 0x70, 0x40}*/{0x00, 0x00, 0x00, 0xFF},   // blue
+    SDL_Color dotInnerColor = {0x00, 0x00, 0x00, 0xFF},   // blue
               dotOuterColor = {0x00, 0x00, 0xFF, 0xFF},   // red
               edgeColor = {0x3B, 0x27, 0xBA, 0xFF},       // dark green
               blockColor = {0x00, 0x00, 0x00, 0xFF};      // green
 
-    //window->renderRect(&dot, dotOuterColor);
     window->renderTexture(texture, &dot, &dot);
     boundaryRectGhost.push_back(dot);
     boundaryRectPacman.push_back(dot);
@@ -321,12 +317,10 @@ void Maze::createBase(Window *window, int x, int y, SDL_Color boundaryColor) {
     int offset = dotSize + blockSize;
 
     for(int i = 0; i < dimension; i ++) {
-        //window->renderRect(&hEdge, edgeColor);
         window->renderTexture(texture, &hEdge, &hEdge);
         boundaryRectGhost.push_back(hEdge);
         boundaryRectPacman.push_back(hEdge);
         dot.x += offset;
-        //window->renderRect(&dot, dotOuterColor);
         window->renderTexture(texture, &dot, &dot);
 
         boundaryRectGhost.push_back(dot);
@@ -336,7 +330,6 @@ void Maze::createBase(Window *window, int x, int y, SDL_Color boundaryColor) {
     }
 
     for(int i = 0; i < dimension; i ++) {
-        //window->renderRect(&vEdge, edgeColor);
         window->renderTexture(texture, &vEdge, &vEdge);
 
         boundaryRectGhost.push_back(vEdge);
@@ -350,7 +343,6 @@ void Maze::createBase(Window *window, int x, int y, SDL_Color boundaryColor) {
                 window->renderRect(&vEdge, blockColor);
             }
             else {
-                //window->renderRect(&vEdge, edgeColor);
                 window->renderTexture(texture, &vEdge, &vEdge);
  
                 boundaryRectGhost.push_back(vEdge);
@@ -360,8 +352,7 @@ void Maze::createBase(Window *window, int x, int y, SDL_Color boundaryColor) {
         }
         dot.x = startPoint.x;
         dot.y += offset;
-        //window->renderRect(&dot, dotOuterColor);
-                window->renderTexture(texture, &dot, &dot);
+        window->renderTexture(texture, &dot, &dot);
         boundaryRectGhost.push_back(dot);
         boundaryRectPacman.push_back(dot);
         hEdge.x = dot.x + dot.w;
@@ -374,8 +365,7 @@ void Maze::createBase(Window *window, int x, int y, SDL_Color boundaryColor) {
                     window->renderRect(&dot, dotInnerColor);
                 }
                 else {
-                    //window->renderRect(&dot, dotOuterColor);
-                            window->renderTexture(texture, &dot, &dot);
+                    window->renderTexture(texture, &dot, &dot);
                     boundaryRectGhost.push_back(dot);
                     boundaryRectPacman.push_back(dot);
                 }
@@ -384,13 +374,11 @@ void Maze::createBase(Window *window, int x, int y, SDL_Color boundaryColor) {
         }   
         else {
             for(int j = 0; j < dimension; j ++) {
-                //window->renderRect(&hEdge, edgeColor);
-                        window->renderTexture(texture, &hEdge, &hEdge);
+                window->renderTexture(texture, &hEdge, &hEdge);
                 boundaryRectGhost.push_back(hEdge);
                 boundaryRectPacman.push_back(hEdge);
                 dot.x += offset;
-                //window->renderRect(&dot, dotOuterColor);
-                        window->renderTexture(texture, &dot, &dot);
+                window->renderTexture(texture, &dot, &dot);
                 boundaryRectGhost.push_back(dot);
                 boundaryRectPacman.push_back(dot);
                 hEdge.x += offset;
@@ -416,9 +404,7 @@ void Maze::createBasicStructure(Window* window) {
               blockColor = {0x00, 0x00, 0x00, 0xFF},  // mix
               doorColor = {0xFF, 0x80, 0xFF, 0xFF};  // light magenta
     // create top left square
-    // window->renderRect(&dot, dotColor);
-    // window->renderRect(&hEdge, edgeColor);
-    // window->renderRect(&vEdge, edgeColor);
+
     window->renderRect(&block, blockColor);
     window->renderTexture(texture, &dot, &dot);
     window->renderTexture(texture, &hEdge, &hEdge);
@@ -432,9 +418,7 @@ void Maze::createBasicStructure(Window* window) {
     dot.y += offset;
     hEdge.y += offset;
     vEdge.x += offset;
-    // window->renderRect(&dot, dotColor);
-    // window->renderRect(&hEdge, edgeColor);
-    // window->renderRect(&vEdge, edgeColor);
+    
     window->renderTexture(texture, &dot, &dot);
     window->renderTexture(texture, &hEdge, &hEdge);
     window->renderTexture(texture, &vEdge, &vEdge);
@@ -445,12 +429,10 @@ void Maze::createBasicStructure(Window* window) {
     boundaryRectGhost.push_back(vEdge);
     boundaryRectPacman.push_back(vEdge);
     dot.x += offset;
-    //window->renderRect(&dot, dotColor);
     window->renderTexture(texture, &dot, &dot);
     boundaryRectGhost.push_back(dot);
     boundaryRectPacman.push_back(dot);
     dot.y -= offset;
-    //window->renderRect(&dot, dotColor);
     window->renderTexture(texture, &dot, &dot);
     boundaryRectGhost.push_back(dot);
     boundaryRectPacman.push_back(dot);
@@ -459,15 +441,13 @@ void Maze::createBasicStructure(Window* window) {
     hEdge.x += offset;
     hEdge.y -= offset;
     window->renderTexture(ghostWallHoriz, NULL, &hEdge);
-    // window->renderRect(&hEdge, doorColor);
     boundaryRectPacman.push_back(hEdge);
     dot.x += offset;
     hEdge.x += offset;
     window->renderTexture(ghostWallHoriz, NULL, &hEdge);
     window->renderTexture(ghostWallHoriz, NULL, &dot);
 
-    // window->renderRect(&dot, doorColor);
-    // window->renderRect(&hEdge, doorColor);
+    
     boundaryRectPacman.push_back(dot);
     boundaryRectPacman.push_back(hEdge);
 
@@ -476,9 +456,7 @@ void Maze::createBasicStructure(Window* window) {
     vEdge.x += 2 * offset;
     block.x += 3 * offset;
     // create top right square
-    // window->renderRect(&dot, dotColor);
-    // window->renderRect(&hEdge, edgeColor);
-    // window->renderRect(&vEdge, edgeColor);
+    
     window->renderRect(&block, blockColor);
     window->renderTexture(texture, &dot, &dot);
     window->renderTexture(texture, &hEdge, &hEdge);
@@ -492,9 +470,7 @@ void Maze::createBasicStructure(Window* window) {
     dot.y += offset;
     hEdge.y += offset;
     vEdge.x += offset;
-    // window->renderRect(&dot, dotColor);
-    // window->renderRect(&hEdge, edgeColor);
-    // window->renderRect(&vEdge, edgeColor);
+    
     window->renderTexture(texture, &dot, &dot);
     window->renderTexture(texture, &hEdge, &hEdge);
     window->renderTexture(texture, &vEdge, &vEdge);
@@ -505,12 +481,10 @@ void Maze::createBasicStructure(Window* window) {
     boundaryRectGhost.push_back(vEdge);
     boundaryRectPacman.push_back(vEdge);
     dot.x += offset;
-    //window->renderRect(&dot, dotColor);
     window->renderTexture(texture, &dot, &dot);
     boundaryRectGhost.push_back(dot);
     boundaryRectPacman.push_back(dot);
     dot.y -= offset;
-    //window->renderRect(&dot, dotColor);
     window->renderTexture(texture, &dot, &dot);
     boundaryRectGhost.push_back(dot);
     boundaryRectPacman.push_back(dot);
@@ -519,14 +493,12 @@ void Maze::createBasicStructure(Window* window) {
     vEdge.y += offset;
     window->renderTexture(ghostWallVert, NULL, &vEdge);
 
-    // window->renderRect(&vEdge, doorColor);
     boundaryRectPacman.push_back(vEdge);
     dot.y += 2 * offset;
     vEdge.y += offset;
     window->renderTexture(ghostWallVert, NULL, &vEdge);
     window->renderTexture(ghostWallVert, NULL, &dot);
-    // window->renderRect(&dot, doorColor);
-    // window->renderRect(&vEdge, doorColor);
+    
     boundaryRectPacman.push_back(dot);
     boundaryRectPacman.push_back(vEdge);
 
@@ -537,9 +509,7 @@ void Maze::createBasicStructure(Window* window) {
     vEdge.x -= offset;
     block.y += 3 * offset;
     // create bottom right square
-    // window->renderRect(&dot, dotColor);
-    // window->renderRect(&hEdge, edgeColor);
-    // window->renderRect(&vEdge, edgeColor);
+    
     window->renderTexture(texture, &dot, &dot);
     window->renderTexture(texture, &hEdge, &hEdge);
     window->renderTexture(texture, &vEdge, &vEdge);
@@ -553,9 +523,7 @@ void Maze::createBasicStructure(Window* window) {
     dot.y += offset;
     hEdge.y += offset;
     vEdge.x += offset;
-    // window->renderRect(&dot, dotColor);
-    // window->renderRect(&hEdge, edgeColor);
-    // window->renderRect(&vEdge, edgeColor);
+    
     window->renderTexture(texture, &dot, &dot);
     window->renderTexture(texture, &hEdge, &hEdge);
     window->renderTexture(texture, &vEdge, &vEdge);
@@ -566,19 +534,16 @@ void Maze::createBasicStructure(Window* window) {
     boundaryRectGhost.push_back(vEdge);
     boundaryRectPacman.push_back(vEdge);
     dot.x += offset;
-    //window->renderRect(&dot, dotColor);
     window->renderTexture(texture, &dot, &dot);
     boundaryRectGhost.push_back(dot);
     boundaryRectPacman.push_back(dot);
     dot.y -= offset;
-    //window->renderRect(&dot, dotColor);
     window->renderTexture(texture, &dot, &dot);
     boundaryRectGhost.push_back(dot);
     boundaryRectPacman.push_back(dot);
 
     // create bottom door
     hEdge.x -= offset;
-    // window->renderRect(&hEdge, doorColor);
     window->renderTexture(ghostWallHoriz, NULL, &hEdge);
     boundaryRectPacman.push_back(hEdge);
     dot.y += offset;
@@ -586,8 +551,7 @@ void Maze::createBasicStructure(Window* window) {
     hEdge.x -= offset;
     window->renderTexture(ghostWallHoriz, NULL, &hEdge);
     window->renderTexture(ghostWallHoriz, NULL, &dot);
-    // window->renderRect(&dot, doorColor);
-    // window->renderRect(&hEdge, doorColor);
+    
     boundaryRectPacman.push_back(dot);
     boundaryRectPacman.push_back(hEdge);
 
@@ -598,9 +562,7 @@ void Maze::createBasicStructure(Window* window) {
     block.x -= 3 * offset;
     vEdge.x -= 4 * offset;
     // create bottom left square
-    // window->renderRect(&dot, dotColor);
-    // window->renderRect(&hEdge, edgeColor);
-    // window->renderRect(&vEdge, edgeColor);
+    
     window->renderRect(&block, blockColor);
     window->renderTexture(texture, &dot, &dot);
     window->renderTexture(texture, &hEdge, &hEdge);
@@ -614,9 +576,7 @@ void Maze::createBasicStructure(Window* window) {
     dot.y += offset;
     hEdge.y += offset;
     vEdge.x += offset;
-    // window->renderRect(&dot, dotColor);
-    // window->renderRect(&hEdge, edgeColor);
-    // window->renderRect(&vEdge, edgeColor);
+    
     window->renderTexture(texture, &dot, &dot);
     window->renderTexture(texture, &hEdge, &hEdge);
     window->renderTexture(texture, &vEdge, &vEdge);
@@ -627,12 +587,10 @@ void Maze::createBasicStructure(Window* window) {
     boundaryRectGhost.push_back(vEdge);
     boundaryRectPacman.push_back(vEdge);
     dot.x += offset;
-    //window->renderRect(&dot, dotColor);
     window->renderTexture(texture, &dot, &dot);
     boundaryRectGhost.push_back(dot);
     boundaryRectPacman.push_back(dot);
     dot.y -= offset;
-    //window->renderRect(&dot, dotColor);
     window->renderTexture(texture, &dot, &dot);
     boundaryRectGhost.push_back(dot);
     boundaryRectPacman.push_back(dot);
@@ -640,7 +598,6 @@ void Maze::createBasicStructure(Window* window) {
     // create left door
     vEdge.x -= offset;
     vEdge.y -= offset;
-    // window->renderRect(&vEdge, doorColor);
     window->renderTexture(ghostWallVert, NULL, &vEdge);
     boundaryRectPacman.push_back(vEdge);
     dot.y -= offset;
@@ -648,8 +605,7 @@ void Maze::createBasicStructure(Window* window) {
     vEdge.y -= offset;
     window->renderTexture(ghostWallVert, NULL, &vEdge);
     window->renderTexture(ghostWallVert, NULL, &dot);
-    // window->renderRect(&dot, doorColor);
-    // window->renderRect(&vEdge, doorColor);
+    
     boundaryRectPacman.push_back(dot);
     boundaryRectPacman.push_back(vEdge);
 
@@ -695,10 +651,9 @@ void Maze::createBasicStructure(Window* window) {
     dot.x = startPoint.x;
     dot.y = startPoint.y + offset;
     for(int i = 0; i < 5; i ++) {
-        // window->renderRect(&vEdge, edgeColor);
-        // window->renderRect(&dot, dotColor);
+        
         window->renderTexture(texture, &dot, &dot);
-    window->renderTexture(texture, &vEdge, &vEdge);
+        window->renderTexture(texture, &vEdge, &vEdge);
         boundaryRectGhost.push_back(dot);
         boundaryRectPacman.push_back(dot);
         boundaryRectGhost.push_back(vEdge);
@@ -719,10 +674,9 @@ void Maze::createBasicStructure(Window* window) {
     vEdge.y = startPoint.y + dotSize;
     dot.y = startPoint.y;
     for(int i = 0; i < 5; i ++) {
-        // window->renderRect(&vEdge, edgeColor);
-        // window->renderRect(&dot, dotColor);
+        
         window->renderTexture(texture, &dot, &dot);
-    window->renderTexture(texture, &vEdge, &vEdge);
+        window->renderTexture(texture, &vEdge, &vEdge);
         boundaryRectGhost.push_back(dot);
         boundaryRectPacman.push_back(dot);
         boundaryRectGhost.push_back(vEdge);
@@ -745,10 +699,9 @@ void Maze::createBasicStructure(Window* window) {
     dot.x = startPoint.x + offset;
     dot.y = startPoint.y;
     for(int i = 0; i < 5; i ++) {
-        // window->renderRect(&hEdge, edgeColor);
-        // window->renderRect(&dot, dotColor);
+        
         window->renderTexture(texture, &dot, &dot);
-    window->renderTexture(texture, &hEdge, &hEdge);
+        window->renderTexture(texture, &hEdge, &hEdge);
         boundaryRectGhost.push_back(dot);
         boundaryRectPacman.push_back(dot);
         boundaryRectGhost.push_back(hEdge);
@@ -769,10 +722,9 @@ void Maze::createBasicStructure(Window* window) {
     hEdge.x = startPoint.x + dotSize;
     dot.x = startPoint.x;
     for(int i = 0; i < 5; i ++) {
-        // window->renderRect(&hEdge, edgeColor);
-        // window->renderRect(&dot, dotColor);
+        
         window->renderTexture(texture, &dot, &dot);
-    window->renderTexture(texture, &hEdge, &hEdge);
+        window->renderTexture(texture, &hEdge, &hEdge);
         boundaryRectGhost.push_back(dot);
         boundaryRectPacman.push_back(dot);
         boundaryRectGhost.push_back(hEdge);
@@ -790,9 +742,7 @@ void Maze::createBasicStructure(Window* window) {
     }
 
     // create pacman house
-    // SDL_Rect rectHoriz = {0, 0, hEdge.w, hEdge.h};
-    // SDL_Rect rectVert = {0, 0, vEdge.w, vEdge.h};
-    // SDL_Rect rectDot = {0, 0, hEdge.w, hEdge.h};
+    
     startPoint = getDotScreenCoordinate(1, 1);
     hEdge.x = startPoint.x + dotSize;
     hEdge.y = startPoint.y + offset;
@@ -810,9 +760,7 @@ void Maze::createBasicStructure(Window* window) {
     window->renderTexture(pacWallVert, NULL, &vEdge);
     window->renderTexture(pacWallHoriz, NULL, &dot);
 
-    // window->renderRect(&hEdge, edgeColor);
-    // window->renderRect(&vEdge, edgeColor);
-    // window->renderRect(&dot, dotColor);
+    
     boundaryRectGhost.push_back(dot);
     boundaryRectGhost.push_back(hEdge);
     boundaryRectGhost.push_back(vEdge);
@@ -834,9 +782,7 @@ void Maze::createBasicStructure(Window* window) {
     window->renderTexture(pacWallHoriz, NULL, &hEdge);
     window->renderTexture(pacWallVert, NULL, &vEdge);
     window->renderTexture(pacWallHoriz, NULL, &dot);
-    // window->renderRect(&hEdge, edgeColor);
-    // window->renderRect(&vEdge, edgeColor);
-    // window->renderRect(&dot, dotColor);
+    
     boundaryRectGhost.push_back(dot);
     boundaryRectGhost.push_back(hEdge);
     boundaryRectGhost.push_back(vEdge);
@@ -863,8 +809,7 @@ void Maze::createEdge(Window* window, int i, int j, int side) {
               edgeColor = {0x00, 0x70, 0x00, 0xFF};   // dark green
 
     int offset = dotSize + blockSize;
-    // window->renderRect(&dot1, dotColor);
-    // window->renderRect(&dot2, dotColor);
+    
     window->renderTexture(texture, &dot1, &dot1);
     window->renderTexture(texture, &dot2, &dot2);
     boundaryRectGhost.push_back(dot1);
@@ -874,48 +819,40 @@ void Maze::createEdge(Window* window, int i, int j, int side) {
     switch(side) {
         case 0:
             vEdge.y = dot1.y - blockSize;
-            //window->renderRect(&vEdge, edgeColor);
             window->renderTexture(texture, &vEdge, &vEdge);
             boundaryRectGhost.push_back(vEdge);
             boundaryRectPacman.push_back(vEdge);
             dot1.y -= offset;
-            //window->renderRect(&dot1, dotColor);
             window->renderTexture(texture, &dot1, &dot1);
             boundaryRectGhost.push_back(dot1);
             boundaryRectPacman.push_back(dot1);
             break;
         case 1:
             hEdge.x = dot1.x + dotSize;
-            //window->renderRect(&hEdge, edgeColor);
             window->renderTexture(texture, &hEdge, &hEdge);
             boundaryRectGhost.push_back(hEdge);
             boundaryRectPacman.push_back(hEdge);
             dot1.x += offset;
-            //window->renderRect(&dot1, dotColor);
             window->renderTexture(texture, &dot1, &dot1);
             boundaryRectGhost.push_back(dot1);
             boundaryRectPacman.push_back(dot1);
             break;
         case 2:
             vEdge.y = dot1.y + dotSize;
-            //window->renderRect(&vEdge, edgeColor);
             window->renderTexture(texture, &vEdge, &vEdge);
             boundaryRectGhost.push_back(vEdge);
             boundaryRectPacman.push_back(vEdge);
             dot1.y += offset;
-            //window->renderRect(&dot1, dotColor);
             window->renderTexture(texture, &dot1, &dot1);
             boundaryRectGhost.push_back(dot1);
             boundaryRectPacman.push_back(dot1);
             break;
         case 3:
             hEdge.x = dot1.x - blockSize;
-            //window->renderRect(&hEdge, edgeColor);
             window->renderTexture(texture, &hEdge, &hEdge);
             boundaryRectGhost.push_back(hEdge);
             boundaryRectPacman.push_back(hEdge);
             dot1.x -= offset;
-            //window->renderRect(&dot1, dotColor);
             window->renderTexture(texture, &dot1, &dot1);
             boundaryRectGhost.push_back(dot1);
             boundaryRectPacman.push_back(dot1);
@@ -927,48 +864,40 @@ void Maze::createEdge(Window* window, int i, int j, int side) {
     switch(side) {
         case 0:
             vEdge.y = dot2.y + dotSize;
-            //window->renderRect(&vEdge, edgeColor);
             window->renderTexture(texture, &vEdge, &vEdge);
             boundaryRectGhost.push_back(vEdge);
             boundaryRectPacman.push_back(vEdge);
             dot2.y += offset;
-            //window->renderRect(&dot2, dotColor);
             window->renderTexture(texture, &dot2, &dot2);
             boundaryRectGhost.push_back(dot2);
             boundaryRectPacman.push_back(dot2);
             break;
         case 1:
             hEdge.x = dot2.x - blockSize;
-            //window->renderRect(&hEdge, edgeColor);
             window->renderTexture(texture, &hEdge, &hEdge);
             boundaryRectGhost.push_back(hEdge);
             boundaryRectPacman.push_back(hEdge);
             dot2.x -= offset;
-            //window->renderRect(&dot2, dotColor);
             window->renderTexture(texture, &dot2, &dot2);
             boundaryRectGhost.push_back(dot2);
             boundaryRectPacman.push_back(dot2);
             break;
         case 2:
             vEdge.y = dot2.y - blockSize;
-            //window->renderRect(&vEdge, edgeColor);
             window->renderTexture(texture, &vEdge, &vEdge);
             boundaryRectGhost.push_back(vEdge);
             boundaryRectPacman.push_back(vEdge);
             dot2.y -= offset;
-            //window->renderRect(&dot2, dotColor);
             window->renderTexture(texture, &dot2, &dot2);
             boundaryRectGhost.push_back(dot2);
             boundaryRectPacman.push_back(dot2);
             break;
         case 3:
             hEdge.x = dot2.x + dotSize;
-            //window->renderRect(&hEdge, edgeColor);
             window->renderTexture(texture, &hEdge, &hEdge);
             boundaryRectGhost.push_back(hEdge);
             boundaryRectPacman.push_back(hEdge);
             dot2.x += offset;
-            //window->renderRect(&dot2, dotColor);
             window->renderTexture(texture, &dot2, &dot2);
             boundaryRectGhost.push_back(dot2);
             boundaryRectPacman.push_back(dot2);
@@ -979,7 +908,6 @@ void Maze::createEdge(Window* window, int i, int j, int side) {
 
 void Maze::generateMazeRandom(Window* window) {
 
-    //srand(time(0));
     int mirrorI, mirrorJ, side, deg1 = 1, deg2 = 1;
     for(int i = 2; i <= dimension; i ++) {
         for(int j = 2; j <= dimension / 2; j ++) {
@@ -993,13 +921,13 @@ void Maze::generateMazeRandom(Window* window) {
             int counter = 0;
             int extra;
             side = rand() % 4;
-            deg1 = /*rand() % 2 +*/ 1;
-            deg2 = /*rand() % 2 +*/ 1;
+            deg1 = rand() % 2 + 1;
+            deg2 = rand() % 2 + 1;
             while(!flag && counter < 16) {
                 
                 switch(side) {
                     case 0: 
-                        if(/*i-2==dimension/2||*/(dimension/2-1<=j&&j<=dimension/2+3&&i==dimension/2+4)) {
+                        if((dimension/2-1<=j&&j<=dimension/2+3&&i==dimension/2+4)) {
                             side = rand() % 4;
                             break;
                         }
@@ -1024,7 +952,7 @@ void Maze::generateMazeRandom(Window* window) {
                             break;
                         }
                     case 1:
-                        if(/*j==dimension/2||*/(dimension/2-1<=i&&i<=dimension/2+3&&j==dimension/2-2)){
+                        if((dimension/2-1<=i&&i<=dimension/2+3&&j==dimension/2-2)){
                             side = rand() % 4;
                             break;
                         }
@@ -1049,7 +977,7 @@ void Maze::generateMazeRandom(Window* window) {
                             break;
                         }  
                     case 2:
-                        if(/*i==dimension/2||*/(dimension/2-1<=j&&j<=dimension/2+3&&i==dimension/2-2)) {
+                        if((dimension/2-1<=j&&j<=dimension/2+3&&i==dimension/2-2)) {
                             side = rand() % 4;
                             break;
                         }
@@ -1074,7 +1002,7 @@ void Maze::generateMazeRandom(Window* window) {
                             break;
                         }
                     case 3:
-                        if(/*j-2==dimension/2||*/(dimension/2-1<=i&&i<=dimension/2+3&&j==dimension/2+4)){
+                        if((dimension/2-1<=i&&i<=dimension/2+3&&j==dimension/2+4)){
                             side = rand() % 4;
                             break;
                         }
