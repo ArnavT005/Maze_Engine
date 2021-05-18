@@ -43,8 +43,13 @@ Ghost::Ghost() {
 	small.clear();
 	destinationX = 0;
 	destinationY = 0;
-	reached = true;
+	reached = false;
 	distance = 0;
+	targetAcquired = false;
+	reachedStart = 0;
+	radarRadius = 0;
+	end = false;
+
 }
 
 Ghost::Ghost(Maze* maze, Window* window, int startX, int startY) {
@@ -71,15 +76,19 @@ Ghost::Ghost(Maze* maze, Window* window, int startX, int startY) {
 	small.clear();
 	destinationX = startX;
 	destinationY = startY;
-	reached = true;
+	reached = false;
 	distance = 0;
+	targetAcquired = false;
+	reachedStart = 0;
+	radarRadius = 0;
+	end = false;
 	loadTexture(window);
 }
 
 
 void Ghost::loadTexture(Window* window) {
 	std::string path;
-	path = "Blinky";
+	path = "Pinky";
 
 	SDL_Surface* upSurf = IMG_Load(("../img/" + path + "/upMotion.png").c_str());
 	if(upSurf == NULL) {
@@ -159,39 +168,51 @@ void Ghost::checkAlignment() {
 }
 
 void Ghost::update(Window* window) {
+  	bool move = true;
+  	if(reached && !targetAcquired)
+  		move = false;
+  	// else if(targetAcquired)
+  	// 	targetAcquired = false;
     checkAlignment();
 	if(rowAligned && colAligned){
-		direction = BFS(destinationX, destinationY);
-		if(direction == 0) {
-			reached = true;
-			SDL_Point point = maze->getBlockScreenCoordinate(destinationX, destinationY);
-			int size = large.size();
-			for(int i = 0; i < size; i ++) {
-				if(point.x + 7 == large[i].location.x && point.y + 7 == large[i].location.y) {
-					large[i].free();
-					large.erase(large.begin() + i);
-					break;
+	  	direction = 0;
+		if(move) {
+			direction = BFS(destinationX, destinationY);
+			if(direction == 0) {
+				reached = true;
+				targetAcquired = false;
+				reachedStart = SDL_GetTicks();
+				SDL_Point point = maze->getBlockScreenCoordinate(destinationX, destinationY);
+				int size = large.size();
+				for(int i = 0; i < size; i ++) {
+					if(point.x + 7 == large[i].location.x && point.y + 7 == large[i].location.y) {
+						large[i].free();
+						large.erase(large.begin() + i);
+						break;
+					}
+				}
+				small.clear();
+			}
+			else {
+				reached = false;
+				int size = small.size();
+				for(int i = 0; i < size; i ++) {
+					if(screenX + 15 == small[i].location.x && screenY + 15 == small[i].location.y) {
+						small[i].free();
+						small.erase(small.begin() + i);
+						break;
+					}
 				}
 			}
-			small.clear();
-		}
-		else {
-			reached = false;
-			int size = small.size();
-			for(int i = 0; i < size; i ++) {
-				if(screenX + 15 == small[i].location.x && screenY + 15 == small[i].location.y) {
-					small[i].free();
-					small.erase(small.begin() + i);
-					break;
-				}
-			}
+			if(reached) {
+		    	if(dest.size() == 0)
+		    		end = true;
+		    	std::pair<int, int> loc = chooseLoc(window);
+		    	destinationX = loc.first;
+		    	destinationY = loc.second;
+		    }
 		}
 	}
-	if(reached) {
-    	std::pair<int, int> loc = chooseLoc(window);
-    	destinationX = loc.first;
-    	destinationY = loc.second;
-    }
 	switch(direction) {
 		case UP: velX = 0; velY = -GHOST_VEL; state = MOVE_UP; break;
 		case DOWN: velX = 0; velY = GHOST_VEL; state = MOVE_DOWN; break;
@@ -289,6 +310,11 @@ void Ghost::render(Window* window) {
 			window->renderTexture(left, &movingPosition, &onScreenRect);			
 			frameCount ++;
 			break;			
+	}
+	if(reached && !targetAcquired && !end) {
+		renderRadar(window);
+		
+		radarRadius += radarRadius / 45 + 1 > 5 ? 5: radarRadius / 45 + 1;
 	}
 	if(frameCount == 8) {
 		frameCount = 0;
@@ -498,4 +524,34 @@ std::pair<int, int> Ghost::chooseLoc(Window* window) {
             }
         }
     }
+}
+
+void Ghost::renderRadar(Window* window) {
+    SDL_SetRenderDrawColor(window->getRenderer(), 0x00, 0x00, 0xFF, 0x50);
+    SDL_SetRenderDrawBlendMode(window->getRenderer(), SDL_BLENDMODE_BLEND);
+    int n = 0;
+    SDL_Point center = colliderSphere.center;
+    for(int i = 25; i <= 1000; i ++) {
+        for(int j = 25; j <= 1000; j ++) {
+            int distanceSq = (center.x - j) * (center.x - j) + (center.y - i) * (center.y - i);
+            if(distanceSq <= radarRadius * radarRadius) {
+                SDL_Point sample;
+                sample.x = j;
+                sample.y = i;
+                points[n] = sample;  
+                n ++;
+            }
+        }
+    }
+    SDL_RenderDrawPoints(window->getRenderer(), points, n);
+    SDL_SetRenderDrawBlendMode(window->getRenderer(), SDL_BLENDMODE_NONE);
+	
+	int cood1X = small[0].location.x, cood1Y = small[0].location.y;
+
+	int distanceSq1 = (cood1X - center.x) * (cood1X - center.x) + (cood1Y - center.y) * (cood1Y - center.y);
+	int sqRadar = radarRadius * radarRadius;
+	if(distanceSq1 <= sqRadar) {
+		targetAcquired = true;
+		radarRadius = 0;
+	}
 }

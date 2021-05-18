@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
         return 0;
     }
   
-    Window window("DROID SIMULATION", 1025, 1025);
+    Window window("PLIGHT OF PINKY", 1025, 1025);
     if(!window.getSuccess()) {
         close();
         return 0;
@@ -140,9 +140,11 @@ int main(int argc, char** argv) {
         ghost.move();
         window.clearWindow();
         window.renderTexture(background, NULL, &bg);
-        for(int i = 0; i < ghost.small.size(); i ++) {
-        	ghost.small[i].render(&window);
-        }
+	    if(ghost.targetAcquired) {
+	        for(int i = 0; i < ghost.small.size(); i ++) {
+	        	ghost.small[i].render(&window);
+	        }
+	    }
         for(int i = 0; i < ghost.large.size(); i ++) {
         	ghost.large[i].render(&window);
         }

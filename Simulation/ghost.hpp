@@ -55,7 +55,7 @@ class Ghost {
     bool collisionDetectorCircle(Circle* circle1, Circle* circle2);
     bool isIn(std::pair<int, int> location);
     std::pair<int, int> chooseLoc(Window* window);
-
+    void renderRadar(Window* window);
     
     bool rowAligned, colAligned;        // To check if ghost is row/column aligned
     Maze* maze;                         // Maze
@@ -72,11 +72,20 @@ class Ghost {
     bool success;				// error reporting flag
     int frameCount;
     int distance;               // distance travelled by the ghost
+    int radarRadius;
+
 
     std::vector<std::pair<int, int>> dest; // set of locations to visit
     bool reached;
+    bool targetAcquired;
+    bool end;
     std::vector<Eatable> large;
     std::vector<Eatable> small;
+
+    SDL_Point points[952576];
+
+
+    Uint32 reachedStart;
     
     SDL_Texture* up;
     SDL_Texture* right;
