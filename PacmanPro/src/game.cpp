@@ -404,6 +404,7 @@ bool game(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSe
     char msg[1000];
 
     while(menu->isRunning) {
+        Uint32 startLoop = SDL_GetTicks();
         if(!timer && SDL_GetTicks() - startTime > finishTime - 9000) {
             Mix_PlayChannel(18, tenSecTimer, 0);
             timer = true;
@@ -557,6 +558,9 @@ bool game(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_SocketSe
                     menu->winner = 0;
             }
         }
+        Uint32 loopTime = SDL_GetTicks() - startTime;
+        if(loopTime < 17)
+            SDL_Delay(17 - loopTime);
     }
     g1.free();
     g2.free();
@@ -1040,6 +1044,8 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
             std::cout << "Connection to server is slow. Some packet loss/delay may be there!\n";
             message = true;
         }
+        if(loopTime < 17)
+            SDL_Delay(17 - loopTime);
     }
     g1.free();
     g2.free();
