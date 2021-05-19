@@ -5,8 +5,8 @@ Subtask 1 of Task 2 of course COP290, Spring 2021
 PACMAN PRO: SYSTEM REQUIREMENTS  
 --------------------------------  
 Recommended OS: Ubuntu 20.04 LTS  
-Recommended Resolution: 1920x1080 or higher
-Recommended Monitor Refresh Rate: 60 Hz or higher  
+Recommended Resolution: 1920x1080 or higher  
+Recommended Monitor Refresh Rate: 60 Hz or higher    
 Recommended Networking: LAN on different devices  
 (two terminals running on the same device can slow down the rendering, not recommended)  
 
