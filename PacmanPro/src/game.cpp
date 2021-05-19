@@ -1036,7 +1036,7 @@ bool gameOnline(Menu* menu, Window* window, int id, TCPsocket* server, SDLNet_So
             }
         }
         Uint32 loopTime = SDL_GetTicks() - startLoop;
-        if(loopTime > 25 && !message) {
+        if(loopTime > 25 && !message && menu->isRunning) {
             std::cout << "Connection to server is slow. Some packet loss/delay may be there!\n";
             message = true;
         }
