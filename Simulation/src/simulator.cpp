@@ -4,6 +4,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 #include <vector>
+#include <string>
 #include "window.hpp"
 #include "maze.hpp"
 #include "ghost.hpp"
@@ -48,12 +49,30 @@ bool isSame(int startX, int startY, int endX, int endY, std::vector<std::pair<in
 	return false;
 }
 
+bool isInteger(std::string s) {
+
+    int len = s.length();
+
+    if (len == 0) 
+        return false;
+    for (int i = 0; i < len; i++) {
+        if (s.at(i) < '0' || s.at(i) > '9') 
+            return false;
+    }
+
+    return true;
+}
+
 int main(int argc, char** argv) {
     
     if(!SDL_init()) {
         return 0;
     }
-  
+
+    bool fast = false;
+    if(argc > 1 && isInteger(argv[1]) && std::stoi(argv[1]) == 1)
+        fast = true;
+
     Window window("PLIGHT OF PINKY", 1025, 1025);
     if(!window.getSuccess()) {
         close();
@@ -119,6 +138,8 @@ int main(int argc, char** argv) {
 
     // create ghost
     Ghost ghost(&maze, &window, startX, startY);
+    if(fast)
+        ghost.GHOST_VEL = 5;
 
     Eatable item;
     // tell locations to ghost
@@ -150,8 +171,14 @@ int main(int argc, char** argv) {
                 quit = true;
                 break;
             }
+            else if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_p) {
+                if(!ghost.pause)
+                    ghost.pause = true;
+                else
+                    ghost.pause = false;
+            }
         } 
-        if(SDL_GetTicks() - start >= 4000) {
+        if(SDL_GetTicks() - start >= 4000 && !ghost.pause) {
             ghost.update(&window);
             ghost.move();
         }    
@@ -170,6 +197,12 @@ int main(int argc, char** argv) {
         SDL_Delay(15);
     }
 
+    if(startGame != NULL) {
+        Mix_FreeChunk(startGame);
+        startGame = NULL;
+    }
+    ghost.free();
+    maze.free();
     window.free();
     close();
 }

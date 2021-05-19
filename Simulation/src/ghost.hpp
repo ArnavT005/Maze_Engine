@@ -41,7 +41,6 @@ class Ghost {
     static const int GHOST_WIDTH = 35;
     static const int GHOST_HEIGHT = 45;
     static const int ANIMATION_FRAMES = 2;
-    static const int GHOST_VEL = 1;
     void free();
     Ghost();
     Ghost(Maze* maze, Window* window, int startX, int startY);
@@ -73,12 +72,14 @@ class Ghost {
     int frameCount;
     int distance;               // distance travelled by the ghost
     int radarRadius;
+    int GHOST_VEL;
 
 
     std::vector<std::pair<int, int>> dest; // set of locations to visit
     bool reached;
     bool targetAcquired;
     bool end;
+    bool pause;
     std::vector<Eatable> large;
     std::vector<Eatable> small;
 

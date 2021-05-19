@@ -6,6 +6,7 @@
 #include <SDL2/SDL_mixer.h>
 #include <vector>
 #include <fstream>
+#include <string>
 #include "window.hpp"
 #include "maze.hpp"
 #include "ghost.hpp"
@@ -129,8 +130,27 @@ int findDistance(std::vector<int> &v, map<std::pair<int, int>, int> &distance){
 	return ans;
 }
 
+bool isInteger(std::string s) {
+
+    int len = s.length();
+
+    if (len == 0) 
+        return false;
+    for (int i = 0; i < len; i++) {
+        if (s.at(i) < '0' || s.at(i) > '9') 
+            return false;
+    }
+
+    return true;
+}
+
 int main(int argc, char** argv) {
     
+    int num = 10;
+
+    if(argc > 1 && isInteger(argv[1]))
+        num = std::stoi(argv[1]);
+
     if(!SDL_init()) {
         return 0;
     }
@@ -145,7 +165,7 @@ int main(int argc, char** argv) {
     fout << "Optimal,Experimental\n";
     int counter = 0;
 
-    while(counter < 100) {
+    while(counter < num) {
 
         srand(time(0));
 
@@ -219,9 +239,7 @@ int main(int argc, char** argv) {
 
     	}
     	fout << optimalDist << ",";
-        // for(int i = 0; i < 6; i ++) {
-        //     std::cout << locations[optimalPerm[i]].first << " " << locations[optimalPerm[i]].second << "\n";
-        // }
+        
         window.setRenderTarget(NULL);
 
         // create ghost
@@ -263,6 +281,7 @@ int main(int argc, char** argv) {
             ghost.render(&window);
             window.updateWindow(); 
         }
+        Mix_HaltChannel(2);
         fout << ghost.distance << "\n";
         counter ++;
     }  

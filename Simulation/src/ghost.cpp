@@ -21,6 +21,14 @@ void Ghost::free() {
 		Mix_FreeChunk(movement);
 		movement = NULL;
 	}
+	if(endSound != NULL) {
+		Mix_FreeChunk(endSound);
+		endSound = NULL;
+	}
+	if(found != NULL) {
+		Mix_FreeChunk(found);
+		found = NULL;
+	}
 }
 
 Ghost::Ghost() {
@@ -42,6 +50,7 @@ Ghost::Ghost() {
 	state = STILL_UP;
 	success = true;
 	frameCount = 0;
+	GHOST_VEL = 1;
 	dest.clear();
 	large.clear();
 	small.clear();
@@ -50,6 +59,7 @@ Ghost::Ghost() {
 	reached = false;
 	distance = 0;
 	targetAcquired = false;
+	pause = false;
 	reachedStart = 0;
 	radarRadius = 0;
 	end = false;
@@ -75,6 +85,7 @@ Ghost::Ghost(Maze* maze, Window* window, int startX, int startY) {
 	state = STILL_UP;
 	success = true;
 	frameCount = 0;
+	GHOST_VEL = 1;
 	dest.clear();
 	large.clear();
 	small.clear();
@@ -83,6 +94,7 @@ Ghost::Ghost(Maze* maze, Window* window, int startX, int startY) {
 	reached = false;
 	distance = 0;
 	targetAcquired = false;
+	pause = false;
 	reachedStart = 0;
 	radarRadius = 0;
 	end = false;
@@ -190,8 +202,6 @@ void Ghost::update(Window* window) {
   	bool move = true;
   	if(reached && !targetAcquired)
   		move = false;
-  	// else if(targetAcquired)
-  	// 	targetAcquired = false;
     checkAlignment();
 	if(rowAligned && colAligned){
 	  	direction = 0;
@@ -335,8 +345,8 @@ void Ghost::render(Window* window) {
 	}
 	if(reached && !targetAcquired && !end) {
 		renderRadar(window);
-		
-		radarRadius += radarRadius / 45 + 1 > 5 ? 5: radarRadius / 45 + 1;
+		if(!pause)
+			radarRadius += radarRadius / 45 + 1 > 5 ? 5: radarRadius / 45 + 1;
 	}
 	if(frameCount == 8) {
 		frameCount = 0;
