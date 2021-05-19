@@ -118,6 +118,19 @@ vector<vector<int>> findPermutations(int n){
 	return list;
 }
 
+int findDistance(vector<int> &v, map<pair<int, int>, int> &distance){
+	int ans = 0;
+	for(int i = 0; i < v.size()-1; i++){
+		auto iter =  distance.find(make_pair(v[i],v[i+1]));
+		ans+=iter->second;
+	}
+	auto iter =  distance.find(make_pair(v[0],-1));
+	ans+=iter->second;
+	auto iter =  distance.find(make_pair(v[i],5));
+	ans+=iter->second;
+	return ans;
+}
+
 int main(int argc, char** argv) {
     
     if(!SDL_init()) {
@@ -190,6 +203,12 @@ int main(int argc, char** argv) {
 		BFS(locations[k].first, locations[k].second, k, locations, startX, startY, endX, endY, distance, maze);
 	}
 	vector<vector<int>> allPermuations = findPermutations(6);
+	//find optimal distance
+	int optimalDist = 9999;
+	for(int i = 0; i < allPermuations.size(); i++){
+		optimalDist = min(optimalDist, findDistance(allPermuations[i], distance));
+	}
+	cout << optimalDist << "\n";
     window.setRenderTarget(NULL);
 
     // create ghost
