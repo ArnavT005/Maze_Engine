@@ -29,6 +29,13 @@ void Ghost::free() {
 		Mix_FreeChunk(found);
 		found = NULL;
 	}
+	for(int i = 0; i < large.size(); i ++) {
+		large[i].free();
+	}
+	for(int i = 0; i < small.size(); i ++) {
+		small[i].free();
+	}
+
 }
 
 Ghost::Ghost() {

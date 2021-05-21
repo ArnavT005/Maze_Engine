@@ -30,6 +30,7 @@ bool SDL_init() {
 }
 
 void close() {
+    Mix_Quit();
     IMG_Quit();
     SDL_Quit();
 }
@@ -201,6 +202,7 @@ int main(int argc, char** argv) {
         Mix_FreeChunk(startGame);
         startGame = NULL;
     }
+    item.free();
     ghost.free();
     maze.free();
     window.free();

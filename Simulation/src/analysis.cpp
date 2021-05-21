@@ -32,6 +32,7 @@ bool SDL_init() {
 }
 
 void close() {
+    Mix_Quit();
     IMG_Quit();
     SDL_Quit();
 }
@@ -284,6 +285,9 @@ int main(int argc, char** argv) {
         Mix_HaltChannel(2);
         fout << ghost.distance << "\n";
         counter ++;
+        item.free();
+        ghost.free();
+        maze.free();
     }  
     fout.close();  
     window.free();
