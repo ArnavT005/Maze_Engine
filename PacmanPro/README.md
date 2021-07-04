@@ -1,55 +1,49 @@
-# PACMAN PRO 
-Subtask 1 of Task 2 of course COP290, Spring 2021  
+# Pacman Pro  
 
---------------------------------
-PACMAN PRO: SYSTEM REQUIREMENTS  
---------------------------------  
+---
+SYSTEM REQUIREMENTS  
+--- 
 Recommended OS: Ubuntu 20.04 LTS  
 Recommended Resolution: 1920x1080 or higher  
 Recommended Monitor Refresh Rate: 60 Hz or higher    
 Recommended Networking: LAN on different devices  
 (two terminals running on the same device can slow down the rendering, not recommended)  
 
-NOTE: Game's performance not guaranteed on other platforms  
+> NOTE: Game's performance not guaranteed on other platforms  
+> UPDATE: Windows users can download the game executable package from [Google Drive](https://drive.google.com/file/d/1xNJ0hRqyz1VAVOEWpzhlx22hdv1K-YKs/view?usp=sharing)  
 
-------------------------------------------------------------
-PACMAN PRO: INSTALLATION INSTRUCTIONS (on Ubuntu 20.04 LTS)  
-------------------------------------------------------------
-- INSTALLING SDL:  
-	- sudo apt-get install libsdl2-dev  
-- INSTALLING SDL_image:  
- 	- sudo apt-get install libsdl2-image-dev  
-- INSTALLING SDL_ttf:  
- 	- sudo apt-get install libsdl2-ttf-dev  
-- INSTALLING SDL_mixer:  
- 	- sudo apt-get install libsdl2-mixer-dev  
-- INSTALLING SDL_net:  
- 	- sudo apt-get install libsdl2-net-dev  
+---
+INSTALLATION INSTRUCTIONS (on Ubuntu 20.04 LTS)  
+---
+- INSTALLING SDL: `sudo apt-get install libsdl2-dev`  
+- INSTALLING SDL_image: `sudo apt-get install libsdl2-image-dev`  
+- INSTALLING SDL_ttf: `sudo apt-get install libsdl2-ttf-dev`  
+- INSTALLING SDL_mixer: `sudo apt-get install libsdl2-mixer-dev`  
+- INSTALLING SDL_net: `sudo apt-get install libsdl2-net-dev`  
 	
-(you may have to run *sudo apt-get update* before running these commands, or if there is an error)  
+(you may have to run `sudo apt-get update` before running these commands, or if there is an error)  
 
------------------------------
-PACMAN PRO: RUNNING THE GAME  
------------------------------
+---
+RUNNING THE GAME  
+---
 - Clone the repo https://github.com/ArnavT005/Maze_Game  
 - Change to *PacmanPro/src* directory  
 - Open terminal  
 - LOCAL:  
-  - run *make* or *make game*  
-  - execute game by running the command *./game*  
+  - run `make` or `make game`  
+  - execute game by running the command `./game`  
 - ONLINE:  
-  - run *make* to compile both server-client executables together  
-  - run *make server* (to only compile server executable)
-  - run *make game* (to only compile client executable)
-  - run server on a machine using *./server*  
-  - run game (client) on two different machines/terminals using *./game*  
-  (Note that the server disconnects when either of the clients disconnect (closes game).  
-   The servers needs to be restarted in case the client disconnects, for reconnection.)  
+  - run `make` to compile both server-client executables together  
+  - run `make server` (to only compile server executable)
+  - run `make game` (to only compile client executable)
+  - run server on a machine using `./server`  
+  - run game (client) on two different machines/terminals using `./game`  
+> Note that the server disconnects when either of the clients disconnect (closes game). The servers needs to be restarted in case the client disconnects, for reconnection. 
 - ENJOY!  
 
----------------------
-PACMAN PRO: FEATURES
----------------------
+---
+FEATURES
+---
 We have added some really awesome *pro* features for you :  
 
 - GENERAL:  
@@ -80,18 +74,14 @@ We have added some really awesome *pro* features for you :
 	- Add new mode: DARK MODE  
 	- Improved Ghost AI. Inky now speeds up when going crazy! Be wary of him.  
 
-Disclaimer: Our two player pacman (local/online) builds up on the original single player pacman. Many of the original pacman mechanics have been recreated, and hence are omitted from this section. 
+> Disclaimer: Our two player Pacman (local/online) builds up on the original single player pacman. Many of the original pacman mechanics have been recreated, and hence are omitted from this section. 
 
------------------------------------------
-PACMAN PRO: RESOURCES USED IN DEVELOPMENT   
------------------------------------------
-SDL, SDL_image, SDL_mixer, SDL_ttf:  
-https://lazyfoo.net/tutorials/SDL/index.php  
+---
+RESOURCES USED IN DEVELOPMENT   
+---
+SDL, SDL_image, SDL_mixer, SDL_ttf: [LazyFoo](https://lazyfoo.net/tutorials/SDL/index.php)  
 
-SDL_net:  
-http://www.sdltutorials.com/sdl-net-part-1-user-tutorial  
-http://www.sdltutorials.com/sdl-net-part-2-user-tutorial  
-https://www.libsdl.org/projects/SDL_net/docs/SDL_net.pdf  
+SDL_net: [Docs](https://www.libsdl.org/projects/SDL_net/docs/SDL_net.pdf)  
 
 IMAGES and FONTS:  
 Present in *img* and *font* folder. All open source.  
