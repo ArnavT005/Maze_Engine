@@ -15,11 +15,11 @@ Recommended Networking: LAN on different devices
 ---
 INSTALLATION INSTRUCTIONS (on Ubuntu 20.04 LTS)  
 ---
-- INSTALLING SDL: `sudo apt-get install libsdl2-dev`.  
-- INSTALLING SDL_image: `sudo apt-get install libsdl2-image-dev`.  
-- INSTALLING SDL_ttf: `sudo apt-get install libsdl2-ttf-dev`.  
-- INSTALLING SDL_mixer: `sudo apt-get install libsdl2-mixer-dev`.  
-- INSTALLING SDL_net: `sudo apt-get install libsdl2-net-dev`.  
+- INSTALLING SDL: `sudo apt-get install libsdl2-dev`  
+- INSTALLING SDL_image: `sudo apt-get install libsdl2-image-dev`
+- INSTALLING SDL_ttf: `sudo apt-get install libsdl2-ttf-dev`  
+- INSTALLING SDL_mixer: `sudo apt-get install libsdl2-mixer-dev` 
+- INSTALLING SDL_net: `sudo apt-get install libsdl2-net-dev`  
 	
 (you may have to run `sudo apt-get update` before running these commands, or if there is an error)  
 
