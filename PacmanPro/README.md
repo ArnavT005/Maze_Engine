@@ -26,8 +26,7 @@ INSTALLATION INSTRUCTIONS (on Ubuntu 20.04 LTS)
 ---
 RUNNING THE GAME  
 ---
-- Clone the repo https://github.com/ArnavT005/Maze_Game  
-- Change to *PacmanPro/src* directory  
+- Change to *src* directory  
 - Open terminal  
 - LOCAL:  
   - run `make` or `make game`  
