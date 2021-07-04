@@ -1018,6 +1018,9 @@ void Ghost::render(Window* window) {
 }
 
 bool Ghost::parryPossible(Pacman* pac1) {
+	if(pac1->parry) {
+		return false;
+	}
 	switch(state) {
 		case MOVE_UP:
 			if(pac1->state == STILL_DOWN || pac1->state == MOVE_DOWN) {
