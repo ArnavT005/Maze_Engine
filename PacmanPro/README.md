@@ -9,46 +9,46 @@ Recommended Monitor Refresh Rate: 60 Hz or higher
 Recommended Networking: LAN on different devices  
 (two terminals running on the same device can slow down the rendering, not recommended)  
 
-> NOTE: Game's performance not guaranteed on other platforms  
-> UPDATE: Windows users can download the game executable package from [Google Drive](https://drive.google.com/file/d/1xNJ0hRqyz1VAVOEWpzhlx22hdv1K-YKs/view?usp=sharing)  
+> NOTE: Game's performance not guaranteed on other platforms.  
+> UPDATE: Windows users can download the game executable package from [Google Drive](https://drive.google.com/file/d/1xNJ0hRqyz1VAVOEWpzhlx22hdv1K-YKs/view?usp=sharing).  
 
 ---
 INSTALLATION INSTRUCTIONS (on Ubuntu 20.04 LTS)  
 ---
-- INSTALLING SDL: `sudo apt-get install libsdl2-dev`  
-- INSTALLING SDL_image: `sudo apt-get install libsdl2-image-dev`  
-- INSTALLING SDL_ttf: `sudo apt-get install libsdl2-ttf-dev`  
-- INSTALLING SDL_mixer: `sudo apt-get install libsdl2-mixer-dev`  
-- INSTALLING SDL_net: `sudo apt-get install libsdl2-net-dev`  
+- INSTALLING SDL: `sudo apt-get install libsdl2-dev`.  
+- INSTALLING SDL_image: `sudo apt-get install libsdl2-image-dev`.  
+- INSTALLING SDL_ttf: `sudo apt-get install libsdl2-ttf-dev`.  
+- INSTALLING SDL_mixer: `sudo apt-get install libsdl2-mixer-dev`.  
+- INSTALLING SDL_net: `sudo apt-get install libsdl2-net-dev`.  
 	
 (you may have to run `sudo apt-get update` before running these commands, or if there is an error)  
 
 ---
 RUNNING THE GAME  
 ---
-- Change to *src* directory  
-- Open terminal  
+- Change to *src* directory.  
+- Open terminal.  
 - LOCAL:  
-  - run `make` or `make game`  
-  - execute game by running the command `./game`  
+  - run `make` or `make game`.  
+  - execute game by running the command `./game`.  
 - ONLINE:  
-  - run `make` to compile both server-client executables together  
-  - run `make server` (to only compile server executable)
-  - run `make game` (to only compile client executable)
-  - run server on a machine using `./server`  
-  - run game (client) on two different machines/terminals using `./game`  
+  - run `make` to compile both server-client executables together.  
+  - run `make server` (to only compile server executable).
+  - run `make game` (to only compile client executable).
+  - run server on a machine using `./server`.  
+  - run game (client) on two different machines/terminals using `./game`.  
 > Note that the server disconnects when either of the clients disconnect (closes game). The servers needs to be restarted in case the client disconnects, for reconnection. 
 - ENJOY!  
 
 ---
 FEATURES
 ---
-We have added some really awesome *pro* features for you :  
+We have added some really awesome *pro* features for you:  
 
 - GENERAL:  
-	- Add 2 player game modes (Local/Online)  
+	- Add 2 player game modes (Local/Online).  
 	- Add networking. Players can now play together even when on different machines. Only LAN supported as of now.
-	- Add *safe* areas for players (GHOSTS DENIED!)  
+	- Add *safe* areas for players (GHOSTS DENIED!). 
 	- Background theme is chosen at random from 5 predefined backgrounds.  
 	  This can act as a breath of fresh air, when playing multiple times.  
 	- New maze is generated every time the game is started.  
@@ -59,10 +59,10 @@ We have added some really awesome *pro* features for you :
 	- A message is printed on terminal when the connection between client and server is slow. Slow connection may lead to lag and/or loss of information.
 	- New game mode: DARK MODE (scary!).  
 	  (Players have limited visibility and are haunted by ghosts, a real challenge!)  
-	- Various new sound effects have been added for different in-game activities  
+	- Various new sound effects have been added for different in-game activities.  
 - PLAYER:  
 	- Players can now teleport using any of the 4 portals present.  
-	  Destination portal is picked up at random (surprise!)  
+	  Destination portal is picked up at random. (surprise!)  
 	- Added a new *zone* around the players, a.k.a Parry Zone.  
 	  Players can now parry ghosts even when they are not scared.  
 	  (Can be useful when you are at a dead end. It has a cooldown though!)  
@@ -70,7 +70,7 @@ We have added some really awesome *pro* features for you :
 	  (It is a fight to survive and win!)  
 - GHOST:  
 	- Ghosts can now split up at a specific time leading to more number of them.  
-	- Add new mode: DARK MODE  
+	- Add new mode: DARK MODE.  
 	- Improved Ghost AI. Inky now speeds up when going crazy! Be wary of him.  
 
 > Disclaimer: Our two player Pacman (local/online) builds up on the original single player pacman. Many of the original pacman mechanics have been recreated, and hence are omitted from this section. 
@@ -78,17 +78,17 @@ We have added some really awesome *pro* features for you :
 ---
 RESOURCES USED IN DEVELOPMENT   
 ---
-SDL, SDL_image, SDL_mixer, SDL_ttf: [LazyFoo](https://lazyfoo.net/tutorials/SDL/index.php)  
+SDL, SDL_image, SDL_mixer, SDL_ttf: [LazyFoo](https://lazyfoo.net/tutorials/SDL/index.php).  
 
-SDL_net: [Docs](https://www.libsdl.org/projects/SDL_net/docs/SDL_net.pdf)  
+SDL_net: [Docs](https://www.libsdl.org/projects/SDL_net/docs/SDL_net.pdf).  
 
 IMAGES and FONTS:  
 Present in *img* and *font* folder. All open source.  
 
 MUSIC:  
 Background music-  
-Music: [Space Ambience](https://serpentsoundstudios.com) by Alexander Nakarada 
-Licensed under Creative Commons BY Attribution 4.0 [License](https://creativecommons.org/licenses/by/4.0/)  
+Music: [Space Ambience](https://serpentsoundstudios.com) by Alexander Nakarada. 
+Licensed under Creative Commons BY Attribution 4.0 [License](https://creativecommons.org/licenses/by/4.0/).  
 All other sound effects in *music* folder are open source.
 
 
