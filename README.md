@@ -1,7 +1,13 @@
-# Task 2 of course COP290, Spring 2021
+# Maze Engine | SDL
 
-## Subtask 1: Game Development: PACMAN PRO
-- Switch to PacmanPro directory for more details
+## Course Project COP290, Spring 2021
 
-## Subtask 2: Maze Simulation: The Plight of Pinky
-- Switch to Simulation directory for more details
+---
+
+This project has two parts:
+1. **Part I - Pacman Pro:** This part involves development of a 2-player maze-game.
+2. **Part II - The Plight of Pinky:** This part involves simulation and analysis of a specific instance of the Travelling Salesman Problem.
+
+---
+---
+
